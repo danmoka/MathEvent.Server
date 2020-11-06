@@ -29,6 +29,7 @@ namespace MathEventWebApi
             services.AddDbContext<MathEventContext>(opt => opt.UseSqlServer
                 (Configuration.GetConnectionString("MathEventConnection")));
             services.AddControllers();
+            services.AddScoped<IEventRepo, SqlEventRepo>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
