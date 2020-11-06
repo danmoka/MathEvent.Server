@@ -13,18 +13,18 @@ namespace MathEventWebApi.Contollers
 
         }
 
-        //GET api/events
-        [HttpGet]
-        public ActionResult<IEnumerable<Event>> List()
-        {
+        // //GET api/events
+        // [HttpGet]
+        // public ActionResult<IEnumerable<Event>> List()
+        // {
             
-        }
+        // }
 
-        //GET api/events/{id}
-        [HttpGet("{id}")]
-        public ActionResult<Event> Retrive(int id) 
-        {
+        // //GET api/events/{id}
+        // [HttpGet("{id}")]
+        // public ActionResult<Event> Retrive(int id) 
+        // {
 
-        }
+        // }
     }
 }
