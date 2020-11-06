@@ -1,6 +1,6 @@
-namespace  MathEventWepApi.Models
+namespace MathEventWebApi.Models
 {
-    public class MathEventWepApi
+     public class Event
     {
         public int Id { get; set; }
         public string name { get; set; }
