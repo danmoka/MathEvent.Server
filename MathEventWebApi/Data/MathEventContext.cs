@@ -1,9 +1,11 @@
+using MathEventWebApi.Data.Identity;
 using MathEventWebApi.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MathEventWebApi.Data
 {
-    public class MathEventContext : DbContext 
+    public class MathEventContext : IdentityDbContext<ApplicationUser>
     {
         public MathEventContext(DbContextOptions<MathEventContext> opt) : base(opt)
         {
