@@ -27,8 +27,16 @@ namespace MathEventWebApi
             services.AddDbContext<MathEventContext>(opt => opt.UseSqlServer
                 (Configuration.GetConnectionString("MathEventConnection")));
             services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<MathEventContext>();
-            
+            .AddEntityFrameworkStores<MathEventContext>()
+            .AddDefaultTokenProviders();
+
+            services.AddIdentityServer()
+                .AddDeveloperSigningCredential()
+                .AddInMemoryIdentityResources(Config.IdentityResources)
+                .AddInMemoryApiScopes(Config.ApiScopes)
+                .AddInMemoryClients(Config.Clients)
+                .AddAspNetIdentity<ApplicationUser>();
+
             services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
@@ -46,6 +54,8 @@ namespace MathEventWebApi
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseIdentityServer();
 
             app.UseAuthorization();
 
