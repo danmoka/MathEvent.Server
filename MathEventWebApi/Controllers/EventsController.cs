@@ -5,6 +5,7 @@ using AutoMapper;
 using MathEventWebApi.Data;
 using MathEventWebApi.Dtos;
 using MathEventWebApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,6 +26,7 @@ namespace MathEventWebApi.Contollers
 
         //GET api/events
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventReadDto>>> ListAsync()
         {
             var events = await _repository.ListAsync();
