@@ -1,5 +1,6 @@
 using System;
 using AutoMapper;
+using MathEventApi.Extensions;
 using MathEventWebApi.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,8 +23,13 @@ namespace MathEventWebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<MathEventContext>(opt => opt.UseSqlServer
-                (Configuration.GetConnectionString("MathEventConnection")));
+            services.AddDbContext<MathEventContext>(options => options.UseSqlServer(
+                Configuration.GetConnectionString("DBConnection")));
+
+            services.ConfigureIndentity();
+            services.ConfigureAuthentication();
+            services.ConfigureAuthorization();
+
             services.AddControllers().AddNewtonsoftJson(s => {
                 s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
@@ -42,11 +48,14 @@ namespace MathEventWebApi
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllers()
+                .RequireAuthorization("ApiScope");
             });
         }
     }
