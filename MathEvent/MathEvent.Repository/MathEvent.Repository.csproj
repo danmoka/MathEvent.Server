@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Contracts\MathEvent.Contracts.csproj" />
-    <ProjectReference Include="..\MathEvent.Database\MathEvent.Database.csproj" />
   </ItemGroup>
 
 </Project>
