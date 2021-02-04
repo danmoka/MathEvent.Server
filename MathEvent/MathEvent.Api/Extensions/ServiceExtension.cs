@@ -1,4 +1,6 @@
-﻿using MathEvent.Entities;
+﻿using MathEvent.Contracts;
+using MathEvent.Entities;
+using MathEvent.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -62,6 +64,15 @@ namespace MathEvent.Api.Extensions
                     policy.RequireClaim("scope", "matheventapi");
                 });
             });
+        }
+
+        /// <summary>
+        /// Настройка репозитория
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        public static void ConfigureRepositoryWrapper(this IServiceCollection services)
+        {
+            services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
         }
     }
 }
