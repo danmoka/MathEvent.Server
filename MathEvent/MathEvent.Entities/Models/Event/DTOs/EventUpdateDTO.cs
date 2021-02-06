@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace MathEvent.Entities.Models.Event.DTOs
 {
     /// <summary>
@@ -7,6 +8,15 @@ namespace MathEvent.Entities.Models.Event.DTOs
     public class EventUpdateDTO
     {
         public string Name { get; set; }
-        public string Annotation { get; set; }
+
+        public DateTime StartDate { get; set; }
+
+        #region hierarchy
+        public bool? Hierarchy { get; set; }
+
+        public int? ParentId { get; set; }
+        #endregion
+
+        public string Description { get; set; }
     }
 }

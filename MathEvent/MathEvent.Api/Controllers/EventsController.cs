@@ -3,10 +3,10 @@ using MathEvent.Contracts;
 using MathEvent.Entities.Models.Event;
 using MathEvent.Entities.Models.Event.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MathEvent.Api.Controllers
@@ -31,9 +31,9 @@ namespace MathEvent.Api.Controllers
         {
             var eventModels = await _repositoryWrapper.Event.FindAll().ToListAsync();
 
-            if (eventModels != null && eventModels.Any())
+            if (eventModels != null)
             {
-                return Ok(_mapper.Map<IEnumerable<EventCreateDTO>>(eventModels));
+                return Ok(_mapper.Map<IEnumerable<EventReadDTO>>(eventModels));
             }
 
             return NotFound();
@@ -58,7 +58,7 @@ namespace MathEvent.Api.Controllers
 
         // POST api/Events
         [HttpPost]
-        public async Task<ActionResult> CreateAsync(EventCreateDTO eventCreateDTO)
+        public async Task<ActionResult> CreateAsync([FromBody] EventCreateDTO eventCreateDTO)
         {
             var eventModel = _mapper.Map<Event>(eventCreateDTO);
 
@@ -75,7 +75,7 @@ namespace MathEvent.Api.Controllers
 
         // PUT api/Events/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, EventUpdateDTO eventUpdateDTO)
+        public async Task<ActionResult> UpdateAsync(int id, [FromBo] EventUpdateDTO eventUpdateDTO)
         {
             var eventModel = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.Id == id)
@@ -99,8 +99,36 @@ namespace MathEvent.Api.Controllers
             return Ok();
         }
 
+        //PATCH api/Events/{id}
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> PartialUpdateAsync(int id, [FromBody] JsonPatchDocument<EventUpdateDTO> patchDocument)
+        {
+            var eventModel = await _repositoryWrapper.Event
+                .FindByCondition(ev => ev.Id == id)
+                .SingleOrDefaultAsync(); ;
+
+            if (eventModel == null)
+            {
+                return NotFound();
+            }
+
+            var eventToPatch = _mapper.Map<EventUpdateDTO>(eventModel);
+            patchDocument.ApplyTo(eventToPatch, ModelState);
+
+            if (!TryValidateModel(eventToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            _mapper.Map(eventToPatch, eventModel);
+            _repositoryWrapper.Event.Update(eventModel);
+            await _repositoryWrapper.SaveAsync();
+
+            return Ok();
+        }
+
         // DELETE api/Events/{id}
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult> DestroyAsync(int id)
         {
             var eventModel = await _repositoryWrapper.Event

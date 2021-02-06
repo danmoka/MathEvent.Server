@@ -1,4 +1,3 @@
-using AutoMapper;
 using MathEvent.Api.Extensions;
 using MathEvent.Entities.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -6,8 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json.Serialization;
-using System;
 
 namespace MathEvent.Api
 {
@@ -26,12 +23,10 @@ namespace MathEvent.Api
             services.ConfigureIndentity();
             services.ConfigureAuthentication(Configuration);
             services.ConfigureAuthorization(Configuration);
-            services.AddControllers().AddNewtonsoftJson(options =>
-            {
-                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-            });
+            services.ConfigureMapper();
+            services.ConfigureJson();
+            services.ConfigureRepositoryWrapper();
             services.AddSwaggerGen();
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // для использования маппера в апи
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

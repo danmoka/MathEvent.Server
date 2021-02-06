@@ -1,4 +1,5 @@
-﻿using MathEvent.Contracts;
+﻿using AutoMapper;
+using MathEvent.Contracts;
 using MathEvent.Entities;
 using MathEvent.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Serialization;
+using System;
 
 namespace MathEvent.Api.Extensions
 {
@@ -73,6 +76,27 @@ namespace MathEvent.Api.Extensions
         public static void ConfigureRepositoryWrapper(this IServiceCollection services)
         {
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
+        }
+
+        /// <summary>
+        /// Настройка маппера
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        public static void ConfigureMapper(this IServiceCollection services)
+        {
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // для использования маппера в апи
+        }
+
+        /// <summary>
+        /// Настройка json
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        public static void ConfigureJson(this IServiceCollection services)
+        {
+            services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
         }
     }
 }
