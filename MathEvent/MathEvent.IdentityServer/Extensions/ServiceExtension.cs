@@ -1,6 +1,6 @@
 ﻿using IdentityServer;
 using MathEvent.Entities;
-using MathEvent.Entities.Models.Identity;
+using MathEvent.Entities.Models.Identities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

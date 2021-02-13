@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
-using MathEvent.Entities.Models.Event.DTOs;
-using MathEvent.Entities.Models.Identity;
+using MathEvent.Contracts;
+using MathEvent.Converters.Events.DTOs;
+using MathEvent.Entities.Models.Events;
+using MathEvent.Entities.Models.Identities;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MathEvent.Entities.Models.Event.Profiles
+namespace MathEvent.Converters.Events.Profiles
 {
     /// <summary>
     /// Класс для связи с моделью БЛ
@@ -24,12 +26,12 @@ namespace MathEvent.Entities.Models.Event.Profiles
         /// <summary>
         /// Класс, описывающий маппинг id пользователя на сущность пользователя
         /// </summary>
-        private class CustomResolver : IValueResolver<EventUpdateDTO, Event, ICollection<ApplicationUser>>
+        public class CustomResolver : IValueResolver<EventUpdateDTO, Event, ICollection<ApplicationUser>>
         {
-            readonly RepositoryContext _repositoryContext;
-            public CustomResolver(RepositoryContext repositoryContext)
+            readonly IRepositoryWrapper _repositoryWrapper;
+            public CustomResolver(IRepositoryWrapper repositoryWrapper)
             {
-                _repositoryContext = repositoryContext;
+                _repositoryWrapper = repositoryWrapper;
             }
 
             public ICollection<ApplicationUser> Resolve(EventUpdateDTO source, Event destination, ICollection<ApplicationUser> destMember, ResolutionContext context)
@@ -38,7 +40,7 @@ namespace MathEvent.Entities.Models.Event.Profiles
 
                 foreach (var id in source.ApplicationUsers)
                 {
-                    users.Add(_repositoryContext.ApplicationUsers.Where(x => x.Id == id).SingleOrDefault());
+                    users.Add(_repositoryWrapper.User.FindByCondition(x => x.Id == id).SingleOrDefault());
                 }
 
                 return users;

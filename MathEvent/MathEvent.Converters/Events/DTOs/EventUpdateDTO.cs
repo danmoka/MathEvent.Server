@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MathEvent.Entities.Models.Event.DTOs
+namespace MathEvent.Converters.Events.DTOs
 {
     /// <summary>
     /// Класс для передачи данных для обновления Event

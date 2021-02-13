@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
+using MathEvent.Converters.Events.Profiles;
+using MathEvent.Converters.Identities.Profiles;
 using MathEvent.Entities;
 using MathEvent.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Reflection;
 
 namespace MathEvent.Api.Extensions
 {
@@ -84,7 +87,7 @@ namespace MathEvent.Api.Extensions
         /// <param name="services">Зависимости</param>
         public static void ConfigureMapper(this IServiceCollection services)
         {
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies()); // для использования маппера в апи
+            services.AddAutoMapper(typeof(UserProfile), typeof(EventProfile));
         }
 
         /// <summary>

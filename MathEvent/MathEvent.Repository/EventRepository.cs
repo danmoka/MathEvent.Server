@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Entities;
-using MathEvent.Entities.Models.Event;
+using MathEvent.Entities.Models.Events;
 
 namespace MathEvent.Repository
 {

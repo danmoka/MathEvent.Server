@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Entities.Models.Event;
-using MathEvent.Entities.Models.Event.DTOs;
+using MathEvent.Entities.Models.Events;
+using MathEvent.Converters.Events.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;

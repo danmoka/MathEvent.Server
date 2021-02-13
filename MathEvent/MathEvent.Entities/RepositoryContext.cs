@@ -1,5 +1,5 @@
-﻿using MathEvent.Entities.Models.Event;
-using MathEvent.Entities.Models.Identity;
+﻿using MathEvent.Entities.Models.Events;
+using MathEvent.Entities.Models.Identities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

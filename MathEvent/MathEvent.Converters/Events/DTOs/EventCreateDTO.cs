@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MathEvent.Entities.Models.Event.DTOs
+namespace MathEvent.Converters.Events.DTOs
 {
     /// <summary>
     /// Класс для передачи данных для создания Event

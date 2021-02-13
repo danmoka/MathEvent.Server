@@ -1,4 +1,4 @@
-﻿using MathEvent.Entities.Models.Event;
+﻿using MathEvent.Entities.Models.Events;
 
 namespace MathEvent.Contracts
 {

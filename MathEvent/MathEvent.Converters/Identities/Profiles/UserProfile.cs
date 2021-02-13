@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using MathEvent.Entities.Models.Identity.DTOs;
+using MathEvent.Converters.Identities.DTOs;
+using MathEvent.Entities.Models.Identities;
 
-namespace MathEvent.Entities.Models.Identity.Profiles
+namespace MathEvent.Converters.Identities.Profiles
 {
     public class UserProfile : Profile
     {

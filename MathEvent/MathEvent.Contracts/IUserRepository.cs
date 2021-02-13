@@ -1,4 +1,4 @@
-﻿using MathEvent.Entities.Models.Identity;
+﻿using MathEvent.Entities.Models.Identities;
 
 namespace MathEvent.Contracts
 {

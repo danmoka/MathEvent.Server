@@ -1,7 +1,7 @@
-﻿using MathEvent.Entities.Models.Event.DTOs;
+﻿using MathEvent.Converters.Events.DTOs;
 using System.Collections.Generic;
 
-namespace MathEvent.Entities.Models.Identity.DTOs
+namespace MathEvent.Converters.Identities.DTOs
 {
     /// <summary>
     /// Класс для передачи данных для чтения информации о пользователе и его событиях

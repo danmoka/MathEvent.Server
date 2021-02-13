@@ -1,5 +1,5 @@
 ﻿
-namespace MathEvent.Entities.Models.Identity.DTOs
+namespace MathEvent.Converters.Identities.DTOs
 {
     /// <summary>
     /// Класс для передачи данных для чтения упрощенной информации о пользователе

@@ -1,10 +1,10 @@
-﻿using MathEvent.Entities.Models.Identity;
+﻿using MathEvent.Entities.Models.Identities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MathEvent.Entities.Models.Event
+namespace MathEvent.Entities.Models.Events
 {
     public class Event
     {
