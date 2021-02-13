@@ -19,6 +19,11 @@ namespace MathEvent.Repository
         /// </summary>
         private IEventRepository _event;
 
+        /// <summary>
+        /// Репозиторий для работы с Пользователями
+        /// </summary>
+        private IUserRepository _user;
+
         public RepositoryWrapper(RepositoryContext repositoryContext)
         {
             _repositoryContext = repositoryContext;
@@ -37,6 +42,22 @@ namespace MathEvent.Repository
                 }
 
                 return _event;
+            }
+        }
+
+        /// <summary>
+        /// Предоставляет репозиторий для работы с Пользователями
+        /// </summary>
+        public IUserRepository User
+        {
+            get
+            {
+                if (_user is null)
+                {
+                    _user = new UserRepository(_repositoryContext);
+                }
+
+                return _user;
             }
         }
 

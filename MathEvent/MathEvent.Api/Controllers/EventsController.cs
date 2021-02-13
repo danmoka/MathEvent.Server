@@ -29,7 +29,9 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventReadDTO>>> ListAsync()
         {
-            var eventModels = await _repositoryWrapper.Event.FindAll().ToListAsync();
+            var eventModels = await _repositoryWrapper.Event.FindAll()
+                .Include(ev => ev.ApplicationUsers)
+                .ToListAsync();
 
             if (eventModels != null)
             {
@@ -46,6 +48,7 @@ namespace MathEvent.Api.Controllers
         {
             var eventModel = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.Id == id)
+                .Include(ev => ev.ApplicationUsers)
                 .SingleOrDefaultAsync();
 
             if (eventModel != null)
@@ -75,10 +78,11 @@ namespace MathEvent.Api.Controllers
 
         // PUT api/Events/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, [FromBo] EventUpdateDTO eventUpdateDTO)
+        public async Task<ActionResult> UpdateAsync(int id, [FromBody] EventUpdateDTO eventUpdateDTO)
         {
             var eventModel = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.Id == id)
+                .Include(ev => ev.ApplicationUsers)
                 .SingleOrDefaultAsync();
 
             if (eventModel == null)
@@ -105,6 +109,7 @@ namespace MathEvent.Api.Controllers
         {
             var eventModel = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.Id == id)
+                .Include(ev => ev.ApplicationUsers)
                 .SingleOrDefaultAsync(); ;
 
             if (eventModel == null)

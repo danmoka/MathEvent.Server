@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MathEvent.Entities.Models.Identity.DTOs;
+using System;
+using System.Collections.Generic;
 
 namespace MathEvent.Entities.Models.Event.DTOs
 {
@@ -18,6 +20,8 @@ namespace MathEvent.Entities.Models.Event.DTOs
 
         public int? ParentId { get; set; }
         #endregion
+
+        public ICollection<UserSimpleReadDTO> ApplicationUsers { get; set; }
 
         public string Description { get; set; }
     }
