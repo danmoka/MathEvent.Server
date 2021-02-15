@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Entities.Models.Events;
 using MathEvent.Converters.Events.DTOs;
+using MathEvent.Entities.Models.Events;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -65,15 +65,20 @@ namespace MathEvent.Api.Controllers
         {
             var eventModel = _mapper.Map<Event>(eventCreateDTO);
 
-            if (!TryValidateModel(eventModel))
+            if (eventModel is not null)
             {
-                return ValidationProblem(ModelState);
+                if (!TryValidateModel(eventModel))
+                {
+                    return ValidationProblem(ModelState);
+                }
+
+                await _repositoryWrapper.Event.CreateAsync(eventModel);
+                await _repositoryWrapper.SaveAsync();
+
+                return Ok();
             }
 
-            await _repositoryWrapper.Event.CreateAsync(eventModel);
-            await _repositoryWrapper.SaveAsync();
-
-            return Ok();
+            return BadRequest();
         }
 
         // PUT api/Events/{id}
@@ -85,22 +90,22 @@ namespace MathEvent.Api.Controllers
                 .Include(ev => ev.ApplicationUsers)
                 .SingleOrDefaultAsync();
 
-            if (eventModel == null)
+            if (eventModel is not null)
             {
-                return NotFound();
+                _mapper.Map(eventUpdateDTO, eventModel);
+
+                if (!TryValidateModel(eventModel))
+                {
+                    return ValidationProblem(ModelState);
+                }
+
+                _repositoryWrapper.Event.Update(eventModel);
+                await _repositoryWrapper.SaveAsync();
+
+                return Ok();
             }
 
-            _mapper.Map(eventUpdateDTO, eventModel);
-
-            if (!TryValidateModel(eventModel))
-            {
-                return ValidationProblem(ModelState);
-            }
-
-            _repositoryWrapper.Event.Update(eventModel);
-            await _repositoryWrapper.SaveAsync();
-
-            return Ok();
+            return NotFound();
         }
 
         //PATCH api/Events/{id}
@@ -112,24 +117,24 @@ namespace MathEvent.Api.Controllers
                 .Include(ev => ev.ApplicationUsers)
                 .SingleOrDefaultAsync(); ;
 
-            if (eventModel == null)
+            if (eventModel is not null)
             {
-                return NotFound();
+                var eventToPatch = _mapper.Map<EventUpdateDTO>(eventModel);
+                patchDocument.ApplyTo(eventToPatch, ModelState);
+
+                if (!TryValidateModel(eventToPatch))
+                {
+                    return ValidationProblem(ModelState);
+                }
+
+                _mapper.Map(eventToPatch, eventModel);
+                _repositoryWrapper.Event.Update(eventModel);
+                await _repositoryWrapper.SaveAsync();
+
+                return Ok();
             }
 
-            var eventToPatch = _mapper.Map<EventUpdateDTO>(eventModel);
-            patchDocument.ApplyTo(eventToPatch, ModelState);
-
-            if (!TryValidateModel(eventToPatch))
-            {
-                return ValidationProblem(ModelState);
-            }
-
-            _mapper.Map(eventToPatch, eventModel);
-            _repositoryWrapper.Event.Update(eventModel);
-            await _repositoryWrapper.SaveAsync();
-
-            return Ok();
+            return NotFound();
         }
 
         // DELETE api/Events/{id}
@@ -140,15 +145,15 @@ namespace MathEvent.Api.Controllers
                 .FindByCondition(ev => ev.Id == id)
                 .SingleOrDefaultAsync();
 
-            if (eventModel == null)
+            if (eventModel is not null)
             {
-                return NotFound();
+                _repositoryWrapper.Event.Delete(eventModel);
+                await _repositoryWrapper.SaveAsync();
+
+                return NoContent();
             }
 
-            _repositoryWrapper.Event.Delete(eventModel);
-            await _repositoryWrapper.SaveAsync();
-
-            return NoContent();
+            return NotFound();
         }
     }
 }

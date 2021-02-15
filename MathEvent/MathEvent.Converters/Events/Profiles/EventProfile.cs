@@ -17,19 +17,20 @@ namespace MathEvent.Converters.Events.Profiles
         {
             //Source -> target
             CreateMap<Event, EventReadDTO>();
+            CreateMap<Event, EventSimpleReadDTO>();
             CreateMap<EventCreateDTO, Event>();
             CreateMap<EventUpdateDTO, Event>()
-                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<CustomResolver>());
+                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<IdToUserResolver>());
             CreateMap<Event, EventUpdateDTO>();
         }
 
         /// <summary>
         /// Класс, описывающий маппинг id пользователя на сущность пользователя
         /// </summary>
-        public class CustomResolver : IValueResolver<EventUpdateDTO, Event, ICollection<ApplicationUser>>
+        public class IdToUserResolver : IValueResolver<EventUpdateDTO, Event, ICollection<ApplicationUser>>
         {
-            readonly IRepositoryWrapper _repositoryWrapper;
-            public CustomResolver(IRepositoryWrapper repositoryWrapper)
+            private readonly IRepositoryWrapper _repositoryWrapper;
+            public IdToUserResolver(IRepositoryWrapper repositoryWrapper)
             {
                 _repositoryWrapper = repositoryWrapper;
             }
@@ -40,7 +41,9 @@ namespace MathEvent.Converters.Events.Profiles
 
                 foreach (var id in source.ApplicationUsers)
                 {
-                    users.Add(_repositoryWrapper.User.FindByCondition(x => x.Id == id).SingleOrDefault());
+                    users.Add(_repositoryWrapper.User
+                        .FindByCondition(user => user.Id == id)
+                        .SingleOrDefault());
                 }
 
                 return users;

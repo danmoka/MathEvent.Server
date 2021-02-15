@@ -15,8 +15,11 @@ namespace MathEvent.Entities.Models.Identities
         }
 
         public string Name { get; set; }
+
         public string Surname { get; set; }
+
         public string Patronymic { get; set; }
+
         public virtual ICollection<Event> Events { get; set; }
     }
 }

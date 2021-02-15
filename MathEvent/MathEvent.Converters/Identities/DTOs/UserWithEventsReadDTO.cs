@@ -9,11 +9,17 @@ namespace MathEvent.Converters.Identities.DTOs
     public class UserWithEventsReadDTO
     {
         public string Id { get; set; }
+
         public string Name { get; set; }
+
         public string Surname { get; set; }
+
         public string Patronymic { get; set; }
+
         public string Email { get; set; }
+
         public string UserName { get; set; }
-        public ICollection<EventReadDTO> Events { get; set; }
+
+        public ICollection<EventSimpleReadDTO> Events { get; set; }
     }
 }
