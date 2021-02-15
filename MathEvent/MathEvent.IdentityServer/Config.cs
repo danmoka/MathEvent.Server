@@ -31,11 +31,14 @@ namespace IdentityServer
                 new Client
                 {
                     // TODO: сделать начитку из json
+                    // TODO: настройка токенов (время жизни токена доступа (меньше), а рефреш токена?)
                     ClientId = "react_spa",
                     ClientName = "React SPA",
                     ClientSecrets = { new Secret("secret".Sha256()) },
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     AllowAccessTokensViaBrowser = true,
+                    AllowOfflineAccess = true,
+                    AbsoluteRefreshTokenLifetime = 3600,
                     AccessTokenLifetime = 3600,
                     AllowedScopes = new List<string>
                     {
