@@ -4,14 +4,14 @@ using MathEvent.Converters.Events.Profiles;
 using MathEvent.Converters.Identities.Profiles;
 using MathEvent.Entities;
 using MathEvent.Repository;
+using MathEvent.Service.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Reflection;
+using Service.Services;
 
 namespace MathEvent.Api.Extensions
 {
@@ -67,7 +67,7 @@ namespace MathEvent.Api.Extensions
                 {
                     policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", "matheventapi");
+                    policy.RequireClaim("scope", new string[] { "matheventapi", "openid", "offline_access" });
                 });
             });
         }
@@ -79,6 +79,12 @@ namespace MathEvent.Api.Extensions
         public static void ConfigureRepositoryWrapper(this IServiceCollection services)
         {
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
+        }
+
+        public static void ConfigureEntityServices(this IServiceCollection services)
+        {
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IEventService, EventService>();
         }
 
         /// <summary>

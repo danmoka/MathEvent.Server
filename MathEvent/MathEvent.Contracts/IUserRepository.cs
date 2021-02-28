@@ -1,11 +1,11 @@
-﻿using MathEvent.Entities.Models.Identities;
+﻿using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
 namespace MathEvent.Contracts
 {
     /// <summary>
-    /// Декларирует функциональность пользовательских репозиториев
+    /// Декларирует функциональность репозиториев пользователя
     /// </summary>
     public interface IUserRepository : IRepositoryBase<ApplicationUser>
     {

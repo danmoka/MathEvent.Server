@@ -1,18 +1,14 @@
-﻿using MathEvent.Entities.Models.Identities;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MathEvent.Entities.Models.Events
+namespace MathEvent.Entities.Entities
 {
+    /// <summary>
+    /// Сущность события
+    /// </summary>
     public class Event
     {
-        public Event()
-        {
-            ApplicationUsers = new HashSet<ApplicationUser>();
-        }
-
         [Key]
         public int Id { get; set; }
 
@@ -31,8 +27,6 @@ namespace MathEvent.Entities.Models.Events
 
         public Event Parent { get; set; }
         #endregion
-
-        public virtual ICollection<ApplicationUser> ApplicationUsers { get; set; }
 
         [MaxLength(500)]
         public string Description { get; set; }

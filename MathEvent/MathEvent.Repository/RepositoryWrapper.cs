@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Entities;
-using MathEvent.Entities.Models.Identities;
+using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
@@ -30,6 +30,11 @@ namespace MathEvent.Repository
         /// Репозиторий для работы с Пользователями
         /// </summary>
         private IUserRepository _user;
+
+        /// <summary>
+        /// Репозиторий для работы с Подписками
+        /// </summary>
+        private ISubscriptionRepository _subscirption;
 
         public RepositoryWrapper(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager)
         {
@@ -66,6 +71,22 @@ namespace MathEvent.Repository
                 }
 
                 return _user;
+            }
+        }
+
+        /// <summary>
+        /// Предоставляет репозиторий для работы с Подписками
+        /// </summary>
+        public ISubscriptionRepository Subscription
+        {
+            get
+            {
+                if (_subscirption is null)
+                {
+                    _subscirption = new SubscriptionRepository(_repositoryContext);
+                }
+
+                return _subscirption;
             }
         }
 

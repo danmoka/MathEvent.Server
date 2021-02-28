@@ -1,4 +1,4 @@
-﻿using MathEvent.Entities.Models.Identities;
+﻿using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;

@@ -1,5 +1,5 @@
 using MathEvent.Entities;
-using MathEvent.Entities.Models.Identities;
+using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;

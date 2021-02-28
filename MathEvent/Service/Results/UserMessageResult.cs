@@ -1,0 +1,29 @@
+﻿using MathEvent.Entities.Entities;
+using Microsoft.AspNetCore.Identity;
+using Service.Messages;
+using System.Collections.Generic;
+
+namespace Service.Results
+{
+    /// <summary>
+    /// Результат выполнения с сущностью пользователя
+    /// </summary>
+    public class UserMessageResult : MessageResult<ApplicationUser>
+    {
+        /// <summary>
+        /// Преобразует перечисление IdentityError в перечисление IdentityMessage
+        /// </summary>
+        /// <param name="errors">Перечисление ошибок подсистемы Identity</param>
+        /// <returns></returns>
+        public static IEnumerable<IdentityMessage> GetMessagesFromErrors(IEnumerable<IdentityError> errors)
+        {
+            foreach (var error in errors)
+            {
+                yield return new IdentityMessage
+                {
+                    IdentityError = error
+                };
+            }
+        }
+    }
+}

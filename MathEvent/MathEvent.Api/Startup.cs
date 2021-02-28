@@ -24,6 +24,7 @@ namespace MathEvent.Api
             services.ConfigureAuthentication(Configuration);
             services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();
+            services.ConfigureEntityServices();
             services.ConfigureMapper();
             services.ConfigureJson();
             services.AddSwaggerGen();

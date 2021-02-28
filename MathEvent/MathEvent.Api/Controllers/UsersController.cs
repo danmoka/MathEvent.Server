@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
-using MathEvent.Contracts;
 using MathEvent.Converters.Identities.DTOs;
-using MathEvent.Entities.Models.Identities;
+using MathEvent.Converters.Identities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Service.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,27 +14,25 @@ namespace MathEvent.Api.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
+        private readonly IUserService _userService;
 
-        public UsersController(IRepositoryWrapper wrapper, IMapper mapper)
+        public UsersController(IMapper mapper, IUserService userService)
         {
-            _repositoryWrapper = wrapper;
             _mapper = mapper;
+            _userService = userService;
         }
 
         // GET api/Users
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<UserReadDTO>>> ListAsync()
+        public async Task<ActionResult<IEnumerable<UserReadModel>>> ListAsync()
         {
-            var userModels = await _repositoryWrapper.User
-                .FindAll()
-                .ToListAsync();
+            var userReadModels = await _userService.ListAsync();
 
-            if (userModels is not null)
+            if (userReadModels is not null)
             {
-                return Ok(_mapper.Map<IEnumerable<UserReadDTO>>(userModels));
+                return Ok(userReadModels);
             }
 
             return NotFound();
@@ -44,16 +41,18 @@ namespace MathEvent.Api.Controllers
         // GET api/Users/{id}
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<UserWithEventsReadDTO>> RetriveAsync(string id)
+        public async Task<ActionResult<UserWithEventsReadModel>> RetrieveAsync(string id)
         {
-            var userModel = await _repositoryWrapper.User
-                .FindByCondition(user => user.Id == id)
-                .Include(user => user.Events)
-                .SingleOrDefaultAsync();
-
-            if (userModel is not null)
+            if (id is null)
             {
-                return Ok(_mapper.Map<UserWithEventsReadDTO>(userModel));
+                return BadRequest();
+            }
+
+            var userReadModel = await _userService.RetrieveAsync(id);
+
+            if (userReadModel is not null)
+            {
+                return Ok(userReadModel);
             }
 
             return NotFound();
@@ -62,134 +61,129 @@ namespace MathEvent.Api.Controllers
         // POST api/Users
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult> CreateAsync([FromBody] UserCreateDTO userCreateDTO)
+        public async Task<ActionResult> CreateAsync([FromBody] UserCreateModel userCreateModel)
         {
-            var userModel = _mapper.Map<ApplicationUser>(userCreateDTO);
-
-            if (userModel is not null)
+            if (!TryValidateModel(userCreateModel))
             {
-                var createResult = await _repositoryWrapper.User
-                    .CreateAsync(userModel, userCreateDTO.Password);
-                // TODO: AddToRoleAsync
-
-                if (createResult.Succeeded)
-                {
-                    await _repositoryWrapper.SaveAsync();
-
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(createResult.Errors);
-                }
+                return ValidationProblem(ModelState);
             }
 
-            return BadRequest();
+            var createResult = await _userService.CreateAsync(userCreateModel);
+
+            if (createResult.Succeeded)
+            {
+                var createdUser = createResult.Entity;
+
+                if (createdUser is null)
+                {
+                    return Ok();
+                }
+
+                return StatusCode(201, createdUser.Id);
+            }
+            else
+            {
+                return BadRequest(createResult.Messages);
+            }
         }
 
         // PUT api/Users/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(string id, [FromBody] UserUpdateDTO userUpdateDTO)
+        public async Task<ActionResult> UpdateAsync(string id, [FromBody] UserUpdateModel userUpdateModel)
         {
-            var userModel = await _repositoryWrapper.User
-                .FindByCondition(user => user.Id == id)
-                .Include(user => user.Events)
-                .SingleOrDefaultAsync();
-            // TODO: ? AddToRoleAsync
-
-            if (userModel is not null)
+            if (id is null)
             {
-                _mapper.Map(userUpdateDTO, userModel);
-
-                if (!TryValidateModel(userModel))
-                {
-                    return ValidationProblem(ModelState);
-                }
-
-                var updateResult = await _repositoryWrapper.User
-                    .UpdateAsync(userModel);
-
-                if (updateResult.Succeeded)
-                {
-                    await _repositoryWrapper.SaveAsync();
-
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(updateResult.Errors);
-                }
+                return BadRequest();
             }
 
-            return NotFound();
+            if (await _userService.GetUserEntityAsync(id) is null)
+            {
+                return NotFound();
+            }
+
+            if (!TryValidateModel(userUpdateModel))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var updateResult = await _userService.UpdateAsync(id, userUpdateModel);
+
+            if (updateResult.Succeeded)
+            {
+                return Ok(id);
+            }
+            else
+            {
+                return BadRequest(updateResult.Messages);
+            }
         }
 
         // PATCH api/Users/{id}
         [HttpPatch("{id}")]
-        public async Task<ActionResult> PartialupdateAsync(string id, [FromBody] JsonPatchDocument<UserUpdateDTO> patchDocument)
+        public async Task<ActionResult> PartialupdateAsync(string id, [FromBody] JsonPatchDocument<UserUpdateModel> patchDocument)
         {
-            var userModel = await _repositoryWrapper.User
-                .FindByCondition(user => user.Id == id)
-                .Include(user => user.Events)
-                .SingleOrDefaultAsync();
-            // TODO: ? AddToRoleAsync
-
-            if (userModel is not null)
+            if (id is null)
             {
-                var userToPatch = _mapper.Map<UserUpdateDTO>(userModel);
-                patchDocument.ApplyTo(userToPatch, ModelState);
-
-                if (!TryValidateModel(userToPatch))
-                {
-                    return ValidationProblem(ModelState);
-                }
-
-                _mapper.Map(userToPatch, userModel);
-
-                var updateResult = await _repositoryWrapper.User
-                    .UpdateAsync(userModel);
-
-                if (updateResult.Succeeded)
-                {
-                    await _repositoryWrapper.SaveAsync();
-
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(updateResult.Errors);
-                }
+                return BadRequest();
             }
 
-            return NotFound();
+            if (patchDocument is null)
+            {
+                return BadRequest();
+            }
+
+            var userEntity = await _userService.GetUserEntityAsync(id);
+
+            if (userEntity is null)
+            {
+                return NotFound();
+            }
+
+            var userDTO = _mapper.Map<UserWithEventsDTO>(userEntity);
+            var userToPatch = _mapper.Map<UserUpdateModel>(userDTO);
+            patchDocument.ApplyTo(userToPatch, ModelState);
+
+            if (!TryValidateModel(userToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var updateResult = await _userService.UpdateAsync(id, userToPatch);
+
+            if (updateResult.Succeeded)
+            {
+                return Ok(id);
+            }
+            else
+            {
+                return BadRequest(updateResult.Messages);
+            }
         }
 
         // DELETE api/Users/{id}
         [HttpDelete("{id}")]
         public async Task<ActionResult> DestroyAsync(string id)
         {
-            var userModel = await _repositoryWrapper.User
-                .FindByCondition(user => user.Id == id)
-                .SingleOrDefaultAsync();
-
-            if (userModel is not null)
+            if (id is null)
             {
-                var deleteResult = await _repositoryWrapper.User
-                    .DeleteAsync(userModel);
-
-                if (deleteResult.Succeeded)
-                {
-                    await _repositoryWrapper.SaveAsync();
-
-                    return NoContent();
-                }
-                else
-                {
-                    return BadRequest(deleteResult.Errors);
-                }
+                return BadRequest();
             }
 
-            return NotFound();
+            if (await _userService.GetUserEntityAsync(id) is null)
+            {
+                return NotFound();
+            }
+
+            var deleteResult = await _userService.DeleteAsync(id);
+
+            if (deleteResult.Succeeded)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return BadRequest(deleteResult.Messages);
+            }
         }
     }
 }

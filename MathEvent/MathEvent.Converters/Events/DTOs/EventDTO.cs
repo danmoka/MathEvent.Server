@@ -3,10 +3,12 @@
 namespace MathEvent.Converters.Events.DTOs
 {
     /// <summary>
-    /// Класс для передачи данных для создания Event
+    /// Transfer объект сущности события
     /// </summary>
-    public class EventCreateDTO
+    public class EventDTO
     {
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
         public DateTime StartDate { get; set; }
@@ -15,6 +17,8 @@ namespace MathEvent.Converters.Events.DTOs
         public bool? Hierarchy { get; set; }
 
         public int? ParentId { get; set; }
+
+        public EventDTO Parent { get; set; }
         #endregion
 
         public string Description { get; set; }

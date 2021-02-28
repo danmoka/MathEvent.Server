@@ -1,11 +1,11 @@
 ﻿using System;
 
-namespace MathEvent.Converters.Events.DTOs
+namespace MathEvent.Converters.Events.Models
 {
     /// <summary>
     /// Класс для передачи упрощенной информации о событии
     /// </summary>
-    public class EventSimpleReadDTO
+    public class EventSimpleReadModel
     {
         public int Id { get; set; }
 

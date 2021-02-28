@@ -8,7 +8,11 @@ namespace MathEvent.Contracts
     public interface IRepositoryWrapper
     {
         IEventRepository Event { get; }
+
         IUserRepository User { get; }
+
+        ISubscriptionRepository Subscription { get; }
+
         Task SaveAsync();
     }
 }

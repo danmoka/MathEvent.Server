@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
-using MathEvent.Contracts;
 using MathEvent.Converters.Events.DTOs;
-using MathEvent.Entities.Models.Events;
+using MathEvent.Converters.Events.Models;
+using MathEvent.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,27 +14,25 @@ namespace MathEvent.Api.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        private readonly IRepositoryWrapper _repositoryWrapper;
         private readonly IMapper _mapper;
+        private readonly IEventService _eventService;
 
-        public EventsController(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        public EventsController(IMapper mapper, IEventService eventService)
         {
-            _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _eventService = eventService;
         }
 
         // GET api/Events
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<EventReadDTO>>> ListAsync()
+        public async Task<ActionResult<IEnumerable<EventReadModel>>> ListAsync()
         {
-            var eventModels = await _repositoryWrapper.Event.FindAll()
-                .Include(ev => ev.ApplicationUsers)
-                .ToListAsync();
+            var eventReadModels = await _eventService.ListAsync();
 
-            if (eventModels != null)
+            if (eventReadModels is not null)
             {
-                return Ok(_mapper.Map<IEnumerable<EventReadDTO>>(eventModels));
+                return Ok(eventReadModels);
             }
 
             return NotFound();
@@ -44,16 +41,18 @@ namespace MathEvent.Api.Controllers
         // GET api/Events/{id}
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<EventReadDTO>> RetriveAsync(int id)
+        public async Task<ActionResult<EventWithUsersReadModel>> RetrieveAsync(int id)
         {
-            var eventModel = await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.Id == id)
-                .Include(ev => ev.ApplicationUsers)
-                .SingleOrDefaultAsync();
-
-            if (eventModel != null)
+            if (id < 0)
             {
-                return Ok(_mapper.Map<EventReadDTO>(eventModel));
+                return BadRequest();
+            }
+
+            var eventReadModel = await _eventService.RetrieveAsync(id);
+
+            if (eventReadModel != null)
+            {
+                return Ok(eventReadModel);
             }
 
             return NotFound();
@@ -61,99 +60,129 @@ namespace MathEvent.Api.Controllers
 
         // POST api/Events
         [HttpPost]
-        public async Task<ActionResult> CreateAsync([FromBody] EventCreateDTO eventCreateDTO)
+        public async Task<ActionResult> CreateAsync([FromBody] EventCreateModel eventCreateModel)
         {
-            var eventModel = _mapper.Map<Event>(eventCreateDTO);
-
-            if (eventModel is not null)
+            if (!TryValidateModel(eventCreateModel))
             {
-                if (!TryValidateModel(eventModel))
-                {
-                    return ValidationProblem(ModelState);
-                }
-
-                await _repositoryWrapper.Event.CreateAsync(eventModel);
-                await _repositoryWrapper.SaveAsync();
-
-                return Ok();
+                return ValidationProblem(ModelState);
             }
 
-            return BadRequest();
+            var createResult = await _eventService.CreateAsync(eventCreateModel);
+
+            if (createResult.Succeeded)
+            {
+                var createdEvent = createResult.Entity;
+
+                if (createdEvent is null)
+                {
+                    return Ok();
+                }
+
+                return StatusCode(201, createdEvent.Id);
+            }
+            else
+            {
+                return BadRequest(createResult.Messages);
+            }
         }
 
         // PUT api/Events/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, [FromBody] EventUpdateDTO eventUpdateDTO)
+        public async Task<ActionResult> UpdateAsync(int id, [FromBody] EventUpdateModel eventUpdateModel)
         {
-            var eventModel = await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.Id == id)
-                .Include(ev => ev.ApplicationUsers)
-                .SingleOrDefaultAsync();
-
-            if (eventModel is not null)
+            if (id < 0)
             {
-                _mapper.Map(eventUpdateDTO, eventModel);
-
-                if (!TryValidateModel(eventModel))
-                {
-                    return ValidationProblem(ModelState);
-                }
-
-                _repositoryWrapper.Event.Update(eventModel);
-                await _repositoryWrapper.SaveAsync();
-
-                return Ok();
+                return BadRequest();
             }
 
-            return NotFound();
+            if (await _eventService.GetEventEntityAsync(id) is null)
+            {
+                return NotFound();
+            }
+
+            if (!TryValidateModel(eventUpdateModel))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var updateResult = await _eventService.UpdateAsync(id, eventUpdateModel);
+
+            if (updateResult.Succeeded)
+            {
+                return Ok(id);
+            }
+            else
+            {
+                return BadRequest(updateResult.Messages);
+            }
         }
 
         //PATCH api/Events/{id}
         [HttpPatch("{id}")]
-        public async Task<ActionResult> PartialUpdateAsync(int id, [FromBody] JsonPatchDocument<EventUpdateDTO> patchDocument)
+        public async Task<ActionResult> PartialUpdateAsync(int id, [FromBody] JsonPatchDocument<EventUpdateModel> patchDocument)
         {
-            var eventModel = await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.Id == id)
-                .Include(ev => ev.ApplicationUsers)
-                .SingleOrDefaultAsync(); ;
-
-            if (eventModel is not null)
+            if (id < 0)
             {
-                var eventToPatch = _mapper.Map<EventUpdateDTO>(eventModel);
-                patchDocument.ApplyTo(eventToPatch, ModelState);
-
-                if (!TryValidateModel(eventToPatch))
-                {
-                    return ValidationProblem(ModelState);
-                }
-
-                _mapper.Map(eventToPatch, eventModel);
-                _repositoryWrapper.Event.Update(eventModel);
-                await _repositoryWrapper.SaveAsync();
-
-                return Ok();
+                return BadRequest();
             }
 
-            return NotFound();
+            if (patchDocument is null)
+            {
+                return BadRequest();
+            }
+
+            var eventEntity = await _eventService.GetEventEntityAsync(id);
+
+            if (eventEntity is null)
+            {
+                return NotFound();
+            }
+
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
+            var eventToPatch = _mapper.Map<EventUpdateModel>(eventDTO);
+            patchDocument.ApplyTo(eventToPatch, ModelState);
+
+            if (!TryValidateModel(eventToPatch))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var updateResult = await _eventService.UpdateAsync(id, eventToPatch);
+
+            if (updateResult.Succeeded)
+            {
+                return Ok(id);
+            }
+            else
+            {
+                return BadRequest(updateResult.Messages);
+            }
         }
 
         // DELETE api/Events/{id}
         [HttpDelete("{id}")]
         public async Task<ActionResult> DestroyAsync(int id)
         {
-            var eventModel = await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.Id == id)
-                .SingleOrDefaultAsync();
-
-            if (eventModel is not null)
+            if (id < 0)
             {
-                _repositoryWrapper.Event.Delete(eventModel);
-                await _repositoryWrapper.SaveAsync();
-
-                return NoContent();
+                return BadRequest();
             }
 
-            return NotFound();
+            if (await _eventService.GetEventEntityAsync(id) is null)
+            {
+                return NotFound();
+            }
+
+            var deleteResult = await _eventService.DeleteAsync(id);
+
+            if (deleteResult.Succeeded)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return BadRequest(deleteResult.Messages);
+            }
         }
     }
 }

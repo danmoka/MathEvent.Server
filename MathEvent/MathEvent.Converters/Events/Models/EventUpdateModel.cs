@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MathEvent.Converters.Events.DTOs
+namespace MathEvent.Converters.Events.Models
 {
     /// <summary>
     /// Класс для передачи данных для обновления Event
     /// </summary>
-    public class EventUpdateDTO
+    public class EventUpdateModel
     {
         public string Name { get; set; }
 

@@ -5,10 +5,15 @@ using System.Collections.Generic;
 namespace MathEvent.Converters.Events.DTOs
 {
     /// <summary>
-    /// Класс для передачи данных для чтения Event
+    /// Transfer объект сущности события с пользователями
     /// </summary>
-    public class EventReadDTO
+    public class EventWithUsersDTO
     {
+        public EventWithUsersDTO()
+        {
+            ApplicationUsers = new HashSet<UserDTO>();
+        }
+
         public int Id { get; set; }
 
         public string Name { get; set; }
@@ -19,9 +24,11 @@ namespace MathEvent.Converters.Events.DTOs
         public bool? Hierarchy { get; set; }
 
         public int? ParentId { get; set; }
+
+        public EventWithUsersDTO Parent { get; set; }
         #endregion
 
-        public ICollection<UserSimpleReadDTO> ApplicationUsers { get; set; }
+        public virtual ICollection<UserDTO> ApplicationUsers { get; set; }
 
         public string Description { get; set; }
     }
