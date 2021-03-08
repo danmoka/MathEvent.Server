@@ -92,6 +92,7 @@ namespace MathEvent.Service.Services
             if (eventEntity is not null)
             {
                 await CreateNewSubscriptions(updateModel.ApplicationUsers, id);
+                await CreateNewManagers(updateModel.Managers, id);
                 var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
                 _mapper.Map(updateModel, eventDTO);
                 _mapper.Map(eventDTO, eventEntity);
@@ -158,6 +159,23 @@ namespace MathEvent.Service.Services
             {
                 await _repositoryWrapper.Subscription
                     .CreateAsync(new Subscription()
+                    {
+                        ApplicationUserId = userId,
+                        EventId = eventId
+                    });
+            }
+        }
+
+        private async Task CreateNewManagers(IEnumerable<string> newIds, int eventId)
+        {
+            await _repositoryWrapper.Manager
+                .FindByCondition(m => m.EventId == eventId)
+                .ForEachAsync(m => _repositoryWrapper.Manager.Delete(m));
+
+            foreach (var userId in newIds)
+            {
+                await _repositoryWrapper.Manager
+                    .CreateAsync(new Manager()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId

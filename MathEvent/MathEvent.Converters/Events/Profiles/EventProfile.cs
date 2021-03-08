@@ -21,13 +21,15 @@ namespace MathEvent.Converters.Events.Profiles
             // Model -> DTO
             CreateMap<EventCreateModel, EventDTO>(); // создание
             CreateMap<EventUpdateModel, EventWithUsersDTO>() // обновление
-                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<IdToUserDTOResolver>());
+                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<IdToUserDTOResolver>())
+                .ForMember(dest => dest.Managers, opt => opt.MapFrom<IdToUserDTOResolver>());
 
             // DTO -> Model
             CreateMap<EventDTO, EventSimpleReadModel>(); // чтение
             CreateMap<EventDTO, EventReadModel>(); // чтение
             CreateMap<EventWithUsersDTO, EventUpdateModel>()
-                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<UserDTOToIdResolver>()); // обновление
+                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<UserDTOToIdResolver>())
+                .ForMember(dest => dest.Managers, opt => opt.MapFrom<UserDTOToIdResolver>()); // обновление
             CreateMap<EventWithUsersDTO, EventWithUsersReadModel>(); // чтение
 
             // DTO -> Entity
@@ -36,7 +38,8 @@ namespace MathEvent.Converters.Events.Profiles
 
             // Entity -> DTO
             CreateMap<Event, EventWithUsersDTO>()
-                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<GetUsersDTOResolver>());
+                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<GetUsersDTOResolver>())
+                .ForMember(dest => dest.Managers, opt => opt.MapFrom<GetManagersDTOResolver>());
             CreateMap<Event, EventDTO>();
         }
 
@@ -112,6 +115,38 @@ namespace MathEvent.Converters.Events.Profiles
                 {
                     users.Add(_mapper.Map<UserDTO>(_repositoryWrapper.User
                         .FindByCondition(user => user.Id == subscription.ApplicationUserId)
+                        .SingleOrDefault()));
+                }
+
+                return users;
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий получение transfer объектов пользователей, связанных с управлением
+        /// </summary>
+        public class GetManagersDTOResolver : IValueResolver<Event, EventWithUsersDTO, ICollection<UserDTO>>
+        {
+            private readonly IRepositoryWrapper _repositoryWrapper;
+            private readonly IMapper _mapper;
+
+            public GetManagersDTOResolver(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+            {
+                _repositoryWrapper = repositoryWrapper;
+                _mapper = mapper;
+            }
+
+            public ICollection<UserDTO> Resolve(Event source, EventWithUsersDTO destination, ICollection<UserDTO> destMember, ResolutionContext context)
+            {
+                var users = new HashSet<UserDTO>();
+                var managers = _repositoryWrapper.Manager
+                    .FindByCondition(s => s.EventId == source.Id)
+                    .ToList();
+
+                foreach (var manager in managers)
+                {
+                    users.Add(_mapper.Map<UserDTO>(_repositoryWrapper.User
+                        .FindByCondition(user => user.Id == manager.ApplicationUserId)
                         .SingleOrDefault()));
                 }
 

@@ -12,6 +12,7 @@ namespace MathEvent.Converters.Events.DTOs
         public EventWithUsersDTO()
         {
             ApplicationUsers = new HashSet<UserDTO>();
+            Managers = new HashSet<UserDTO>();
         }
 
         public int Id { get; set; }
@@ -26,7 +27,9 @@ namespace MathEvent.Converters.Events.DTOs
         public int? ParentId { get; set; }
         #endregion
 
-        public virtual ICollection<UserDTO> ApplicationUsers { get; set; }
+        public ICollection<UserDTO> ApplicationUsers { get; set; }
+
+        public ICollection<UserDTO> Managers { get; set; }
 
         public string Description { get; set; }
     }

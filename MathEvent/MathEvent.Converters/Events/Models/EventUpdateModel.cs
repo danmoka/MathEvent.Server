@@ -23,6 +23,8 @@ namespace MathEvent.Converters.Events.Models
         /// </summary>
         public ICollection<string> ApplicationUsers { get; set; }
 
+        public ICollection<string> Managers { get; set; }
+
         public string Description { get; set; }
     }
 }

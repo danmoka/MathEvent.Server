@@ -36,6 +36,11 @@ namespace MathEvent.Repository
         /// </summary>
         private ISubscriptionRepository _subscirption;
 
+        /// <summary>
+        /// Репозиторий для работы с Менеджерами
+        /// </summary>
+        private IManagerRepository _manager;
+
         public RepositoryWrapper(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager)
         {
             _repositoryContext = repositoryContext;
@@ -87,6 +92,22 @@ namespace MathEvent.Repository
                 }
 
                 return _subscirption;
+            }
+        }
+
+        /// <summary>
+        /// Предоставляет репозиторий для работы с Менеджерами
+        /// </summary>
+        public IManagerRepository Manager
+        {
+            get
+            {
+                if (_manager is null)
+                {
+                    _manager = new ManagerRepository(_repositoryContext);
+                }
+
+                return _manager;
             }
         }
 
