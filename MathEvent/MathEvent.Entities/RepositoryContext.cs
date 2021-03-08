@@ -34,13 +34,8 @@ namespace MathEvent.Entities
                 .Property(e => e.Id)
                 .ValueGeneratedOnAdd();
 
-            // смена названия промежуточной таблицы
-            //builder.Entity<Event>()
-            //    .HasMany(e => e.ApplicationUsers)
-            //    .WithMany(p => p.Events)
-            //    .UsingEntity(j => j.ToTable("Subscription"));
-
-            builder.Entity<Subscription>().HasKey(s => new { s.ApplicationUserId, s.EventId });
+            builder.Entity<Subscription>()
+                .HasKey(s => new { s.ApplicationUserId, s.EventId });
             builder.Entity<Subscription>()
                 .HasOne<ApplicationUser>()
                 .WithMany()
@@ -49,15 +44,17 @@ namespace MathEvent.Entities
                 .HasOne<Event>()
                 .WithMany()
                 .HasForeignKey(s => s.EventId);
-            //builder.Entity<Subscription>()
-            //    .HasOne(s => s.ApplicationUserId)
-            //    .WithMany(u => u)
-            //    .HasForeignKey(s => s.ApplicationUserId);
 
-            //builder.Entity<ApplicationUserPerformance>()
-            //    .HasOne(ap => ap.Performance)
-            //    .WithMany(p => p.ApplicationUserPerformances)
-            //    .HasForeignKey(ap => ap.PerformanceId);
+            builder.Entity<Manager>()
+                .HasKey(m => new { m.ApplicationUserId, m.EventId });
+            builder.Entity<Manager>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(m => m.ApplicationUserId);
+            builder.Entity<Manager>()
+                .HasOne<Event>()
+                .WithMany()
+                .HasForeignKey(m => m.EventId);
         }
     }
 }
