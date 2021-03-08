@@ -24,7 +24,7 @@ namespace MathEvent.Entities
 
             // настройка ссылки таблицы на саму себя
             builder.Entity<Event>()
-                .HasOne(e => e.Parent)
+                .HasOne<Event>()
                 .WithMany()
                 .HasForeignKey(e => e.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);

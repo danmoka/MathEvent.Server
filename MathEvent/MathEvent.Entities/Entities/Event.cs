@@ -24,8 +24,6 @@ namespace MathEvent.Entities.Entities
 
         [ForeignKey("Event")]
         public int? ParentId { get; set; }
-
-        public Event Parent { get; set; }
         #endregion
 
         [MaxLength(500)]

@@ -24,8 +24,6 @@ namespace MathEvent.Converters.Events.DTOs
         public bool? Hierarchy { get; set; }
 
         public int? ParentId { get; set; }
-
-        public EventWithUsersDTO Parent { get; set; }
         #endregion
 
         public virtual ICollection<UserDTO> ApplicationUsers { get; set; }
