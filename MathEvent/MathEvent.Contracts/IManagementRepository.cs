@@ -2,7 +2,7 @@
 
 namespace MathEvent.Contracts
 {
-    public interface IManagerRepository : IRepositoryBase<Manager>
+    public interface IManagementRepository : IRepositoryBase<Management>
     {
     }
 }

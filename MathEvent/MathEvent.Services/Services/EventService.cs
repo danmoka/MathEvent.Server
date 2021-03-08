@@ -168,14 +168,14 @@ namespace MathEvent.Service.Services
 
         private async Task CreateNewManagers(IEnumerable<string> newIds, int eventId)
         {
-            await _repositoryWrapper.Manager
+            await _repositoryWrapper.Management
                 .FindByCondition(m => m.EventId == eventId)
-                .ForEachAsync(m => _repositoryWrapper.Manager.Delete(m));
+                .ForEachAsync(m => _repositoryWrapper.Management.Delete(m));
 
             foreach (var userId in newIds)
             {
-                await _repositoryWrapper.Manager
-                    .CreateAsync(new Manager()
+                await _repositoryWrapper.Management
+                    .CreateAsync(new Management()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId

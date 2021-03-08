@@ -49,14 +49,14 @@ namespace MathEvent.Entities
                 .OnDelete(DeleteBehavior.Cascade);
 
             // менеджмент
-            builder.Entity<Manager>()
+            builder.Entity<Management>()
                 .HasKey(m => new { m.ApplicationUserId, m.EventId });
-            builder.Entity<Manager>()
+            builder.Entity<Management>()
                 .HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(m => m.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Cascade);
-            builder.Entity<Manager>()
+            builder.Entity<Management>()
                 .HasOne<Event>()
                 .WithMany()
                 .HasForeignKey(m => m.EventId)

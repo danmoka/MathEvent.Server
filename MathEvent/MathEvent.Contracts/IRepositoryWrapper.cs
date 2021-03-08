@@ -13,7 +13,7 @@ namespace MathEvent.Contracts
 
         ISubscriptionRepository Subscription { get; }
 
-        IManagerRepository Manager { get; }
+        IManagementRepository Management { get; }
 
         Task SaveAsync();
     }

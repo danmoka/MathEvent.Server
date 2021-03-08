@@ -39,7 +39,7 @@ namespace MathEvent.Repository
         /// <summary>
         /// Репозиторий для работы с Менеджерами
         /// </summary>
-        private IManagerRepository _manager;
+        private IManagementRepository _management;
 
         public RepositoryWrapper(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager)
         {
@@ -98,16 +98,16 @@ namespace MathEvent.Repository
         /// <summary>
         /// Предоставляет репозиторий для работы с Менеджерами
         /// </summary>
-        public IManagerRepository Manager
+        public IManagementRepository Management
         {
             get
             {
-                if (_manager is null)
+                if (_management is null)
                 {
-                    _manager = new ManagerRepository(_repositoryContext);
+                    _management = new ManagementRepository(_repositoryContext);
                 }
 
-                return _manager;
+                return _management;
             }
         }
 

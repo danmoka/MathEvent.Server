@@ -7,9 +7,9 @@ namespace MathEvent.Repository
     /// <summary>
     /// Репозиторий для Менеджеров
     /// </summary>
-    public class ManagerRepository : RepositoryBase<Manager>, IManagerRepository
+    public class ManagementRepository : RepositoryBase<Management>, IManagementRepository
     {
-        public ManagerRepository(RepositoryContext repositoryContext) : base(repositoryContext)
+        public ManagementRepository(RepositoryContext repositoryContext) : base(repositoryContext)
         {
 
         }

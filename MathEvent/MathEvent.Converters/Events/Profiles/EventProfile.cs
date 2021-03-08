@@ -139,7 +139,7 @@ namespace MathEvent.Converters.Events.Profiles
             public ICollection<UserDTO> Resolve(Event source, EventWithUsersDTO destination, ICollection<UserDTO> destMember, ResolutionContext context)
             {
                 var users = new HashSet<UserDTO>();
-                var managers = _repositoryWrapper.Manager
+                var managers = _repositoryWrapper.Management
                     .FindByCondition(s => s.EventId == source.Id)
                     .ToList();
 
