@@ -8,12 +8,6 @@ namespace MathEvent.Entities.Entities
     /// </summary>
     public class Manager
     {
-        [Key]
-        public int Id { get; set; }
-
-        [MaxLength(500)]
-        public string Description { get; set; }
-
         [ForeignKey("ApplicationUser")]
         public string ApplicationUserId { get; set; }
 
