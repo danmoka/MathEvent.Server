@@ -34,27 +34,58 @@ namespace MathEvent.Entities
                 .Property(e => e.Id)
                 .ValueGeneratedOnAdd();
 
+            // подписки
             builder.Entity<Subscription>()
                 .HasKey(s => new { s.ApplicationUserId, s.EventId });
             builder.Entity<Subscription>()
                 .HasOne<ApplicationUser>()
                 .WithMany()
-                .HasForeignKey(s => s.ApplicationUserId);
+                .HasForeignKey(s => s.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<Subscription>()
                 .HasOne<Event>()
                 .WithMany()
-                .HasForeignKey(s => s.EventId);
+                .HasForeignKey(s => s.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // менеджмент
             builder.Entity<Manager>()
                 .HasKey(m => new { m.ApplicationUserId, m.EventId });
             builder.Entity<Manager>()
                 .HasOne<ApplicationUser>()
                 .WithMany()
-                .HasForeignKey(m => m.ApplicationUserId);
+                .HasForeignKey(m => m.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
             builder.Entity<Manager>()
                 .HasOne<Event>()
                 .WithMany()
-                .HasForeignKey(m => m.EventId);
+                .HasForeignKey(m => m.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // файлы
+            builder.Entity<File>()
+                .HasOne<File>()
+                .WithMany()
+                .HasForeignKey(f => f.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<File>()
+                .HasOne<FileOwner>()
+                .WithMany()
+                .HasForeignKey(f => f.OwnerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // владельцы
+            builder.Entity<FileOwner>()
+                .HasOne<Event>()
+                .WithOne()
+                .HasForeignKey<FileOwner>(f => f.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<FileOwner>()
+                .HasOne<ApplicationUser>()
+                .WithOne()
+                .HasForeignKey<FileOwner>(f => f.ApplicationUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
