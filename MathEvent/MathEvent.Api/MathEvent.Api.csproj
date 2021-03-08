@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
-    <ProjectReference Include="..\Service\MathEvent.Service.csproj" />
+    <ProjectReference Include="..\Service\MathEvent.Services.csproj" />
   </ItemGroup>
 
 </Project>
