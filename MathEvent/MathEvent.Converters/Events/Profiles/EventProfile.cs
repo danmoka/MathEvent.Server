@@ -26,7 +26,8 @@ namespace MathEvent.Converters.Events.Profiles
             // DTO -> Model
             CreateMap<EventDTO, EventSimpleReadModel>(); // чтение
             CreateMap<EventDTO, EventReadModel>(); // чтение
-            CreateMap<EventWithUsersDTO, EventUpdateModel>(); // обновление
+            CreateMap<EventWithUsersDTO, EventUpdateModel>()
+                .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<UserDTOToIdResolver>()); // обновление
             CreateMap<EventWithUsersDTO, EventWithUsersReadModel>(); // чтение
 
             // DTO -> Entity
@@ -65,6 +66,24 @@ namespace MathEvent.Converters.Events.Profiles
                 }
 
                 return users;
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий маппинг transfer объектов сущности пользователя на id пользователя
+        /// </summary>
+        public class UserDTOToIdResolver : IValueResolver<EventWithUsersDTO, EventUpdateModel, ICollection<string>>
+        {
+            public ICollection<string> Resolve(EventWithUsersDTO source, EventUpdateModel destination, ICollection<string> destMember, ResolutionContext context)
+            {
+                var ids = new HashSet<string>();
+
+                foreach (var user in source.ApplicationUsers)
+                {
+                    ids.Add(user.Id);
+                }
+
+                return ids;
             }
         }
 
