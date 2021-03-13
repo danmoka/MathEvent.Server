@@ -177,7 +177,7 @@ namespace MathEvent.Services.Services
         {
             var user = await GetUserEntityAsync(id);
 
-            if (user is not null)
+            if (user is null)
             {
                 return new UserMessageResult
                 {

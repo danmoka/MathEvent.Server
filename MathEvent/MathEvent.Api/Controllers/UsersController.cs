@@ -26,7 +26,7 @@ namespace MathEvent.Api.Controllers
         // GET api/Users/?key1=value1&key2=value2
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<UserReadModel>>> ListAsync(IDictionary<string, string> filters)
+        public async Task<ActionResult<IEnumerable<UserReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
             var userReadModels = await _userService.ListAsync(filters);
 

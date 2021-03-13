@@ -56,7 +56,7 @@ namespace MathEvent.Entities
                 .HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(m => m.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<Management>()
                 .HasOne<Event>()
                 .WithMany()
