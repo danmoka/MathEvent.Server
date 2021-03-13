@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using MathEvent.Converters.Identities.DTOs;
 using MathEvent.Converters.Identities.Models;
+using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Service.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -23,12 +23,12 @@ namespace MathEvent.Api.Controllers
             _userService = userService;
         }
 
-        // GET api/Users
+        // GET api/Users/?key1=value1&key2=value2
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<UserReadModel>>> ListAsync()
+        public async Task<ActionResult<IEnumerable<UserReadModel>>> ListAsync(IDictionary<string, string> filters)
         {
-            var userReadModels = await _userService.ListAsync();
+            var userReadModels = await _userService.ListAsync(filters);
 
             if (userReadModels is not null)
             {

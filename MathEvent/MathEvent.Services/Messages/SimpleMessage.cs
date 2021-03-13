@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts;
 
-namespace Service.Messages
+namespace MathEvent.Services.Messages
 {
     /// <summary>
     /// Класс простого сообщения

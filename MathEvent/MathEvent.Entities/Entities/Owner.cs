@@ -4,10 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace MathEvent.Entities.Entities
 {
     /// <summary>
-    /// Сущность владельца файла
+    /// Сущность владельца
     /// </summary>
-    public class FileOwner
+    [Table("Owners")]
+    public class Owner
     {
+        public enum Type
+        {
+            File
+        }
+
         [Key]
         public int Id { get; set; }
 
@@ -16,5 +22,7 @@ namespace MathEvent.Entities.Entities
 
         [ForeignKey("ApplicationUser")]
         public string ApplicationUserId { get; set; }
+
+        public Type OwnedType { get; set; }
     }
 }

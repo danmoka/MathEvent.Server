@@ -4,14 +4,14 @@ using MathEvent.Converters.Events.Profiles;
 using MathEvent.Converters.Identities.Profiles;
 using MathEvent.Entities;
 using MathEvent.Repository;
-using MathEvent.Service.Services;
+using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
-using Service.Services;
 
 namespace MathEvent.Api.Extensions
 {
@@ -81,10 +81,13 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
         }
 
-        public static void ConfigureEntityServices(this IServiceCollection services)
+        public static void ConfigureEntityServices(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEventService, EventService>();
+            services.AddScoped<IOwnerService, OwnerService>();
+            services.AddScoped<IFileService, FileService>();
+            services.AddSingleton(new DataPathService(env.ContentRootPath, configuration.GetValue<long>("FileSizeLimit")));
         }
 
         /// <summary>

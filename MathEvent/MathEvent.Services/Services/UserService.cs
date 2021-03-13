@@ -3,34 +3,45 @@ using MathEvent.Contracts;
 using MathEvent.Converters.Identities.DTOs;
 using MathEvent.Converters.Identities.Models;
 using MathEvent.Entities.Entities;
+using MathEvent.Services.Messages;
+using MathEvent.Services.Results;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Service.Messages;
-using Service.Results;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Service.Services
+namespace MathEvent.Services.Services
 {
     /// <summary>
     /// Сервис по выполнению действий над пользователями
     /// </summary>
     public class UserService : IUserService
     {
-        private IRepositoryWrapper _repositoryWrapper { get; set; }
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        private IMapper _mapper { get; set; }
+        private readonly IMapper _mapper;
 
-        public UserService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        private readonly IOwnerService _ownerService;
+
+        public UserService(
+            IRepositoryWrapper repositoryWrapper,
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager,
+            IOwnerService ownerService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _userManager = userManager;
+            _ownerService = ownerService;
         }
 
-        public async Task<IEnumerable<UserReadModel>> ListAsync()
+        public async Task<IEnumerable<UserReadModel>> ListAsync(IDictionary<string, string> filters)
         {
-            var users = await _repositoryWrapper.User
-                .FindAll()
-                .ToListAsync();
+            var users = await Filter(_repositoryWrapper.User.FindAll(), filters).ToListAsync();
 
             if (users is not null)
             {
@@ -49,8 +60,10 @@ namespace Service.Services
             if (user is not null)
             {
                 var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+                var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
+                userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-                return _mapper.Map<UserWithEventsReadModel>(userDTO);
+                return userReadModel;
             }
 
             return null;
@@ -60,43 +73,55 @@ namespace Service.Services
         {
             var user = _mapper.Map<ApplicationUser>(_mapper.Map<UserDTO>(createModel));
 
-            if (user is not null)
+            if (user is null)
             {
-                var createResult = await _repositoryWrapper.User
+                return new UserMessageResult
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>()
+                    {
+                        new SimpleMessage
+                        {
+                            Message = $"Errors when mapping model {createModel.Name}"
+                        }
+                    }
+                };
+            }
+
+            var createResult = await _repositoryWrapper.User
                     .CreateAsync(user, createModel.Password);
-                // TODO: AddToRoleAsync
 
-                if (createResult.Succeeded)
+            if (!createResult.Succeeded)
+            {
+                return new UserMessageResult
                 {
-                    await _repositoryWrapper.SaveAsync();
+                    Succeeded = false,
+                    Messages = UserMessageResult.GetMessagesFromErrors(createResult.Errors),
+                    Entity = user
+                };
+            }
 
-                    return new UserMessageResult
-                    {
-                        Succeeded = true,
-                        Entity = user
-                    };
-                }
-                else
+            await _repositoryWrapper.SaveAsync();
+
+            if (await _ownerService.CreateUserOwner(user.Id, Owner.Type.File) is null)
+            {
+                return new UserMessageResult
                 {
-                    return new UserMessageResult
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>()
                     {
-                        Succeeded = false,
-                        Messages = UserMessageResult.GetMessagesFromErrors(createResult.Errors),
-                        Entity = user
-                    };
-                }
+                        new SimpleMessage
+                        {
+                            Message = $"Errors when creating an owner for user with id = {user.Id}"
+                        }
+                    }
+                };
             }
 
             return new UserMessageResult
             {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
-                {
-                    new SimpleMessage
-                    {
-                        Message = "Error when mapping model"
-                    }
-                }
+                Succeeded = true,
+                Entity = user
             };
         }
 
@@ -207,6 +232,21 @@ namespace Service.Services
                         EventId = eventId
                     });
             }
+        }
+
+        public async Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user)
+        {
+            return await _userManager.GetUserAsync(user);
+        }
+
+        private static IQueryable<ApplicationUser> Filter(IQueryable<ApplicationUser> filesQuery, IDictionary<string, string> filters)
+        {
+            if (filters is not null)
+            {
+                // TODO: фильтрация
+            }
+
+            return filesQuery;
         }
     }
 }

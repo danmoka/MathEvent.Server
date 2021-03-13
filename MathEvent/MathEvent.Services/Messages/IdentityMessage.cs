@@ -1,7 +1,7 @@
 ﻿using MathEvent.Contracts;
 using Microsoft.AspNetCore.Identity;
 
-namespace Service.Messages
+namespace MathEvent.Services.Messages
 {
     /// <summary>
     /// Сообщение на основе IdentityError

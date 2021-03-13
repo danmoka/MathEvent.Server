@@ -41,6 +41,16 @@ namespace MathEvent.Repository
         /// </summary>
         private IManagementRepository _management;
 
+        /// <summary>
+        /// Репозиторий для работы с Файлами
+        /// </summary>
+        private IFileRepository _file;
+
+        /// <summary>
+        /// Репозиторий для работы с Владельцами
+        /// </summary>
+        private IOwnerRepository _owner;
+
         public RepositoryWrapper(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager)
         {
             _repositoryContext = repositoryContext;
@@ -108,6 +118,38 @@ namespace MathEvent.Repository
                 }
 
                 return _management;
+            }
+        }
+
+        /// <summary>
+        /// Предоставляет репозиторий для работы с Файлами
+        /// </summary>
+        public IFileRepository File
+        {
+            get
+            {
+                if (_file is null)
+                {
+                    _file = new FileRepository(_repositoryContext);
+                }
+
+                return _file;
+            }
+        }
+
+        /// <summary>
+        /// Предоставляет репозиторий для работы с Владельцами
+        /// </summary>
+        public IOwnerRepository Owner
+        {
+            get
+            {
+                if (_owner is null)
+                {
+                    _owner = new OwnerRepository(_repositoryContext);
+                }
+
+                return _owner;
             }
         }
 

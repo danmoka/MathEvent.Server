@@ -21,5 +21,7 @@ namespace MathEvent.Converters.Identities.Models
         public string UserName { get; set; }
 
         public ICollection<EventSimpleReadModel> Events { get; set; }
+
+        public int? OwnerId { get; set; }
     }
 }

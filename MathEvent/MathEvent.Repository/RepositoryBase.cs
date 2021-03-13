@@ -33,9 +33,11 @@ namespace MathEvent.Repository
             return RepositoryContext.Set<T>().Where(expression);
         }
 
-        public async Task CreateAsync(T entity)
+        public async Task<T> CreateAsync(T entity)
         {
-            await RepositoryContext.Set<T>().AddAsync(entity);
+            var addResult = await RepositoryContext.Set<T>().AddAsync(entity);
+
+            return addResult.Entity;
         }
 
         public void Update(T entity)

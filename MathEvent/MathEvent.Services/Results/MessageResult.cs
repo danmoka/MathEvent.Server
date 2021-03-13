@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts;
 
-namespace Service.Results
+namespace MathEvent.Services.Results
 {
     /// <summary>
     /// Результат выполнения с сообщениями IMessage

@@ -1,7 +1,7 @@
 ﻿using MathEvent.Contracts;
 using System.Collections.Generic;
 
-namespace Service.Results
+namespace MathEvent.Services.Results
 {
     /// <summary>
     /// Родительский класс результата выполнения

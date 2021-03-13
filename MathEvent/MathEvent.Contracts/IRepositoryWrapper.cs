@@ -15,6 +15,10 @@ namespace MathEvent.Contracts
 
         IManagementRepository Management { get; }
 
+        IFileRepository File { get; }
+
+        IOwnerRepository Owner { get; }
+
         Task SaveAsync();
     }
 }

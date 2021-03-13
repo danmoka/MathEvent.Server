@@ -1,10 +1,10 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Converters.Events.Models;
 using MathEvent.Entities.Entities;
-using Service.Results;
+using MathEvent.Services.Results;
 using System.Threading.Tasks;
 
-namespace MathEvent.Service.Services
+namespace MathEvent.Services.Services
 {
     /// <summary>
     /// Декларирует функциональность сервисов событий

@@ -1,22 +1,16 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MathEvent.Entities.Entities
+namespace MathEvent.Converters.Files.DTOs
 {
     /// <summary>
-    /// Сущность файла
+    /// Transfer объект сущности файла
     /// </summary>
-    [Table("Files")]
-    public class File
+    public class FileDTO
     {
-        [Key]
         public int Id { get; set; }
 
-        [MaxLength(250)]
         public string Name { get; set; }
 
-        [MaxLength(5)]
         public string Extension { get; set; }
 
         public DateTime Date { get; set; }
@@ -24,14 +18,11 @@ namespace MathEvent.Entities.Entities
         #region hierarchy
         public bool? Hierarchy { get; set; }
 
-        [ForeignKey("File")]
         public int? ParentId { get; set; }
         #endregion
 
-        [ForeignKey("ApplicationUser")]
         public string AuthorId { get; set; }
 
-        [ForeignKey("FileOwner")]
         public int? OwnerId { get; set; }
 
         public string Path { get; set; }

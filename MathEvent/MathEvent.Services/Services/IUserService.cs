@@ -1,10 +1,11 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Converters.Identities.Models;
 using MathEvent.Entities.Entities;
-using Service.Results;
+using MathEvent.Services.Results;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Service.Services
+namespace MathEvent.Services.Services
 {
     /// <summary>
     /// Декларирует функциональность сервисов пользователей
@@ -18,5 +19,6 @@ namespace Service.Services
         AResult<IMessage, ApplicationUser>>
     {
         Task<ApplicationUser> GetUserEntityAsync(string id);
+        Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user);
     }
 }

@@ -3,34 +3,36 @@ using MathEvent.Contracts;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
 using MathEvent.Entities.Entities;
+using MathEvent.Services.Messages;
+using MathEvent.Services.Results;
 using Microsoft.EntityFrameworkCore;
-using Service.Messages;
-using Service.Results;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace MathEvent.Service.Services
+namespace MathEvent.Services.Services
 {
     /// <summary>
     /// Сервис по выполнению действий над событиями
     /// </summary>
     public class EventService : IEventService
     {
-        private IRepositoryWrapper _repositoryWrapper { get; set; }
+        private IRepositoryWrapper _repositoryWrapper;
 
-        private IMapper _mapper { get; set; }
+        private IMapper _mapper;
 
-        public EventService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private readonly IOwnerService _ownerService;
+
+        public EventService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IOwnerService ownerService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _ownerService = ownerService;
         }
 
-        public async Task<IEnumerable<EventReadModel>> ListAsync()
+        public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
         {
-            var events = await _repositoryWrapper.Event
-                .FindAll()
-                .ToListAsync();
+            var events = await Filter(_repositoryWrapper.Event.FindAll(), filters).ToListAsync();
 
             if (events != null)
             {
@@ -49,8 +51,10 @@ namespace MathEvent.Service.Services
             if (eventEntity != null)
             {
                 var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
+                var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+                eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
 
-                return _mapper.Map<EventWithUsersReadModel>(eventDTO);
+                return eventReadModel;
             }
 
             return null;
@@ -60,28 +64,60 @@ namespace MathEvent.Service.Services
         {
             var eventEntity = _mapper.Map<Event>(_mapper.Map<EventDTO>(createModel));
 
-            if (eventEntity is not null)
+            if (eventEntity is null)
             {
-                await _repositoryWrapper.Event.CreateAsync(eventEntity);
-                await _repositoryWrapper.SaveAsync();
-
                 return new MessageResult<Event>
                 {
-                    Succeeded = true,
-                    Entity = eventEntity
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>()
+                    {
+                        new SimpleMessage
+                        {
+                            Message = $"Errors when mapping model {createModel.Name}"
+                        }
+                    }
+                };
+
+            }
+
+            var eventEntityDb = await _repositoryWrapper.Event.CreateAsync(eventEntity);
+
+            if (eventEntityDb is null)
+            {
+                return new MessageResult<Event>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>()
+                    {
+                        new SimpleMessage
+                        {
+                            Message = $"Errors when creating entity {eventEntity.Name}"
+                        }
+                    }
+                };
+            }
+
+            await _repositoryWrapper.SaveAsync();
+
+            if (await _ownerService.CreateEventOwner(eventEntityDb.Id, Owner.Type.File) is null)
+            {
+                return new MessageResult<Event>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>()
+                    {
+                        new SimpleMessage
+                        {
+                            Message = $"Errors when creating an owner for event with id = {eventEntityDb.Id}"
+                        }
+                    }
                 };
             }
 
             return new MessageResult<Event>
             {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
-                {
-                    new SimpleMessage
-                    {
-                        Message = "Errors when mapping model"
-                    }
-                }
+                Succeeded = true,
+                Entity = eventEntityDb
             };
         }
 
@@ -181,6 +217,16 @@ namespace MathEvent.Service.Services
                         EventId = eventId
                     });
             }
+        }
+
+        private static IQueryable<Event> Filter(IQueryable<Event> eventQuery, IDictionary<string, string> filters)
+        {
+            if (filters is not null)
+            {
+                // TODO: фильтрация
+            }
+
+            return eventQuery;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace MathEvent.Entities
 {
@@ -69,23 +70,29 @@ namespace MathEvent.Entities
                 .HasForeignKey(f => f.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<File>()
-                .HasOne<FileOwner>()
+                .HasOne<Owner>()
                 .WithMany()
                 .HasForeignKey(f => f.OwnerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // владельцы
-            builder.Entity<FileOwner>()
+            builder.Entity<Owner>()
                 .HasOne<Event>()
                 .WithOne()
-                .HasForeignKey<FileOwner>(f => f.EventId)
+                .HasForeignKey<Owner>(ow => ow.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Entity<FileOwner>()
+            builder.Entity<Owner>()
                 .HasOne<ApplicationUser>()
                 .WithOne()
-                .HasForeignKey<FileOwner>(f => f.ApplicationUserId)
+                .HasForeignKey<Owner>(ow => ow.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder
+                .Entity<Owner>()
+                .Property(e => e.OwnedType)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => (Owner.Type)Enum.Parse(typeof(Owner.Type), v));
         }
     }
 }

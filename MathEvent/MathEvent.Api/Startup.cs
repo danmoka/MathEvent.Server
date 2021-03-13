@@ -12,9 +12,12 @@ namespace MathEvent.Api
     {
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
+        public IWebHostEnvironment Environment { get; }
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -24,7 +27,7 @@ namespace MathEvent.Api
             services.ConfigureAuthentication(Configuration);
             services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();
-            services.ConfigureEntityServices();
+            services.ConfigureEntityServices(Environment, Configuration);
             services.ConfigureMapper();
             services.ConfigureJson();
             services.AddSwaggerGen();

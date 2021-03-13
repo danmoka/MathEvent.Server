@@ -26,5 +26,7 @@ namespace MathEvent.Converters.Events.Models
         public ICollection<UserSimpleReadModel> Managers { get; set; }
 
         public string Description { get; set; }
+
+        public int? OwnerId { get; set; }
     }
 }

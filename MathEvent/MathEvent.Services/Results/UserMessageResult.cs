@@ -1,9 +1,9 @@
 ﻿using MathEvent.Entities.Entities;
+using MathEvent.Services.Messages;
 using Microsoft.AspNetCore.Identity;
-using Service.Messages;
 using System.Collections.Generic;
 
-namespace Service.Results
+namespace MathEvent.Services.Results
 {
     /// <summary>
     /// Результат выполнения с сущностью пользователя

@@ -153,5 +153,31 @@ namespace MathEvent.Converters.Events.Profiles
                 return users;
             }
         }
+
+        //public class GetFileOwner : IValueResolver<EventWithUsersDTO, EventWithUsersReadModel, int?>
+        //{
+        //    private readonly IRepositoryWrapper _repositoryWrapper;
+
+        //    public GetFileOwner(IRepositoryWrapper repositoryWrapper)
+        //    {
+        //        _repositoryWrapper = repositoryWrapper;
+        //    }
+
+        //    public int? Resolve(EventWithUsersDTO source, EventWithUsersReadModel destination, int? destMember, ResolutionContext context)
+        //    {
+        //        var owner = _repositoryWrapper.Owner
+        //            .FindByCondition(ow => ow.EventId == source.Id && ow.OwnedType == Owner.Type.File)
+        //            .SingleOrDefault();
+
+        //        if (owner is not null)
+        //        {
+        //            return owner.Id;
+        //        }
+        //        else
+        //        {
+        //            return null;
+        //        }
+        //    }
+        //}
     }
 }

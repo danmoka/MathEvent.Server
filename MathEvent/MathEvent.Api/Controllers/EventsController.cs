@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
-using MathEvent.Service.Services;
+using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +23,12 @@ namespace MathEvent.Api.Controllers
             _eventService = eventService;
         }
 
-        // GET api/Events
+        // GET api/Events/?key1=value1&key2=value2
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<EventReadModel>>> ListAsync()
+        public async Task<ActionResult<IEnumerable<EventReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
-            var eventReadModels = await _eventService.ListAsync();
+            var eventReadModels = await _eventService.ListAsync(filters);
 
             if (eventReadModels is not null)
             {

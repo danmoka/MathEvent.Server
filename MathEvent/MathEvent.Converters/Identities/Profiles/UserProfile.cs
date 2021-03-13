@@ -118,5 +118,31 @@ namespace MathEvent.Converters.Identities.Profiles
                 return events;
             }
         }
+
+        //public class GetFileOwner : IValueResolver<UserWithEventsDTO, UserWithEventsReadModel, int?>
+        //{
+        //    private readonly IRepositoryWrapper _repositoryWrapper;
+
+        //    public GetFileOwner(IRepositoryWrapper repositoryWrapper)
+        //    {
+        //        _repositoryWrapper = repositoryWrapper;
+        //    }
+
+        //    public int? Resolve(UserWithEventsDTO source, UserWithEventsReadModel destination, int? destMember, ResolutionContext context)
+        //    {
+        //        var owner = _repositoryWrapper.Owner
+        //            .FindByCondition(ow => ow.ApplicationUserId == source.Id && ow.OwnedType == Owner.Type.File)
+        //            .SingleOrDefault();
+
+        //        if (owner is not null)
+        //        {
+        //            return owner.Id;
+        //        }
+        //        else
+        //        {
+        //            return null;
+        //        }
+        //    }
+        //}
     }
 }
