@@ -132,43 +132,45 @@ namespace MathEvent.Services.Services
 
             if (user is not null)
             {
-                await CreateNewSubscriptions(updateModel.Events, id);
-                var userDTO = _mapper.Map<UserWithEventsDTO>(user);
-                _mapper.Map(updateModel, userDTO);
-                _mapper.Map(userDTO, user);
-                var updateResult = await _repositoryWrapper.User
-                    .UpdateAsync(user);
-
-                if (updateResult.Succeeded)
+                return new UserMessageResult
                 {
-                    await _repositoryWrapper.SaveAsync();
-
-                    return new UserMessageResult { Succeeded = true };
-                }
-                else
-                {
-                    return new UserMessageResult
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
                     {
-                        Succeeded = false,
-                        Messages = UserMessageResult.GetMessagesFromErrors(updateResult.Errors)
-                    };
-                }
-
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"User with the ID {id} not found"
+                        }
+                    }
+                };
             }
 
+            await CreateNewSubscriptions(updateModel.Events, id);
+            var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+            _mapper.Map(updateModel, userDTO);
+            _mapper.Map(userDTO, user);
+            var updateResult = await _repositoryWrapper.User
+                .UpdateAsync(user);
 
-            return new UserMessageResult
+            if (updateResult.Succeeded)
             {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
+                await _repositoryWrapper.SaveAsync();
+
+                return new UserMessageResult 
+                { 
+                    Succeeded = true,
+                    Entity = user
+                };
+            }
+            else
+            {
+                return new UserMessageResult
                 {
-                    new SimpleMessage
-                    {
-                        Code = "404",
-                        Message = $"User with the ID {id} not found"
-                    }
-                }
-            };
+                    Succeeded = false,
+                    Messages = UserMessageResult.GetMessagesFromErrors(updateResult.Errors)
+                };
+            }
         }
 
         public async Task<AResult<IMessage, ApplicationUser>> DeleteAsync(string id)
@@ -177,37 +179,37 @@ namespace MathEvent.Services.Services
 
             if (user is not null)
             {
-                var deleteResult = await _repositoryWrapper.User
-                    .DeleteAsync(user);
-
-                if (deleteResult.Succeeded)
+                return new UserMessageResult
                 {
-                    await _repositoryWrapper.SaveAsync();
-
-                    return new UserMessageResult { Succeeded = true };
-                }
-                else
-                {
-                    return new UserMessageResult
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
                     {
-                        Succeeded = false,
-                        Messages = UserMessageResult.GetMessagesFromErrors(deleteResult.Errors)
-                    };
-                }
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"User with the ID {id} not found"
+                        }
+                    }
+                };
             }
 
-            return new UserMessageResult
+            var deleteResult = await _repositoryWrapper.User
+                    .DeleteAsync(user);
+
+            if (deleteResult.Succeeded)
             {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
+                await _repositoryWrapper.SaveAsync();
+
+                return new UserMessageResult { Succeeded = true };
+            }
+            else
+            {
+                return new UserMessageResult
                 {
-                    new SimpleMessage
-                    {
-                        Code = "404",
-                        Message = $"User with the ID {id} not found"
-                    }
-                }
-            };
+                    Succeeded = false,
+                    Messages = UserMessageResult.GetMessagesFromErrors(deleteResult.Errors)
+                };
+            }
         }
 
         public async Task<ApplicationUser> GetUserEntityAsync(string id)
@@ -215,6 +217,11 @@ namespace MathEvent.Services.Services
             return await _repositoryWrapper.User
                 .FindByCondition(user => user.Id == id)
                 .SingleOrDefaultAsync();
+        }
+
+        public async Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user)
+        {
+            return await _userManager.GetUserAsync(user);
         }
 
         private async Task CreateNewSubscriptions(IEnumerable<int> newIds, string userId)
@@ -232,11 +239,6 @@ namespace MathEvent.Services.Services
                         EventId = eventId
                     });
             }
-        }
-
-        public async Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user)
-        {
-            return await _userManager.GetUserAsync(user);
         }
 
         private static IQueryable<ApplicationUser> Filter(IQueryable<ApplicationUser> filesQuery, IDictionary<string, string> filters)

@@ -9,7 +9,7 @@ namespace MathEvent.Services.Services
     /// <summary>
     /// Декларирует функциональность сервисов событий
     /// </summary>
-    public interface IEventService : IService<
+    public interface IEventService : IControllerService<
         EventReadModel,
         EventWithUsersReadModel,
         EventCreateModel,

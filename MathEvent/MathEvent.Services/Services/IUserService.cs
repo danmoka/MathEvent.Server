@@ -10,7 +10,7 @@ namespace MathEvent.Services.Services
     /// <summary>
     /// Декларирует функциональность сервисов пользователей
     /// </summary>
-    public interface IUserService : IService<
+    public interface IUserService : IControllerService<
         UserReadModel,
         UserWithEventsReadModel,
         UserCreateModel,

@@ -10,7 +10,7 @@ namespace MathEvent.Services.Services
     /// <summary>
     /// Декларирует функциональность сервисов файлов
     /// </summary>
-    public interface IFileService : IService<
+    public interface IFileService : IControllerService<
         FileReadModel,
         FileReadModel,
         FileCreateModel,

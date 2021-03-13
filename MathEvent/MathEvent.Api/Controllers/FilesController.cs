@@ -196,6 +196,11 @@ namespace MathEvent.Api.Controllers
                 return NotFound();
             }
 
+            if (file.Hierarchy is not null)
+            {
+                return BadRequest();
+            }
+
             var fileStream = await _fileService.Download(id);
 
             if (fileStream is null)

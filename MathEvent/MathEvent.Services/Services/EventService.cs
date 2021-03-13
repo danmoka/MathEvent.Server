@@ -34,7 +34,7 @@ namespace MathEvent.Services.Services
         {
             var events = await Filter(_repositoryWrapper.Event.FindAll(), filters).ToListAsync();
 
-            if (events != null)
+            if (events is not null)
             {
                 var eventsDTO = _mapper.Map<IEnumerable<EventDTO>>(events);
 
@@ -125,23 +125,12 @@ namespace MathEvent.Services.Services
         {
             var eventEntity = await GetEventEntityAsync(id);
 
-            if (eventEntity is not null)
+            if (eventEntity is null)
             {
-                await CreateNewSubscriptions(updateModel.ApplicationUsers, id);
-                await CreateNewManagers(updateModel.Managers, id);
-                var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
-                _mapper.Map(updateModel, eventDTO);
-                _mapper.Map(eventDTO, eventEntity);
-                _repositoryWrapper.Event.Update(eventEntity);
-                await _repositoryWrapper.SaveAsync();
-
-                return new MessageResult<Event> { Succeeded = true };
-            }
-
-            return new MessageResult<Event>
-            {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
+                return new MessageResult<Event>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
                 {
                     new SimpleMessage
                     {
@@ -149,6 +138,21 @@ namespace MathEvent.Services.Services
                         Message = $"Event with the ID {id} not found"
                     }
                 }
+                };
+            }
+
+            await CreateNewSubscriptions(updateModel.ApplicationUsers, id);
+            await CreateNewManagers(updateModel.Managers, id);
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
+            _mapper.Map(updateModel, eventDTO);
+            _mapper.Map(eventDTO, eventEntity);
+            _repositoryWrapper.Event.Update(eventEntity);
+            await _repositoryWrapper.SaveAsync();
+
+            return new MessageResult<Event>
+            {
+                Succeeded = true,
+                Entity = eventEntity
             };
         }
 
@@ -156,26 +160,26 @@ namespace MathEvent.Services.Services
         {
             var eventEntity = await GetEventEntityAsync(id);
 
-            if (eventEntity is not null)
+            if (eventEntity is null)
             {
-                _repositoryWrapper.Event.Delete(eventEntity);
-                await _repositoryWrapper.SaveAsync();
-
-                return new MessageResult<Event> { Succeeded = true };
+                return new MessageResult<Event>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
+                    {
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"Event with the ID {id} not found"
+                        }
+                    }
+                };
             }
 
-            return new MessageResult<Event>
-            {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
-                {
-                    new SimpleMessage
-                    {
-                        Code = "404",
-                        Message = $"Event with the ID {id} not found"
-                    }
-                }
-            };
+            _repositoryWrapper.Event.Delete(eventEntity);
+            await _repositoryWrapper.SaveAsync();
+
+            return new MessageResult<Event> { Succeeded = true };
         }
 
         public async Task<Event> GetEventEntityAsync(int id)

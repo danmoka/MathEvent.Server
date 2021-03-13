@@ -12,7 +12,7 @@ namespace MathEvent.Contracts
     /// <typeparam name="U">Тип модели для изменения сущности (Update)</typeparam>
     /// <typeparam name="I">Тип первичного ключа (Id)</typeparam>
     /// <typeparam name="R">Тип результата выполнения (Result)</typeparam>
-    public interface IService<LR, RR, C, U, I, R>
+    public interface IControllerService<LR, RR, C, U, I, R>
     {
         public Task<IEnumerable<LR>> ListAsync(IDictionary<string, string> filters);
 

@@ -66,28 +66,28 @@ namespace MathEvent.Services.Services
             fileDTO.Date = DateTime.Now;
             var fileEntity = _mapper.Map<File>(fileDTO);
 
-            if (fileEntity is not null)
+            if (fileEntity is null)
             {
-                await _repositoryWrapper.File.CreateAsync(fileEntity);
-                await _repositoryWrapper.SaveAsync();
-
                 return new MessageResult<File>
                 {
-                    Succeeded = true,
-                    Entity = fileEntity
-                };
-            }
-
-            return new MessageResult<File>
-            {
-                Succeeded = false,
-                Messages = new List<SimpleMessage>
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
                 {
                     new SimpleMessage
                     {
                         Message = "Errors when mapping model"
                     }
                 }
+                };
+            }
+
+            await _repositoryWrapper.File.CreateAsync(fileEntity);
+            await _repositoryWrapper.SaveAsync();
+
+            return new MessageResult<File>
+            {
+                Succeeded = true,
+                Entity = fileEntity
             };
         }
 
@@ -127,49 +127,50 @@ namespace MathEvent.Services.Services
         public async Task<AResult<IMessage, File>> DeleteAsync(int id)
         {
             var fileEntity = await GetFileEntityAsync(id);
-            var messageResult = new MessageResult<File>
-            {
-                Messages = new List<SimpleMessage>()
-            };
 
-            if (fileEntity is not null)
+            if (fileEntity is null)
             {
-                if (fileEntity.Path is not null)
+                return new MessageResult<File>
                 {
-                    _dataPathService.DeleteFile(fileEntity.Path, out string deleteMessage);
-
-                    if (deleteMessage is not null)
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
                     {
-                        messageResult.Succeeded = false;
-                        messageResult.Messages.Append(
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"File with the ID {id} not found"
+                        }
+                    }
+                };
+            }
+
+            if (fileEntity.Path is not null)
+            {
+                _dataPathService.DeleteFile(fileEntity.Path, out string deleteMessage);
+
+                if (deleteMessage is not null)
+                {
+                    return new MessageResult<File>
+                    {
+                        Succeeded = false,
+                        Messages = new List<SimpleMessage>
+                        {
                             new SimpleMessage
                             {
                                 Message = deleteMessage
-                            });
-
-                        return messageResult;
-                    }
+                            }
+                        }
+                    };
                 }
-
-                _repositoryWrapper.File.Delete(fileEntity);
-                await _repositoryWrapper.SaveAsync();
-
-                messageResult.Succeeded = true;
-
-                return messageResult;
             }
 
-            messageResult.Succeeded = false;
-            messageResult.Messages.Append
-            (
-                new SimpleMessage
-                {
-                    Code = "404",
-                    Message = $"File with the ID {id} not found"
-                }
-            );
+            _repositoryWrapper.File.Delete(fileEntity);
+            await _repositoryWrapper.SaveAsync();
 
-            return messageResult;
+            return new MessageResult<File>
+            {
+                Succeeded = true
+            };
         }
 
         public async Task<AResult<IMessage, File>> Upload(IFormFile file, FileCreateModel fileCreateModel)
