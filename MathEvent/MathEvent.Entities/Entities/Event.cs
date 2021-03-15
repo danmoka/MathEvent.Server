@@ -28,5 +28,8 @@ namespace MathEvent.Entities.Entities
 
         [MaxLength(500)]
         public string Description { get; set; }
+
+        [ForeignKey("Organization")]
+        public int? OrganizationId { get; set; }
     }
 }

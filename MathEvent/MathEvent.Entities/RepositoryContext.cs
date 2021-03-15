@@ -23,17 +23,28 @@ namespace MathEvent.Entities
         {
             base.OnModelCreating(builder);
 
+            // события
             // настройка ссылки таблицы на саму себя
             builder.Entity<Event>()
                 .HasOne<Event>()
                 .WithMany()
                 .HasForeignKey(e => e.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Event>()
+                .HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder
-                .Entity<ApplicationUser>()
+            // пользователи
+            builder.Entity<ApplicationUser>()
                 .Property(e => e.Id)
                 .ValueGeneratedOnAdd();
+            builder.Entity<ApplicationUser>()
+                .HasOne<Organization>()
+                .WithMany()
+                .HasForeignKey(u => u.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // подписки
             builder.Entity<Subscription>()
@@ -87,12 +98,17 @@ namespace MathEvent.Entities
                 .HasForeignKey<Owner>(ow => ow.ApplicationUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder
-                .Entity<Owner>()
+            // перевод типа владельца в строковое значение
+            builder.Entity<Owner>()
                 .Property(e => e.OwnedType)
                 .HasConversion(
                     v => v.ToString(),
                     v => (Owner.Type)Enum.Parse(typeof(Owner.Type), v));
+
+            // организации
+            builder.Entity<Organization>()
+                .HasIndex(org => org.ITN)
+                .IsUnique();
         }
     }
 }
