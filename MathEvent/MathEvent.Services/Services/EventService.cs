@@ -17,9 +17,9 @@ namespace MathEvent.Services.Services
     /// </summary>
     public class EventService : IEventService
     {
-        private IRepositoryWrapper _repositoryWrapper;
+        private readonly IRepositoryWrapper _repositoryWrapper;
 
-        private IMapper _mapper;
+        private readonly IMapper _mapper;
 
         private readonly IOwnerService _ownerService;
 
@@ -48,7 +48,7 @@ namespace MathEvent.Services.Services
         {
             var eventEntity = await GetEventEntityAsync(id);
 
-            if (eventEntity != null)
+            if (eventEntity is not null)
             {
                 var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
                 var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
@@ -131,13 +131,13 @@ namespace MathEvent.Services.Services
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
-                {
-                    new SimpleMessage
                     {
-                        Code = "404",
-                        Message = $"Event with the ID {id} not found"
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"Event with the ID {id} not found"
+                        }
                     }
-                }
                 };
             }
 

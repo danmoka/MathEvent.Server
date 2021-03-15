@@ -15,6 +15,7 @@ namespace MathEvent.Api.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IMapper _mapper;
+
         private readonly IEventService _eventService;
 
         public EventsController(IMapper mapper, IEventService eventService)
@@ -50,7 +51,7 @@ namespace MathEvent.Api.Controllers
 
             var eventReadModel = await _eventService.RetrieveAsync(id);
 
-            if (eventReadModel != null)
+            if (eventReadModel is not null)
             {
                 return Ok(eventReadModel);
             }

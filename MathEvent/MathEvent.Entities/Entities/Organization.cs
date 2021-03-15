@@ -12,7 +12,7 @@ namespace MathEvent.Entities.Entities
         [Key]
         public int Id { get; set; }
 
-        public string ITN { get; set; }
+        public string ITN { get; set; } // TODO: ограничение с помощью регулярки
 
         public string Name { get; set; }
     }

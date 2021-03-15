@@ -19,6 +19,8 @@ namespace MathEvent.Contracts
 
         IOwnerRepository Owner { get; }
 
+        IOrganizationRepository Organization { get; }
+
         Task SaveAsync();
     }
 }

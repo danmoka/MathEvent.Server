@@ -51,6 +51,11 @@ namespace MathEvent.Repository
         /// </summary>
         private IOwnerRepository _owner;
 
+        /// <summary>
+        /// Репозиторий для работы с Организациями
+        /// </summary>
+        private IOrganizationRepository _organization;
+
         public RepositoryWrapper(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager)
         {
             _repositoryContext = repositoryContext;
@@ -150,6 +155,22 @@ namespace MathEvent.Repository
                 }
 
                 return _owner;
+            }
+        }
+
+        /// <summary>
+        /// Предоставляет репозиторий для работы с Организациями
+        /// </summary>
+        public IOrganizationRepository Organization
+        {
+            get
+            {
+                if (_organization is null)
+                {
+                    _organization = new OrganizationRepository(_repositoryContext);
+                }
+
+                return _organization;
             }
         }
 
