@@ -1,5 +1,4 @@
-﻿
-namespace MathEvent.Converters.Identities.DTOs
+﻿namespace MathEvent.Converters.Identities.DTOs
 {
     /// <summary>
     /// Transfer объект сущности пользователя
@@ -17,5 +16,7 @@ namespace MathEvent.Converters.Identities.DTOs
         public string Email { get; set; }
 
         public string UserName { get; set; }
+
+        public int? OrganizationId { get; set; }
     }
 }

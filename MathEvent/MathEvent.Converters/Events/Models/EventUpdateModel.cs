@@ -26,5 +26,7 @@ namespace MathEvent.Converters.Events.Models
         public ICollection<string> Managers { get; set; }
 
         public string Description { get; set; }
+
+        public int? OrganizationId { get; set; }
     }
 }

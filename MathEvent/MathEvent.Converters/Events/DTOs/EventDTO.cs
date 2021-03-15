@@ -20,5 +20,7 @@ namespace MathEvent.Converters.Events.DTOs
         #endregion
 
         public string Description { get; set; }
+
+        public int? OrganizationId { get; set; }
     }
 }

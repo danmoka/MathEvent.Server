@@ -1,4 +1,5 @@
 ﻿using MathEvent.Converters.Events.Models;
+using MathEvent.Converters.Organizations.Models;
 using System.Collections.Generic;
 
 namespace MathEvent.Converters.Identities.Models
@@ -23,5 +24,7 @@ namespace MathEvent.Converters.Identities.Models
         public ICollection<EventSimpleReadModel> Events { get; set; }
 
         public int? OwnerId { get; set; }
+
+        public OrganizationReadModel Organization { get; set; }
     }
 }

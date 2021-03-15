@@ -3,6 +3,7 @@ using MathEvent.Contracts;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Identities.DTOs;
 using MathEvent.Converters.Identities.Models;
+using MathEvent.Converters.Organizations.DTOs;
 using MathEvent.Entities.Entities;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,14 +22,16 @@ namespace MathEvent.Converters.Identities.Profiles
             // Model -> DTO
             CreateMap<UserCreateModel, UserDTO>(); // создание
             CreateMap<UserUpdateModel, UserWithEventsDTO>() // обновление
-                .ForMember(dest => dest.Events, opt => opt.MapFrom<IdToEventDTOResolver>());
+                .ForMember(dest => dest.Events, opt => opt.MapFrom<IdToEventDTOResolver>())
+                .ForMember(dest => dest.Organization, opt => opt.MapFrom<IdToOrganizationDTOResolver>());
 
             // DTO -> Model
             CreateMap<UserDTO, UserReadModel>(); // чтение
             CreateMap<UserDTO, UserSimpleReadModel>(); // чтение
             CreateMap<UserWithEventsDTO, UserWithEventsReadModel>(); // чтение
             CreateMap<UserWithEventsDTO, UserUpdateModel>() // обновление
-                .ForMember(dest => dest.Events, opt => opt.MapFrom<EventDTOToIdResolver>());
+                .ForMember(dest => dest.Events, opt => opt.MapFrom<EventDTOToIdResolver>())
+                .ForMember(dest => dest.OrganizationId, opt => opt.MapFrom<OrganizationDTOToIdResolver>());
 
             // DTO -> Entity
             CreateMap<UserDTO, ApplicationUser>(); // создание
@@ -36,7 +39,8 @@ namespace MathEvent.Converters.Identities.Profiles
 
             // Entity -> DTO
             CreateMap<ApplicationUser, UserWithEventsDTO>()
-                .ForMember(dest => dest.Events, opt => opt.MapFrom<GetEventsDTOResolver>());
+                .ForMember(dest => dest.Events, opt => opt.MapFrom<GetEventsDTOResolver>())
+                .ForMember(dest => dest.Organization, opt => opt.MapFrom<GetOrganizationDTOResolver>());
             CreateMap<ApplicationUser, UserDTO>();
         }
 
@@ -119,30 +123,59 @@ namespace MathEvent.Converters.Identities.Profiles
             }
         }
 
-        //public class GetFileOwner : IValueResolver<UserWithEventsDTO, UserWithEventsReadModel, int?>
-        //{
-        //    private readonly IRepositoryWrapper _repositoryWrapper;
+        /// <summary>
+        /// Класс, описывающий маппинг transfer объекта организации на id организации
+        /// </summary>
+        public class OrganizationDTOToIdResolver : IValueResolver<UserWithEventsDTO, UserUpdateModel, int?>
+        {
+            public int? Resolve(UserWithEventsDTO source, UserUpdateModel destination, int? destMember, ResolutionContext context)
+            {
+                return source.Organization?.Id;
+            }
+        }
 
-        //    public GetFileOwner(IRepositoryWrapper repositoryWrapper)
-        //    {
-        //        _repositoryWrapper = repositoryWrapper;
-        //    }
+        /// <summary>
+        /// Класс, описывающий получение transfer объекта организации, связанной с пользователем
+        /// </summary>
+        public class GetOrganizationDTOResolver : IValueResolver<ApplicationUser, UserWithEventsDTO, OrganizationDTO>
+        {
+            private readonly IRepositoryWrapper _repositoryWrapper;
+            private readonly IMapper _mapper;
 
-        //    public int? Resolve(UserWithEventsDTO source, UserWithEventsReadModel destination, int? destMember, ResolutionContext context)
-        //    {
-        //        var owner = _repositoryWrapper.Owner
-        //            .FindByCondition(ow => ow.ApplicationUserId == source.Id && ow.OwnedType == Owner.Type.File)
-        //            .SingleOrDefault();
+            public GetOrganizationDTOResolver(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+            {
+                _repositoryWrapper = repositoryWrapper;
+                _mapper = mapper;
+            }
 
-        //        if (owner is not null)
-        //        {
-        //            return owner.Id;
-        //        }
-        //        else
-        //        {
-        //            return null;
-        //        }
-        //    }
-        //}
+            public OrganizationDTO Resolve(ApplicationUser source, UserWithEventsDTO destination, OrganizationDTO destMember, ResolutionContext context)
+            {
+                return _mapper.Map<OrganizationDTO>(_repositoryWrapper.Organization
+                        .FindByCondition(org => org.Id == source.OrganizationId)
+                        .SingleOrDefault());
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий маппинг id организации на transfer объект организации
+        /// </summary>
+        public class IdToOrganizationDTOResolver : IValueResolver<UserUpdateModel, UserWithEventsDTO, OrganizationDTO>
+        {
+            private readonly IRepositoryWrapper _repositoryWrapper;
+            private readonly IMapper _mapper;
+
+            public IdToOrganizationDTOResolver(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+            {
+                _repositoryWrapper = repositoryWrapper;
+                _mapper = mapper;
+            }
+
+            public OrganizationDTO Resolve(UserUpdateModel source, UserWithEventsDTO destination, OrganizationDTO destMember, ResolutionContext context)
+            {
+                return _mapper.Map<OrganizationDTO>(_repositoryWrapper.Organization
+                         .FindByCondition(org => org.Id == source.OrganizationId)
+                         .SingleOrDefault());
+            }
+        }
     }
 }

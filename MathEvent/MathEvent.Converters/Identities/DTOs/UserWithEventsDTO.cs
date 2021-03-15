@@ -1,4 +1,5 @@
 ﻿using MathEvent.Converters.Events.DTOs;
+using MathEvent.Converters.Organizations.DTOs;
 using System.Collections.Generic;
 
 namespace MathEvent.Converters.Identities.DTOs
@@ -26,5 +27,7 @@ namespace MathEvent.Converters.Identities.DTOs
         public string UserName { get; set; }
 
         public virtual ICollection<EventDTO> Events { get; set; }
+
+        public OrganizationDTO Organization { get; set; }
     }
 }

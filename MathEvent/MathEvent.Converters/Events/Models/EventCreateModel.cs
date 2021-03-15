@@ -18,5 +18,7 @@ namespace MathEvent.Converters.Events.Models
         #endregion
 
         public string Description { get; set; }
+
+        public int? OrganizationId { get; set; }
     }
 }

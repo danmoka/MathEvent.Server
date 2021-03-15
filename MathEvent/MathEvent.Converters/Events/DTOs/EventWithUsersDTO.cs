@@ -1,4 +1,5 @@
 ﻿using MathEvent.Converters.Identities.DTOs;
+using MathEvent.Converters.Organizations.DTOs;
 using System;
 using System.Collections.Generic;
 
@@ -32,5 +33,7 @@ namespace MathEvent.Converters.Events.DTOs
         public ICollection<UserDTO> Managers { get; set; }
 
         public string Description { get; set; }
+
+        public OrganizationDTO Organization { get; set; }
     }
 }

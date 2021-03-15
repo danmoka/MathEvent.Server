@@ -1,5 +1,4 @@
-﻿
-namespace MathEvent.Converters.Identities.Models
+﻿namespace MathEvent.Converters.Identities.Models
 {
     /// <summary>
     /// Класс для передачи данных для создания пользователя
@@ -17,5 +16,7 @@ namespace MathEvent.Converters.Identities.Models
         public string Password { get; set; }
 
         public string PasswordConfirm { get; set; }
+
+        public int? OrganizationId { get; set; }
     }
 }

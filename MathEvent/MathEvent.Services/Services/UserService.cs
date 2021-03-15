@@ -130,7 +130,7 @@ namespace MathEvent.Services.Services
             var user = await GetUserEntityAsync(id);
             // TODO: ? AddToRoleAsync
 
-            if (user is not null)
+            if (user is null)
             {
                 return new UserMessageResult
                 {
@@ -157,8 +157,8 @@ namespace MathEvent.Services.Services
             {
                 await _repositoryWrapper.SaveAsync();
 
-                return new UserMessageResult 
-                { 
+                return new UserMessageResult
+                {
                     Succeeded = true,
                     Entity = user
                 };
