@@ -42,6 +42,14 @@ namespace MathEvent.Api
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MathEvent.Api v1"));
             }
 
+            app.UseCors(builder =>
+            {
+                builder.WithOrigins("http://localhost:8080");
+                builder.AllowCredentials();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+            });
+
             app.UseHttpsRedirection();
 
             app.UseRouting();

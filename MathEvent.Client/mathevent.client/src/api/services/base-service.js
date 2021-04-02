@@ -9,3 +9,5 @@ const baseService = {
         }
     },
 }
+
+export default baseService;

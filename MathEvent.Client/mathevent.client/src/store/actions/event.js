@@ -5,8 +5,6 @@ import statusCode from "../../utils/status-code-reader";
 export const fetchEvents = createAsyncThunk("fetchEvents", async () => {
     const response = await eventService.fetchEvents();
 
-    console.log(`response: ${reponse}`)
-
     if (statusCode(response).ok) {
         const events = await response.json();
 
