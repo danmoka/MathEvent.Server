@@ -1,0 +1,28 @@
+@import "../../../styles/variables";
+
+.list-item {
+  width: 100%;
+  padding-left: 26px !important;
+  border-bottom: $panel-border !important;
+
+  &--selected {
+    padding-left: 20px !important;
+    border-left: 6px solid #1976d2 !important;
+  }
+
+  &:last-child {
+    margin-bottom: 75px;
+  }
+
+  &__secondary {
+    visibility: hidden;
+
+    &--hovered {
+      visibility: visible;
+    }
+  }
+
+  &__secondary-menu {
+    padding: 5px 0;
+  }
+}

@@ -1,4 +1,4 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createAction, createAsyncThunk } from "@reduxjs/toolkit";
 import eventService from "../../api/services/event-service";
 import statusCode from "../../utils/status-code-reader";
 
@@ -13,3 +13,5 @@ export const fetchEvents = createAsyncThunk("fetchEvents", async () => {
 
     return { events: [] }
 })
+
+export const selectEvent = createAction("selectEvent", (event) => ({ payload: { event } }));

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchEvents } from "../../store/actions/event";
-import MyComponent from "./MyComponent";
+import AppContent from "./AppContent";
 import AppSidebar from "./AppSidebar";
 
 const App = () => {
@@ -14,7 +14,9 @@ const App = () => {
     return (
         <div className="app">
             <AppSidebar/>
-            <MyComponent/>
+            <div className="app__main">
+                <AppContent/>
+            </div>
         </div>
     );
 };

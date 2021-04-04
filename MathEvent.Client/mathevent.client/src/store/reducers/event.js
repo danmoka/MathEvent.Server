@@ -1,9 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { onPendingDefault, onFulfilledDefault, onRejectedDefault } from "./defaults";
-import { fetchEvents } from "../actions/event";
+import { fetchEvents, selectEvent } from "../actions/event";
 
 const initialState = {
     events: [],
+    selectedEvent: null,
     isFetching: false,
     hasError: false
 };
@@ -18,10 +19,18 @@ const eventSlice = createSlice({
         [fetchEvents.fulfilled]: (state, { payload: { events, hasError } }) => {
             onFulfilledDefault(state, hasError);
             state.events = events;
+
+            if (!state.selectedEvent) {
+                state.selectedEvent = events[0];
+            }
         },
         [fetchEvents.rejected]: (state) => {
             onRejectedDefault(state);
             state.events = [];
+            state.selectedEvent = null;
+        },
+        [selectEvent]: (state, { payload: { event } }) => {
+            state.selectedEvent = event;
         }
     }
 });

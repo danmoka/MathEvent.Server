@@ -1,0 +1,17 @@
+.loader {
+
+    &--small {
+      width: 25px !important;
+      height: 25px !important;
+    }
+  
+    &--medium {
+      width: 50px !important;
+      height: 50px !important;
+    }
+  
+    &--large {
+      width: 75px !important;
+      height: 75px !important;
+    }
+}
