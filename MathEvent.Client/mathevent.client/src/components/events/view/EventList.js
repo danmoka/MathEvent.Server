@@ -1,5 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import EventHeader from "./EventHeader";
 import EventListItem from "./EventListItem";
 import Loader from "../../_common/Loader";
 
@@ -8,10 +9,7 @@ const EventList = () => {
 
     return (
         <div className="event-list">
-            <div className="event-list__header">
-                <p>Header</p>
-            </div>
-
+            <EventHeader headerText="Список событий"/>
             {isFetching
                 ? (<Loader className="event-list__loader" size="medium"/>)
                 : (

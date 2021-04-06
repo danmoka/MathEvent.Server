@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { onPendingDefault, onFulfilledDefault, onRejectedDefault } from "./defaults";
-import { fetchEvents, selectEvent } from "../actions/event";
+import { fetchEvents, selectEvent, setGridView } from "../actions/event";
 
 const initialState = {
     events: [],
     selectedEvent: null,
+    isGridView: true,
     isFetching: false,
     hasError: false
 };
@@ -31,6 +32,9 @@ const eventSlice = createSlice({
         },
         [selectEvent]: (state, { payload: { event } }) => {
             state.selectedEvent = event;
+        },
+        [setGridView]: (state, { payload: { isGridView } }) => {
+            state.isGridView = isGridView;
         }
     }
 });

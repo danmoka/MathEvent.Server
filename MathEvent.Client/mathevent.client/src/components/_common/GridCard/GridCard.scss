@@ -1,0 +1,23 @@
+@import "../../../styles/variables";
+
+.grid-card {
+  width: 100%;
+  // max-width: 345px;
+  min-width: 180px;
+  margin-bottom: 10px !important;
+  border-bottom: $panel-border !important;
+
+  &__action_area {
+    border: none !important;
+    outline: none !important;
+  }
+
+  &__media {
+    height: 140px;
+  }
+
+  &--selected {
+    margin-bottom: 10px !important;
+    border-bottom: 4px solid $primary-light !important;
+  }
+}

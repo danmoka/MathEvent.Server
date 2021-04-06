@@ -15,3 +15,4 @@ export const fetchEvents = createAsyncThunk("fetchEvents", async () => {
 })
 
 export const selectEvent = createAction("selectEvent", (event) => ({ payload: { event } }));
+export const setGridView = createAction("setGridView", (isGridView) => ({ payload: { isGridView } }));
