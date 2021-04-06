@@ -227,7 +227,17 @@ namespace MathEvent.Services.Services
         {
             if (filters is not null)
             {
-                // TODO: фильтрация
+                if (filters.TryGetValue("parent", out string parentParam))
+                {
+                    if (int.TryParse(parentParam, out int parentId))
+                    {
+                        eventQuery = eventQuery.Where(f => f.ParentId == parentId);
+                    }
+                    else
+                    {
+                        eventQuery = eventQuery.Where(f => f.ParentId == null);
+                    }
+                }
             }
 
             return eventQuery;

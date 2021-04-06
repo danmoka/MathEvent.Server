@@ -20,10 +20,6 @@ const eventSlice = createSlice({
         [fetchEvents.fulfilled]: (state, { payload: { events, hasError } }) => {
             onFulfilledDefault(state, hasError);
             state.events = events;
-
-            if (!state.selectedEvent) {
-                state.selectedEvent = events[0];
-            }
         },
         [fetchEvents.rejected]: (state) => {
             onRejectedDefault(state);

@@ -19,7 +19,7 @@ const EventList = () => {
                                 <EventListItem
                                     key={event.id}
                                     event={event}
-                                    isSelected={event.id === selectedEvent.id}
+                                    isSelected={selectedEvent && event.id === selectedEvent.id}
                                     index={index + 1}
                                 />
                             ))
