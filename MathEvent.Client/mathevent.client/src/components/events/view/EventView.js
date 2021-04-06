@@ -6,7 +6,7 @@ import EventList from "./EventList";
 import "./EventView.scss";
 
 const EventView = () => {
-    const { isGridView, selectedEvent } = useSelector(state => state.event);
+    const { isGridView, eventInfo } = useSelector(state => state.event);
 
     return (
         <div className="event-view">
@@ -14,7 +14,7 @@ const EventView = () => {
                 ? (<EventGrid/>)
                 : (<EventList/>)
             }
-            <EventInfo event={selectedEvent}/>
+            <EventInfo event={eventInfo}/>
         </div>
     );
 };

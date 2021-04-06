@@ -11,6 +11,10 @@ const EventInfo = ({ event }) => {
             <section className="event-info__section--description">
                 <h4>{event.name}</h4>
                 <hr/>
+                <h5>{`Дата начала: ${event.startDate}`}</h5>
+                <h5>{`Описание: ${event.description}`}</h5>
+                <h6>{`Организация: ${event.organization ? event.organization.name : "отсутствует"}`}
+                </h6>
             </section>
             <section className="event-info__section--image">
                 <img

@@ -6,6 +6,11 @@ const eventService = {
         const url = api.events.fetchEvents(event);
 
         return await baseService.get(url);
+    },
+    fetchEvent: async (eventId) => {
+        const url = api.events.fetchEvent(eventId);
+
+        return await baseService.get(url);
     }
 };
 
