@@ -2,6 +2,7 @@
 using MathEvent.Contracts;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
@@ -187,6 +188,57 @@ namespace MathEvent.Services.Services
             return await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.Id == id)
                 .SingleOrDefaultAsync();
+        }
+
+        public async Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        {
+            var events = new Stack<Breadcrumb>();
+            var currentEvent = await GetEventEntityAsync(id);
+
+            if (currentEvent == null)
+            {
+                return new MessageResult<IEnumerable<Breadcrumb>>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
+                    {
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"Event with the ID {id} not found"
+                        }
+                    }
+                };
+            }
+
+            events.Push(new Breadcrumb
+            {
+                Id = currentEvent.Id,
+                Name = currentEvent.Name
+            });
+
+            var parent = await _repositoryWrapper.Event
+                .FindByCondition(e => e.Id == currentEvent.ParentId)
+                .SingleOrDefaultAsync();
+            var depth = 8;
+
+            while (parent != null && depth > 0)
+            {
+                events.Push(new Breadcrumb
+                {
+                    Id = parent.Id,
+                    Name = parent.Name
+                });
+                parent = await _repositoryWrapper.Event
+                    .FindByCondition(e => e.Id == parent.ParentId)
+                    .SingleOrDefaultAsync();
+            }
+
+            return new MessageResult<IEnumerable<Breadcrumb>>
+            {
+                Succeeded = true,
+                Entity = events.ToList()
+            };
         }
 
         private async Task CreateNewSubscriptions(IEnumerable<string> newIds, int eventId)

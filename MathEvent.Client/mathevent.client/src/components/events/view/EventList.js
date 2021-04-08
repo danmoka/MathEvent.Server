@@ -1,16 +1,18 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import EventBreadcrumbs from "./EventBreadcrumbs";
 import EventHeader from "./EventHeader";
 import EventListItem from "./EventListItem";
 import Loader from "../../_common/Loader";
 
 const EventList = () => {
-    const { events, selectedEvent, isFetching } = useSelector(state => state.event);
+    const { events, selectedEvent, isFetchingEvents } = useSelector(state => state.event);
 
     return (
         <div className="event-list">
             <EventHeader headerText="Список событий"/>
-            {isFetching
+            <EventBreadcrumbs/>
+            {isFetchingEvents
                 ? (<Loader className="event-list__loader" size="medium"/>)
                 : (
                     <ul className="event-list__items">

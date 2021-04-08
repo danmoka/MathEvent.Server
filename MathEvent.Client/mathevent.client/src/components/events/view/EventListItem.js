@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { useDispatch } from "react-redux";
+import { selectEvent, fetchEvent, fetchEvents, fetchBreadcrumbs } from "../../../store/actions/event";
 import ListItem from "../../_common/ListItem";
-import { selectEvent, fetchEvent, fetchEvents } from "../../../store/actions/event";
 
 const EventListItem = ({ event, isSelected, index }) => {
     const dispatch = useDispatch();
@@ -11,7 +11,8 @@ const EventListItem = ({ event, isSelected, index }) => {
         dispatch(fetchEvent(event.id));
 
         if (event.hierarchy) {
-            dispatch(fetchEvents(event));
+            dispatch(fetchBreadcrumbs(event.id));
+            dispatch(fetchEvents(event.id));
         }
 
     }, [dispatch, event]);

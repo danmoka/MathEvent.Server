@@ -1,17 +1,19 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { Grid } from "@material-ui/core";
+import EventBreadcrumbs from "./EventBreadcrumbs";
 import EventGridCard from "./EventGridCard";
 import EventHeader from "./EventHeader";
 import Loader from "../../_common/Loader";
 
 const EventGrid = () => {
-    const { events, selectedEvent, isFetching } = useSelector(state => state.event);
+    const { events, selectedEvent, isFetchingEvents } = useSelector(state => state.event);
 
     return (
         <div className="event-grid">
             <EventHeader headerText="Карточки событий"/>
-            {isFetching
+            <EventBreadcrumbs/>
+            {isFetchingEvents
                 ? (<Loader className="event-grid__loader" size="medium"/>)
                 : (
                     <Grid

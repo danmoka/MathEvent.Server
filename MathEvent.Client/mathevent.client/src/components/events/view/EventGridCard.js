@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { useDispatch } from "react-redux";
+import { selectEvent, fetchEvents, fetchEvent, fetchBreadcrumbs } from "../../../store/actions/event";
 import GridCard from "../../_common/GridCard";
-import { selectEvent, fetchEvents, fetchEvent } from "../../../store/actions/event";
 
 const EventGridCard = ({ event, isSelected, index }) => {
     const dispatch = useDispatch();
@@ -11,7 +11,8 @@ const EventGridCard = ({ event, isSelected, index }) => {
         dispatch(fetchEvent(event.id));
 
         if (event.hierarchy) {
-            dispatch(fetchEvents(event));
+            dispatch(fetchBreadcrumbs(event.id));
+            dispatch(fetchEvents(event.id));
         }
 
     }, [dispatch, event]);

@@ -53,7 +53,7 @@
 .event-grid {
   display: flex;
   flex-direction: column;
-  width: 50%;
+  width: 40%;
   min-width: 200px;
   max-height: 100%;
   height: calc(100vh - 100px);
@@ -61,7 +61,7 @@
   border-right: $panel-border;
 
   &__grid {
-    padding: 10px;
+    padding: 5px;
   }
 
   &__header {
@@ -151,4 +151,16 @@
       margin-bottom: 0 !important;
     }
   }
+}
+
+.event-breadcrumbs {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  height: 40px;
+  padding: 5px;
+  border-bottom: $panel-border;
+  font-size: 20px;
+  font-weight: 600;
 }

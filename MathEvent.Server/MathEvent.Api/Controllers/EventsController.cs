@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
@@ -183,6 +184,23 @@ namespace MathEvent.Api.Controllers
             else
             {
                 return BadRequest(deleteResult.Messages);
+            }
+        }
+
+        // GET api/Events/Breadcrumbs/{id}
+        [HttpGet("Breadcrumbs/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        {
+            var result = await _eventService.GetBreadcrumbs(id);
+
+            if (result.Succeeded)
+            {
+                return Ok(result.Entity);
+            }
+            else
+            {
+                return BadRequest(result.Messages);
             }
         }
     }

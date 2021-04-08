@@ -1,7 +1,9 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Converters.Events.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Results;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace MathEvent.Services.Services
@@ -18,5 +20,6 @@ namespace MathEvent.Services.Services
         AResult<IMessage, Event>>
     {
         Task<Event> GetEventEntityAsync(int id);
+        Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id);
     }
 }
