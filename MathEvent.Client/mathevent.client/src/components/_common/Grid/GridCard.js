@@ -4,7 +4,7 @@ import CardActionArea from '@material-ui/core/CardActionArea';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
-import "./GridCard.scss";
+import "./Grid.scss";
 
 const GridCard = ({ primaryText, secondaryText, additionalInfo, isSelected, index, actions, onClick }) => {
   const classes = isSelected ? "grid-card grid-card--selected" : "grid-card";
