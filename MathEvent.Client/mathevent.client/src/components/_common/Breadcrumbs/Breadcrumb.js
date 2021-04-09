@@ -2,13 +2,13 @@ import React from 'react';
 import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 
-const Breadcrumb = ({ crumb, isLast, onClick }) => {
+const Breadcrumb = ({ primaryText, index, isLast, onClick }) => {
   return (
     isLast
-      ? (<Typography>{crumb.name}</Typography>)
+      ? (<Typography>{primaryText}</Typography>)
       : (
           <Link onClick={onClick}>
-              {crumb.name}
+              {primaryText}
           </Link>
         )
   );
