@@ -6,8 +6,8 @@ import MuiListItemText from "@material-ui/core/ListItemText";
 import MuiListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import MuiListItemIcon from "@material-ui/core/ListItemIcon";
 import Popover from "@material-ui/core/Popover";
-import { Icon, IconButton, iconTypes } from "../../_common/Icon";
-import "./ListItem.scss";
+import { Icon, IconButton, iconTypes } from "../Icon";
+import "./List.scss";
 
 const useStyles = makeStyles({
     primary: {
