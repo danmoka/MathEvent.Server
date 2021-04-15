@@ -61,13 +61,13 @@ namespace MathEvent.Services.Services
             return null;
         }
 
-        public async Task<AResult<IMessage, Event>> CreateAsync(EventCreateModel createModel)
+        public async Task<AResult<IMessage, EventWithUsersReadModel>> CreateAsync(EventCreateModel createModel)
         {
             var eventEntity = _mapper.Map<Event>(_mapper.Map<EventDTO>(createModel));
 
             if (eventEntity is null)
             {
-                return new MessageResult<Event>
+                return new MessageResult<EventWithUsersReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -85,7 +85,7 @@ namespace MathEvent.Services.Services
 
             if (eventEntityDb is null)
             {
-                return new MessageResult<Event>
+                return new MessageResult<EventWithUsersReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -102,7 +102,7 @@ namespace MathEvent.Services.Services
 
             if (await _ownerService.CreateEventOwner(eventEntityDb.Id, Owner.Type.File) is null)
             {
-                return new MessageResult<Event>
+                return new MessageResult<EventWithUsersReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -115,20 +115,20 @@ namespace MathEvent.Services.Services
                 };
             }
 
-            return new MessageResult<Event>
+            return new MessageResult<EventWithUsersReadModel>
             {
                 Succeeded = true,
-                Entity = eventEntityDb
+                Entity = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb))
             };
         }
 
-        public async Task<AResult<IMessage, Event>> UpdateAsync(int id, EventUpdateModel updateModel)
+        public async Task<AResult<IMessage, EventWithUsersReadModel>> UpdateAsync(int id, EventUpdateModel updateModel)
         {
             var eventEntity = await GetEventEntityAsync(id);
 
             if (eventEntity is null)
             {
-                return new MessageResult<Event>
+                return new MessageResult<EventWithUsersReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -150,20 +150,20 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.Event.Update(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<Event>
+            return new MessageResult<EventWithUsersReadModel>
             {
                 Succeeded = true,
-                Entity = eventEntity
+                Entity = _mapper.Map<EventWithUsersReadModel>(eventDTO)
             };
         }
 
-        public async Task<AResult<IMessage, Event>> DeleteAsync(int id)
+        public async Task<AResult<IMessage, EventWithUsersReadModel>> DeleteAsync(int id)
         {
             var eventEntity = await GetEventEntityAsync(id);
 
             if (eventEntity is null)
             {
-                return new MessageResult<Event>
+                return new MessageResult<EventWithUsersReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -180,7 +180,7 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.Event.Delete(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<Event> { Succeeded = true };
+            return new MessageResult<EventWithUsersReadModel> { Succeeded = true };
         }
 
         public async Task<Event> GetEventEntityAsync(int id)
@@ -232,6 +232,7 @@ namespace MathEvent.Services.Services
                 parent = await _repositoryWrapper.Event
                     .FindByCondition(e => e.Id == parent.ParentId)
                     .SingleOrDefaultAsync();
+                depth--;
             }
 
             return new MessageResult<IEnumerable<Breadcrumb>>

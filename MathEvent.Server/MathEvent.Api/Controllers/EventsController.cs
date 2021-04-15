@@ -111,7 +111,14 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var updatedEvent = updateResult.Entity;
+
+                if (updatedEvent is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedEvent);
             }
             else
             {
@@ -153,7 +160,14 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var updatedEvent = updateResult.Entity;
+
+                if (updatedEvent is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedEvent);
             }
             else
             {

@@ -17,7 +17,7 @@ namespace MathEvent.Services.Services
         EventCreateModel,
         EventUpdateModel,
         int,
-        AResult<IMessage, Event>>
+        AResult<IMessage, EventWithUsersReadModel>>
     {
         Task<Event> GetEventEntityAsync(int id);
         Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id);

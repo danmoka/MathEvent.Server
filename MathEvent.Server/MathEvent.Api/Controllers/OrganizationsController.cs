@@ -2,6 +2,7 @@
 using MathEvent.Converters.Organizations.DTOs;
 using MathEvent.Converters.Organizations.Models;
 using MathEvent.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace MathEvent.Api.Controllers
 
         // GET api/Organizations/?key1=value1&key2=value2
         [HttpGet]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<OrganizationReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
             var organizationReadModels = await _organizationService.ListAsync(filters);
@@ -39,6 +41,7 @@ namespace MathEvent.Api.Controllers
 
         // GET api/Organizations/{id}
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<OrganizationReadModel>> RetrieveAsync(int id)
         {
             if (id < 0)

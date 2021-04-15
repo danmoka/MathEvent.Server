@@ -42,5 +42,29 @@ export const fetchBreadcrumbs = createAsyncThunk("fetchBreadcrumbs", async (even
     return { crumbs: [] };
 });
 
+export const updateEvent = createAsyncThunk("updateEvent", async ({ eventId, event }) => {
+    const response = await eventService.updateEvent(eventId, event);
+
+    if (statusCode(response).ok) {
+      const updatedEvent = await response.json();
+
+      return { updatedEvent, hasError: false };
+    }
+
+    return { hasError: true };
+});
+
+export const patchEvent = createAsyncThunk("patchEvent", async ({ eventId, data }) => {
+    const response = await eventService.patchEvent(eventId, data);
+
+    if (statusCode(response).ok) {
+      const updatedEvent = await response.json();
+
+      return { updatedEvent, hasError: false };
+    }
+
+    return { hasError: true };
+});
+
 export const selectEvent = createAction("selectEvent", (event) => ({ payload: { event } }));
 export const setGridView = createAction("setGridView", (isGridView) => ({ payload: { isGridView } }));

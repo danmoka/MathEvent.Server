@@ -19,6 +19,7 @@ const useStyles = makeStyles({
 });
 
 const ListItem = ({ primaryText, secondaryText, isSelected, index, actions, onClick }) => {
+    const itemClasses = isSelected ? "list-item list-item--selected" : "list-item";
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const classes = useStyles();
@@ -42,30 +43,26 @@ const ListItem = ({ primaryText, secondaryText, isSelected, index, actions, onCl
         setIsHovered(false);
     }, []);
 
+    const handleSecondaryAction = useCallback((e, action) => {
+        handleMenuClose(e);
+        action();
+      }, [handleMenuClose]);
+
     return (
         <MuiListItem
-            className="list-item"
+            className={itemClasses}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={onClick}
             selected={isSelected}
-            button
-        >
-            {/* <MuiListItemIcon>
-                <Badge content={index} color={isSelected ? "primary" : "secondary"}/>
-            </MuiListItemIcon> */}
-            <MuiListItemText
-                classes={classes}
-                primary={primaryText}
-                secondary={secondaryText}
-            />
+            button>
+            <MuiListItemText classes={classes} primary={primaryText} secondary={secondaryText}/>
 
             {actions && (
                 <>
                     <MuiListItemSecondaryAction
                         className={isHovered ? "list-item__secondary--hovered" : "list-item__secondary"}
-                        onClick={handleMenuOpen}
-                    >
+                        onClick={handleMenuOpen}>
                         <IconButton type={iconTypes.more}/>
                     </MuiListItemSecondaryAction>
                     <Popover
@@ -73,18 +70,17 @@ const ListItem = ({ primaryText, secondaryText, isSelected, index, actions, onCl
                         open={Boolean(anchorEl)}
                         anchorEl={anchorEl}
                         onClose={handleMenuClose}
-                        anchorOrigin={{ vertical: "top", horizontal: "right", }}
-                        transformOrigin={{ vertical: "top", horizontal: "right", }}
-                    >
+                        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+                        transformOrigin={{ vertical: "top", horizontal: "right" }}>
                         <div className="list-item__secondary-menu">
-                            {actions.map((action) => (
-                                <MuiMenuItem key={action.id} onClick={(e) => action.onClick(e, handleMenuClose)}>
-                                    <MuiListItemIcon>
-                                        <Icon type={action.icon}/>
-                                    </MuiListItemIcon>
-                                    {action.label}
-                                </MuiMenuItem>
-                            ))}
+                        {actions.map((action) => (
+                            <MuiMenuItem key={action.id} onClick={(e) => handleSecondaryAction(e, action.onClick)}>
+                                <MuiListItemIcon>
+                                    <Icon type={action.icon} />
+                                </MuiListItemIcon>
+                                {action.label}
+                            </MuiMenuItem>
+                        ))}
                         </div>
                     </Popover>
                 </>

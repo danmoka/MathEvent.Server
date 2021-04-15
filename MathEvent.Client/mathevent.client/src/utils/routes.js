@@ -1,5 +1,6 @@
 const routes = {
-    events: "/events"
+    events: "/events",
+    organizations: "/organizations"
 };
 
 export default routes;
