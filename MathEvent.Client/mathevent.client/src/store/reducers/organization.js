@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { onPendingDefault, onFulfilledDefault, onRejectedDefault } from "./defaults";
+import { onPendingOrganizations, onFulfilledOrganizations, onRejectedOrganizations } from "./defaults";
 import { fetchOrganizations} from "../actions/organization";
 
 const initialState = {
@@ -13,17 +13,17 @@ const organizationSlice = createSlice({
     initialState: initialState,
     extraReducers: {
         [fetchOrganizations.pending]: (state) => {
-            onPendingDefault(state, state.isFetchingOrganizations);
+            onPendingOrganizations(state);
         },
         [fetchOrganizations.fulfilled]: (state, { payload: { organizations, hasError } }) => {
-            onFulfilledDefault(state, hasError, state.isFetchingOrganizations);
+            onFulfilledOrganizations(state, hasError);
 
             if (!hasError) {
                 state.organizations = organizations;
             }
         },
         [fetchOrganizations.rejected]: (state) => {
-            onRejectedDefault(state, state.isFetchingOrganizations);
+            onRejectedOrganizations(state);
             state.organizations = [];
         },
     }

@@ -1,5 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { onPendingDefault, onFulfilledDefault, onRejectedDefault } from "./defaults";
+import {
+    onPendingEvents,
+    onFulfilledEvents,
+    onRejectedEvents,
+    onPendingEvent,
+    onFulfilledEvent,
+    onRejectedEvent,
+    onPendingEventBreadcrumbs,
+    onFulfilledEventBreadcrumbs,
+    onRejectedEventBreadcrumbs } from "./defaults";
 import { fetchEvents,
     fetchEvent,
     selectEvent,
@@ -16,7 +25,7 @@ const initialState = {
     isGridView: true,
     isFetchingEvents: false,
     isFetchingEvent: false,
-    isFetchingBreadcrumbs: false,
+    isFetchingEventBreadcrumbs: false,
     hasError: false,
 };
 
@@ -25,33 +34,33 @@ const eventSlice = createSlice({
     initialState: initialState,
     extraReducers: {
         [fetchEvents.pending]: (state) => {
-            onPendingDefault(state, state.isFetchingEvents);
+            onPendingEvents(state);
         },
         [fetchEvents.fulfilled]: (state, { payload: { events, hasError } }) => {
-            onFulfilledDefault(state, hasError, state.isFetchingEvents);
+            onFulfilledEvents(state, hasError);
 
             if (!hasError) {
                 state.events = events;
             }
         },
         [fetchEvents.rejected]: (state) => {
-            onRejectedDefault(state, state.isFetchingEvents);
+            onRejectedEvents(state);
             state.events = [];
             state.selectedEvent = null;
         },
 
         [fetchEvent.pending]: (state) => {
-            onPendingDefault(state, state.isFetchingEvent);
+            onPendingEvent(state);
         },
         [fetchEvent.fulfilled]: (state, { payload: { event, hasError } }) => {
-            onFulfilledDefault(state, hasError, state.isFetchingEvent);
+            onFulfilledEvent(state, hasError);
 
             if (!hasError) {
                 state.eventInfo = event;
             }
         },
         [fetchEvent.rejected]: (state) => {
-            onRejectedDefault(state, state.isFetchingEvent);
+            onRejectedEvent(state);
             state.eventInfo = null;
         },
 
@@ -63,44 +72,44 @@ const eventSlice = createSlice({
         },
 
         [fetchBreadcrumbs.pending]: (state) => {
-            onPendingDefault(state, state.isFetchingBreadcrumbs);
+            onPendingEventBreadcrumbs(state);
         },
         [fetchBreadcrumbs.fulfilled]: (state, { payload: { crumbs, hasError } }) => {
-            onFulfilledDefault(state, hasError, state.isFetchingBreadcrumbs);
+            onFulfilledEventBreadcrumbs(state, hasError);
             state.crumbs = crumbs;
         },
         [fetchBreadcrumbs.rejected]: (state) => {
-            onRejectedDefault(state, state.isFetchingBreadcrumbs);
+            onRejectedEventBreadcrumbs(state);
             state.crumbs = [];
         },
 
         [updateEvent.pending]: (state) => {
-            onPendingDefault(state, state.isFetchingEvent);
+            onPendingEvent(state);
         },
         [updateEvent.fulfilled]: (state, { payload: { updatedEvent, hasError } }) => {
-            onFulfilledDefault(state, hasError, state.isFetchingEvent);
+            onFulfilledEvent(state, hasErrorEvent);
 
             if (!hasError) {
                 state.eventInfo = updatedEvent;
             }
         },
         [updateEvent.rejected]: (state) => {
-            onRejectedDefault(state, state.isFetchingEvent);
+            onRejectedEvent(state);
             state.eventInfo = null;
         },
 
         [patchEvent.pending]: (state) => {
-            onPendingDefault(state, state.isFetchingEvent);
+            onPendingEvent(state);
         },
         [patchEvent.fulfilled]: (state, { payload: { updatedEvent, hasError } }) => {
-            onFulfilledDefault(state, hasError, state.isFetchingEvent);
+            onFulfilledEvent(state, hasError);
 
             if (!hasError) {
                 state.eventInfo = updatedEvent;
             }
         },
         [patchEvent.rejected]: (state) => {
-            onRejectedDefault(state, state.isFetchingEvent);
+            onRejectedEvent(state);
             state.eventInfo = null;
         },
     }
