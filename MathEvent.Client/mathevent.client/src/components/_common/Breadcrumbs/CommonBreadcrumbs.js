@@ -1,10 +1,15 @@
 import React from "react";
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import { IconButton, iconTypes } from "../Icon";
 import Breadcrumb from "./Breadcrumb";
 
-const CommonBreadcrumbs = ({ className, items }) => (
-    <Breadcrumbs 
+const CommonBreadcrumbs = ({ className, items, backButtonOnClick }) => (
+    <Breadcrumbs
             className={className}>
+            <IconButton
+                type={iconTypes.back}
+                onClick={backButtonOnClick}
+            />
             {items.map((item) => (
                 <Breadcrumb
                     key={item.id}

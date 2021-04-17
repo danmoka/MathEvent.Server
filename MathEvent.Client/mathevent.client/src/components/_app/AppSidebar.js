@@ -13,9 +13,6 @@ const AppSidebar = () => {
             <div className="app-sidebar__items">
                 <IconButton
                     type={iconTypes.events}
-                    tooltip="События"
-                    tooltipPosition="right"
-                    tooltipWithMargin
                     selected={isSelected(routes.events)}
                     onClick={navigateToEvents}
                 />
