@@ -1,3 +1,5 @@
+const defaultOnPendingFetchValue = false;
+
 const onPendingDefault = (state) => {
     state.hasError = false;
 };
@@ -12,7 +14,7 @@ const onRejectedDefault = (state) => {
 
 // Events
 export const onPendingEvents = (state) => {
-    state.isFetchingEvents = true;
+    state.isFetchingEvents = defaultOnPendingFetchValue;
     onPendingDefault(state);
 };
 
@@ -28,7 +30,7 @@ export const onRejectedEvents = (state) => {
 
 // Event
 export const onPendingEvent = (state) => {
-    state.isFetchingEvent = true;
+    state.isFetchingEvent = defaultOnPendingFetchValue;
     onPendingDefault(state);
 };
 
@@ -44,7 +46,7 @@ export const onRejectedEvent = (state) => {
 
 // EventBreadcrumbs
 export const onPendingEventBreadcrumbs = (state) => {
-    state.isFetchingEventBreadcrumbs = true;
+    state.isFetchingEventBreadcrumbs = defaultOnPendingFetchValue;
     onPendingDefault(state);
 };
 
@@ -60,7 +62,7 @@ export const onRejectedEventBreadcrumbs = (state) => {
 
 // Organizations
 export const onPendingOrganizations = (state) => {
-    state.isFetchingOrganizations = true;
+    state.isFetchingOrganizations = defaultOnPendingFetchValue;
     onPendingDefault(state);
 };
 
