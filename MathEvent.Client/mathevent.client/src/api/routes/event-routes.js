@@ -5,7 +5,7 @@ const eventRoutes = {
     fetchEvent: (eventId) => getRoute(`events/${eventId}`),
     updateEvent: (eventId) => getRoute(`events/${eventId}/`),
     patchEvent: (eventId) => getRoute(`events/${eventId}/`),
-    fetchBreadcrumbs: (eventId) => getRoute(`events/breadcrumbs/${eventId}`)
+    fetchEventBreadcrumbs: (eventId) => getRoute(`events/breadcrumbs/${eventId}`)
 };
 
 export default eventRoutes;

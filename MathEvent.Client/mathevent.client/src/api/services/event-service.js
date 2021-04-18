@@ -12,8 +12,8 @@ const eventService = {
 
         return await baseService.get(url);
     },
-    fetchBreadcrumbs: async (eventId) => {
-        const url = api.events.fetchBreadcrumbs(eventId);
+    fetchEventBreadcrumbs: async (eventId) => {
+        const url = api.events.fetchEventBreadcrumbs(eventId);
 
         return await baseService.get(url);
     },

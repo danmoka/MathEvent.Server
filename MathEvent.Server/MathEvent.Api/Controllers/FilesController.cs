@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using MathEvent.Converters.Files.Models;
+﻿using MathEvent.Converters.Files.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -209,6 +209,22 @@ namespace MathEvent.Api.Controllers
             }
 
             return File(fileStream, "application/octet-stream", $"{file.Name}{file.Extension}");
+        }
+
+        // GET api/Files/Breadcrumbs/{id}
+        [HttpGet("Breadcrumbs/{id}")]
+        public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        {
+            var result = await _fileService.GetBreadcrumbs(id);
+
+            if (result.Succeeded)
+            {
+                return Ok(result.Entity);
+            }
+            else
+            {
+                return BadRequest(result.Messages);
+            }
         }
     }
 }

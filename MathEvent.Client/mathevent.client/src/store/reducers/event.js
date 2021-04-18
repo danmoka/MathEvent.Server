@@ -13,7 +13,7 @@ import { fetchEvents,
     fetchEvent,
     selectEvent,
     setGridView,
-    fetchBreadcrumbs,
+    fetchEventBreadcrumbs,
     updateEvent,
     patchEvent} from "../actions/event";
 
@@ -71,14 +71,14 @@ const eventSlice = createSlice({
             state.isGridView = isGridView;
         },
 
-        [fetchBreadcrumbs.pending]: (state) => {
+        [fetchEventBreadcrumbs.pending]: (state) => {
             onPendingEventBreadcrumbs(state);
         },
-        [fetchBreadcrumbs.fulfilled]: (state, { payload: { crumbs, hasError } }) => {
+        [fetchEventBreadcrumbs.fulfilled]: (state, { payload: { crumbs, hasError } }) => {
             onFulfilledEventBreadcrumbs(state, hasError);
             state.crumbs = crumbs;
         },
-        [fetchBreadcrumbs.rejected]: (state) => {
+        [fetchEventBreadcrumbs.rejected]: (state) => {
             onRejectedEventBreadcrumbs(state);
             state.crumbs = [];
         },

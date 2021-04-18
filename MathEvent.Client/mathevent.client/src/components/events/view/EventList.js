@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
-import { selectEvent, fetchEvent, fetchEvents, fetchBreadcrumbs, setGridView } from "../../../store/actions/event";
+import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, setGridView } from "../../../store/actions/event";
 import EventBreadcrumbs from "./EventBreadcrumbs";
 import List from "../../_common/List";
 import Loader from "../../_common/Loader";
@@ -42,7 +42,7 @@ const EventList = () => {
         dispatch(fetchEvent(event.id));
 
         if (event.hierarchy) {
-            dispatch(fetchBreadcrumbs(event.id));
+            dispatch(fetchEventBreadcrumbs(event.id));
             dispatch(fetchEvents(event.id));
         }
     }, []);

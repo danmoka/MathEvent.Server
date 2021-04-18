@@ -26,12 +26,12 @@ export const fetchEvent = createAsyncThunk("fetchEvent", async (eventId) => {
     return { event: null };
 });
 
-export const fetchBreadcrumbs = createAsyncThunk("fetchBreadcrumbs", async (eventId) => {
+export const fetchEventBreadcrumbs = createAsyncThunk("fetchEventBreadcrumbs", async (eventId) => {
     if (!eventId) {
         return { crumbs: [] };
     }
 
-    const response = await eventService.fetchBreadcrumbs(eventId);
+    const response = await eventService.fetchEventBreadcrumbs(eventId);
 
     if (statusCode(response).ok) {
         const crumbs = await response.json();

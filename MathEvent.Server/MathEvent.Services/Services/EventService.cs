@@ -192,7 +192,7 @@ namespace MathEvent.Services.Services
 
         public async Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
         {
-            var events = new Stack<Breadcrumb>();
+            var breadcrumbs = new Stack<Breadcrumb>();
             var currentEvent = await GetEventEntityAsync(id);
 
             if (currentEvent == null)
@@ -211,7 +211,7 @@ namespace MathEvent.Services.Services
                 };
             }
 
-            events.Push(new Breadcrumb
+            breadcrumbs.Push(new Breadcrumb
             {
                 Id = currentEvent.Id,
                 Name = currentEvent.Name
@@ -224,7 +224,7 @@ namespace MathEvent.Services.Services
 
             while (parent != null && depth > 0)
             {
-                events.Push(new Breadcrumb
+                breadcrumbs.Push(new Breadcrumb
                 {
                     Id = parent.Id,
                     Name = parent.Name
@@ -238,7 +238,7 @@ namespace MathEvent.Services.Services
             return new MessageResult<IEnumerable<Breadcrumb>>
             {
                 Succeeded = true,
-                Entity = events.ToList()
+                Entity = breadcrumbs.ToList()
             };
         }
 

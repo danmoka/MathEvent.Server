@@ -2,6 +2,7 @@
 using MathEvent.Contracts;
 using MathEvent.Converters.Files.DTOs;
 using MathEvent.Converters.Files.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
@@ -306,6 +307,58 @@ namespace MathEvent.Services.Services
             return await _repositoryWrapper.File
                 .FindByCondition(f => f.Id == id)
                 .SingleOrDefaultAsync();
+        }
+
+        public async Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        {
+            var breadcrumbs = new Stack<Breadcrumb>();
+            var currentFile = await GetFileEntityAsync(id);
+
+            if (currentFile == null)
+            {
+                return new MessageResult<IEnumerable<Breadcrumb>>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
+                    {
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"File with the ID {id} not found"
+                        }
+                    }
+                };
+            }
+
+            breadcrumbs.Push(new Breadcrumb
+            {
+                Id = currentFile.Id,
+                Name = currentFile.Name
+            });
+
+            var parent = await _repositoryWrapper.File
+                .FindByCondition(e => e.Id == currentFile.ParentId)
+                .SingleOrDefaultAsync();
+            var depth = 8;
+
+            while (parent != null && depth > 0)
+            {
+                breadcrumbs.Push(new Breadcrumb
+                {
+                    Id = parent.Id,
+                    Name = parent.Name
+                });
+                parent = await _repositoryWrapper.File
+                    .FindByCondition(e => e.Id == parent.ParentId)
+                    .SingleOrDefaultAsync();
+                depth--;
+            }
+
+            return new MessageResult<IEnumerable<Breadcrumb>>
+            {
+                Succeeded = true,
+                Entity = breadcrumbs.ToList()
+            };
         }
 
         private static IQueryable<File> Filter(IQueryable<File> filesQuery, IDictionary<string, string> filters)

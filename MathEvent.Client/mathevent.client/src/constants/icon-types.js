@@ -3,7 +3,8 @@ const iconTypes = {
     edit: "edit",
     delete: "delete",
     more: "more",
-    back: "back"
+    back: "back",
+    download: "download",
 };
 
 export default iconTypes;

@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchEvents, fetchEventBreadcrumbs } from "../../../store/actions/event";
+import { fetchFiles, fetchFileBreadcrumbs } from "../../../store/actions/file";
 import CommonBreadcrumbs from "../../_common/Breadcrumbs";
 import Loader from "../../_common/Loader";
 
@@ -13,20 +13,21 @@ const prepareCrumbs = (crumbs, onClick) =>
         onClick: () => onClick(crumb)
     }));
 
-const EventBreadcrumbs = () => {
+const EventFileBreadcrumbs = () => {
     const dispatch = useDispatch();
-    let { crumbs, isFetchingEventBreadcrumbs  } = useSelector(state => state.event);
+    const { eventInfo } = useSelector(state => state.event);
+    let { crumbs, isFetchingFileBreadcrumbs  } = useSelector(state => state.file);
     crumbs = [ {id: null, name: "Корень"}, ...crumbs ];
 
     const handleCrumbClick = useCallback((crumb) => {
-        dispatch(fetchEvents(crumb.id));
-        dispatch(fetchEventBreadcrumbs(crumb.id));
+        dispatch(fetchFiles({fileId: crumb.id, ownerId: eventInfo.ownerId}));
+        dispatch(fetchFileBreadcrumbs(crumb.id));
     });
 
     const handleBackButtonClick = useCallback(() => {
         const lastCrumb = crumbs[crumbs.length - 2];
-        dispatch(fetchEvents(lastCrumb ? lastCrumb.id : null));
-        dispatch(fetchEventBreadcrumbs(lastCrumb ? lastCrumb.id : null));
+        dispatch(fetchFiles({fileId: lastCrumb ? lastCrumb.id : null, ownerId: eventInfo.ownerId}));
+        dispatch(fetchFileBreadcrumbs(lastCrumb ? lastCrumb.id : null));
     });
 
     const preparedCrumbs = prepareCrumbs(
@@ -35,14 +36,14 @@ const EventBreadcrumbs = () => {
     );
 
     return (
-        isFetchingEventBreadcrumbs
-            ? (<Loader className="event-grid__loader" size="medium"/>)
+        isFetchingFileBreadcrumbs
+            ? (<Loader size="medium"/>)
             : (
-                <div className="event-breadcrumbs">
+                <div className="event-files__breadcrumbs">
                     <CommonBreadcrumbs items={preparedCrumbs} backButtonOnClick={handleBackButtonClick}/>
                 </div>
             )
     );
 };
 
-export default EventBreadcrumbs;
+export default EventFileBreadcrumbs;

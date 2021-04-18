@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectEvent, fetchEvent, fetchEvents, fetchBreadcrumbs, setGridView } from "../../../store/actions/event";
+import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, setGridView } from "../../../store/actions/event";
 import { iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
 import EventBreadcrumbs from "./EventBreadcrumbs";
@@ -42,7 +42,7 @@ const EventGrid = () => {
         dispatch(fetchEvent(event.id));
 
         if (event.hierarchy) {
-            dispatch(fetchBreadcrumbs(event.id));
+            dispatch(fetchEventBreadcrumbs(event.id));
             dispatch(fetchEvents(event.id));
         }
     }, []);

@@ -75,3 +75,51 @@ export const onRejectedOrganizations = (state) => {
     state.isFetchingOrganizations = false;
     onRejectedDefault(state);
 };
+
+// Files
+export const onPendingFiles = (state) => {
+    state.isFetchingFiles = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledFiles = (state, hasError) => {
+    state.isFetchingFiles = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedFiles = (state) => {
+    state.isFetchingFiles = false;
+    onRejectedDefault(state);
+};
+
+// File
+export const onPendingFile = (state) => {
+    state.isFetchingFile = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledFile = (state, hasError) => {
+    state.isFetchingFile = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedFile = (state) => {
+    state.isFetchingFile = false;
+    onRejectedDefault(state);
+};
+
+// FileBreadcrumbs
+export const onPendingFileBreadcrumbs = (state) => {
+    state.isFetchingFileBreadcrumbs = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledFileBreadcrumbs = (state, hasError) => {
+    state.isFetchingFileBreadcrumbs = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedFileBreadcrumbs = (state) => {
+    state.isFetchingFileBreadcrumbs = false;
+    onRejectedDefault(state);
+};

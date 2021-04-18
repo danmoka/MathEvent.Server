@@ -6,7 +6,8 @@ const icons = {
     [iconTypes.edit]: materialIcons.Edit,
     [iconTypes.delete]: materialIcons.Delete,
     [iconTypes.more]: materialIcons.MoreVert,
-    [iconTypes.back]: materialIcons.ArrowBack
+    [iconTypes.back]: materialIcons.ArrowBack,
+    [iconTypes.download]: materialIcons.SaveAlt,
 };
 
 export default icons;
