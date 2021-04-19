@@ -13,7 +13,8 @@ namespace IdentityServer
             new List<IdentityResource>
             {
                 new IdentityResources.OpenId(),
-                new IdentityResources.Profile()
+                new IdentityResources.Profile(),
+                new IdentityResources.Email()
             };
 
         public static IEnumerable<ApiScope> ApiScopes =>
@@ -36,15 +37,16 @@ namespace IdentityServer
                     ClientName = "React SPA",
                     ClientSecrets = { new Secret("secret".Sha256()) },
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-                    AllowAccessTokensViaBrowser = true,
+                    RequireClientSecret = false,
                     AllowOfflineAccess = true,
                     AbsoluteRefreshTokenLifetime = 3600,
                     AccessTokenLifetime = 3600,
                     AllowedScopes = new List<string>
                     {
+                        "matheventapi",
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        "matheventapi"
+                        IdentityServerConstants.StandardScopes.Email
                     }
                 }
             };

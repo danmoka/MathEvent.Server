@@ -1,5 +1,5 @@
 import api from "../api";
-import baseService from "./base-service";
+import { baseService } from "./base-service";
 
 const fileService = {
     fetchFiles: async (fileId, ownerId) => {

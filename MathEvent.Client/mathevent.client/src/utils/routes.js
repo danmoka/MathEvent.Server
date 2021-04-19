@@ -1,6 +1,7 @@
 const routes = {
+    login: "/login",
     events: "/events",
-    organizations: "/organizations"
+    organizations: "/organizations",
 };
 
 export default routes;

@@ -1,4 +1,9 @@
 {
     "baseUrl": "https://localhost:5003",
-    "siteUrl": "http://localhost:8080"
+    "siteUrl": "http://localhost:8080",
+    "accountUrl": "https://localhost:5001",
+    "clientId": "react_spa",
+    "clientSecret": "secret",
+    "passwordGrantType": "password",
+    "refreshGrantType": "refresh_token"
 }

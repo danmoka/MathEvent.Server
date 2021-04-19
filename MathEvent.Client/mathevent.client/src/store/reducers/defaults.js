@@ -123,3 +123,19 @@ export const onRejectedFileBreadcrumbs = (state) => {
     state.isFetchingFileBreadcrumbs = false;
     onRejectedDefault(state);
 };
+
+// Account
+export const onPendingAccount = (state) => {
+    state.isFetchingAccount = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledAccount = (state, hasError) => {
+    state.isFetchingAccount = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedAccount = (state) => {
+    state.isFetchingAccount = false;
+    onRejectedDefault(state);
+};

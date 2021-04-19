@@ -31,6 +31,14 @@ namespace MathEvent.IdentityServer
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(builder =>
+            {
+                builder.WithOrigins("http://localhost:8080");
+                builder.AllowCredentials();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
+            });
+
             app.UseRouting();
 
             app.UseIdentityServer();
