@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchEvents } from "../../../store/actions/event";
+import { fetchEvents, fetchEventBreadcrumbs } from "../../../store/actions/event";
+import { useTitle } from "../../../hooks";
 import EventGrid from "./EventGrid";
 import EventInfo from "./EventInfo";
 import EventList from "./EventList";
@@ -12,7 +13,10 @@ const EventView = () => {
 
     useEffect(() => {
         dispatch(fetchEvents());
+        dispatch(fetchEventBreadcrumbs());
     }, []);
+
+    useTitle("События");
 
     return (
         <div className="event-view">

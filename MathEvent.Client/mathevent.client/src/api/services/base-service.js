@@ -4,7 +4,10 @@ const baseService = {
     get: async (url) => {
         try {
             return await fetch(url, {
-                method: "GET"
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${getAccessToken()}`
+                }
             });
         } catch (e) {
             console.log(e);
@@ -16,6 +19,7 @@ const baseService = {
                 method: "PUT",
                 body: JSON.stringify(data),
                 headers: {
+                    "Authorization": `Bearer ${getAccessToken()}`,
                     "Content-Type": "application/json"
                 }
             });
@@ -29,6 +33,7 @@ const baseService = {
                 method: "PATCH",
                 body: JSON.stringify(data),
                 headers: {
+                    "Authorization": `Bearer ${getAccessToken()}`,
                     "Content-Type": "application/json"
                 }
             });

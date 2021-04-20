@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { fetchEvent } from "../../../store/actions/event";
+import { useTitle } from "../../../hooks";
 import EventEditInfo from "./EventEditInfo";
 import EventManagerList from "./EventManagerList";
 import Loader from "../../_common/Loader";
@@ -17,6 +18,8 @@ const EventEdit = () => {
             dispatch(fetchEvent(id));
         }
     }, [dispatch, id]);
+
+    useTitle("Редактирование события");
 
     return (
         isFetchingEvent || !eventInfo

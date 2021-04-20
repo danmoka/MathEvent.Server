@@ -8,7 +8,7 @@ import { useCurrentUser } from "../../hooks";
 import { logout, revocation } from "../../store/actions/account";
 import Button, { colors } from "../_common/Button";
 import { Icon, iconTypes } from "../_common/Icon";
-import { navigateToLogin } from "../../utils/navigator";
+import { navigateToHome, navigateToLogin } from "../../utils/navigator";
 
 const AppHeader = () => {
     const dispatch = useDispatch();
@@ -32,7 +32,7 @@ const AppHeader = () => {
                     className="app-header__button"
                     color={colors.transparentBlack}
                     startIcon={iconTypes.home}
-                    onClick={() => {console.log("home button clicked");}}
+                    onClick={navigateToHome}
                 >
                     MathEvent
                 </Button>
@@ -58,7 +58,7 @@ const AppHeader = () => {
                         </>
                     ) : (
                         isFetching
-                            ? (<div>Загрузка...</div>)
+                            ? (<div>Ожидайте...</div>)
                             : (
                                 <>
                                     <Button

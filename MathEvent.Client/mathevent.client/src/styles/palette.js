@@ -12,9 +12,9 @@ const palette = {
         contrastText: "#000"
     },
     primary: {
-        light: "#4791db",
-        main: "#1976d2",
-        dark: "#115293",
+        light: "#9891ff",
+        main: "#6C63FF",
+        dark: "#4b45b2",
         contrastText: "#fff"
     },
     success: {

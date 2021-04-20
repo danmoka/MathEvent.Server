@@ -8,6 +8,7 @@ import AppSidebar from "./AppSidebar";
 const App = () => {
     const dispatch = useDispatch();
     const { hasToken } = useSelector(state => state.account);
+    const { header } = useSelector(state => state.app);
 
     useEffect(() => {
         dispatch(fetchEvents());
@@ -21,6 +22,9 @@ const App = () => {
         <div className="app">
             <AppSidebar/>
             <div className="app__main">
+                <header className="app__page-header bg-light">
+                    <div className="app__page-header-title">{header}</div>
+                </header>
                 <AppContent/>
             </div>
         </div>

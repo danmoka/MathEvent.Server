@@ -1,5 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { clearAccessToken, clearRefreshToken, getRefreshToken, setAccessToken, setRefreshToken } from "../../utils/local-storage-manager";
+import { navigateToHome } from "../../utils/navigator";
 import accountService from "../../api/services/account-service";
 import statusCode from "../../utils/status-code-reader";
 import config from "../../config";
@@ -49,6 +50,7 @@ export const fetchUserInfo = createAsyncThunk("fetchUserInfo", async () => {
 
     if (statusCode(response).ok) {
         const userInfo = await response.json();
+        navigateToHome();
 
         return { userInfo, isAuthenticated: true };
     }
@@ -59,6 +61,7 @@ export const fetchUserInfo = createAsyncThunk("fetchUserInfo", async () => {
 export const logout = createAsyncThunk("logout", () => {
     clearAccessToken();
     clearRefreshToken();
+    navigateToHome();
 });
 
 export const revocation = createAsyncThunk("revocation", async () => {

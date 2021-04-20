@@ -3,6 +3,7 @@ const colors = {
     default: "default",
     primary: "primary",
     success: "success",
+    textSecondary: "textSecondary",
     transparentBlack: "transparentBlack"
 };
 
