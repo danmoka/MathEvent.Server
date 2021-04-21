@@ -1,5 +1,3 @@
-@import "../../styles/_variables";
-
 .app {
   display: flex;
   flex: 1 1 auto;
@@ -11,7 +9,6 @@
     align-items: center;
     flex-wrap: nowrap;
     padding: 0 24px;
-    border-top: $panel-border;
   }
 
   &__page-header-title {
@@ -43,11 +40,6 @@
   display: flex;
   justify-content: space-between;
   flex-wrap: nowrap;
-  background-color: $default-light;
-  width: 100%;
-  height: 45px;
-  font-size: 12px;
-  box-sizing: border-box;
   position: relative;
   z-index: 999;
 
@@ -59,7 +51,6 @@
     display: block;
     align-self: center;
     margin: 0 12px;
-    font-size: 18px;
   }
 
   &__menu {
@@ -70,7 +61,6 @@
     margin: 5px 2px;
     width: 100%;
     height: 1px;
-    background: rgba(18, 24, 33, 0.12);
   }
 
   &__button {
@@ -83,8 +73,6 @@
 .app-sidebar {
   height: 100%;
   display: flex;
-  border-top: $panel-border;
-  border-right: $panel-border;
 
   &__items {
     margin-top: 5px;
@@ -98,6 +86,5 @@
     margin: 5px;
     width: 80%;
     height: 1px;
-    background: rgba(18, 24, 33, 0.12);
   }
 }

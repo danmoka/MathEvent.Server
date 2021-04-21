@@ -22,7 +22,7 @@ const App = () => {
         <div className="app">
             <AppSidebar/>
             <div className="app__main">
-                <header className="app__page-header bg-light">
+                <header className="app__page-header">
                     <div className="app__page-header-title">{header}</div>
                 </header>
                 <AppContent/>

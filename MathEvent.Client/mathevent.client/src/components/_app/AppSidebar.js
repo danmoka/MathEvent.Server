@@ -9,7 +9,7 @@ const AppSidebar = () => {
     const isSelected = (route) => currentRoute.includes(route);
 
     return (
-        <div className="app-sidebar bg-light">
+        <div className="app-sidebar">
             <div className="app-sidebar__items">
                 <IconButton
                     type={iconTypes.events}

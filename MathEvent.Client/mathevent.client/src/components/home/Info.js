@@ -1,11 +1,19 @@
 import React from "react";
+import Typography from '@material-ui/core/Typography';
+import colors from "../../constants/colors";
 
 const Info = ({ title, text }) => {
     return (
         <div className="info">
-            <div className="section-title text-center">{title}</div>
+            <Typography align="center">
+                {title}
+            </Typography>
             <hr/>
-            <div className="main-text">{text}</div>
+            <Typography
+                color="textSecondary"
+                align="center">
+                    {text}
+            </Typography>
         </div>
     );
 };

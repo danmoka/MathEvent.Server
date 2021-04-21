@@ -1,10 +1,11 @@
 const colors = {
-    danger: "danger",
-    default: "default",
+    error: "error",
+    warning: "warning",
+    info: "info",
+    secondary: "secondary",
+    text: "text",
     primary: "primary",
     success: "success",
-    textSecondary: "textSecondary",
-    transparentBlack: "transparentBlack"
 };
 
 export default colors;

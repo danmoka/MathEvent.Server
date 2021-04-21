@@ -1,5 +1,3 @@
-@import "../../../styles/variables";
-
 .list {
   pointer-events: auto !important;
 }
@@ -7,12 +5,10 @@
 .list-item {
   width: 100%;
   padding-left: 26px !important;
-  border-bottom: $panel-border !important;
   list-style-type: none;
 
   &--selected {
     padding-left: 20px !important;
-    border-left: 6px solid $primary-main !important;
   }
 
   &--draggable {

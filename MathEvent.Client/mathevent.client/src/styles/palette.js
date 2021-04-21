@@ -1,15 +1,31 @@
 const palette = {
-    danger: {
+    mode: "dark",
+    background: {
+        default: "#ede7f6",
+    },
+    error: {
         light: "#e33371",
         main: "#dc004e",
         dark: "#9a0036",
         contrastText: "#fff"
     },
-    default: {
-        light: "#F5F5F5",
-        main: "#EEEEEE",
-        dark: "#E0E0E0",
-        contrastText: "#000"
+    warning: {
+        light: "#ffab40",
+        main: "#ff9100",
+        dark: "#ff6d00",
+        contrastText: "#fff"
+    },
+    info: {
+        light: "#536dfe",
+        main: "#3d5afe",
+        dark: "#304ffe",
+        contrastText: "#fff"
+    },
+    secondary: {
+        light: "#536dfe",
+        main: "#3d5afe",
+        dark: "#304ffe",
+        contrastText: "#fff"
     },
     primary: {
         light: "#9891ff",
@@ -23,12 +39,12 @@ const palette = {
         dark: "#388e3c",
         contrastText: "#fff"
     },
-    transparentBlack: {
-        light: "transparent",
-        main: "transparent",
-        dark: "transparent",
+    default: {
+        light: "#F5F5F5",
+        main: "#EEEEEE",
+        dark: "#E0E0E0",
         contrastText: "#000"
-    }
+    },
 };
 
 export default palette;
