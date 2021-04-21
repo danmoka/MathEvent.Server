@@ -1,5 +1,5 @@
 const palette = {
-    mode: "dark",
+    type: "dark",
     background: {
         default: "#ede7f6",
     },
