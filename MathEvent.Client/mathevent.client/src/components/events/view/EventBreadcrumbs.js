@@ -37,11 +37,7 @@ const EventBreadcrumbs = () => {
     return (
         isFetchingEventBreadcrumbs
             ? (<Loader className="event-grid__loader" size="medium"/>)
-            : (
-                <div className="event-breadcrumbs">
-                    <CommonBreadcrumbs items={preparedCrumbs} backButtonOnClick={handleBackButtonClick}/>
-                </div>
-            )
+            : (<CommonBreadcrumbs items={preparedCrumbs} backButtonOnClick={handleBackButtonClick}/>)
     );
 };
 

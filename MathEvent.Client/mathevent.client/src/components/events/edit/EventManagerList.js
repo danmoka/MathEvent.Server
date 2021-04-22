@@ -1,5 +1,7 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { iconTypes } from "../../_common/Icon";
 import List from "../../_common/List";
 
@@ -43,14 +45,14 @@ const EventManagerList = () => {
     )
 
     return (
-        <div className="event-manager-list">
+        <Paper className="event-manager-list">
             <div className="event-manager-list__header">
-                <p>Менеджеры</p>
+            <Typography variant="h5" gutterBottom>Менеджеры</Typography>
             </div>
             <div className="event-manager-list__items">
                 <List items={preparedManagers}/>
             </div>
-        </div>
+        </Paper>
     );
 };
 

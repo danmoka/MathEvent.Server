@@ -1,5 +1,7 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
 import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, setGridView } from "../../../store/actions/event";
@@ -70,17 +72,17 @@ const EventList = () => {
 
     return (
         <div className="event-list">
-            <div className="event-list__header">
-                <p>Список событий</p>
+            <Paper className="event-list__header">
+                <Typography variant="h5" gutterBottom>Список событий</Typography>
                 <Switch label="Карточки" checked={isGridView} onChange={handleViewChange}/>
-            </div>
+            </Paper>
             <EventBreadcrumbs/>
             {isFetchingEvents
                 ? (<Loader className="event-list__loader" size="medium"/>)
                 : (
-                    <div className="event-list__items">
-                        <List items={preparedEvents}/>
-                    </div>
+                    <Paper className="event-list__items">
+                        <List className="event-list__ul" items={preparedEvents}/>
+                    </Paper>
                 )}
         </div>
     );

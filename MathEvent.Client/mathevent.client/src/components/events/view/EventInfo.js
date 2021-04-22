@@ -1,17 +1,22 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { Date } from "../../_common/Date";
 import EventFiles from "./EventFiles";
 import Image from "../../_common/Image";
 import Loader from "../../_common/Loader";
+import images from "../../../constants/images";
 
 const EventInfo = () => {
     const { eventInfo, isFetchingEvent } = useSelector(state => state.event);
+    const { isDarkTheme } = useSelector(state => state.app);
 
     if (!eventInfo) {
         return null;
     }
+
+    const image = isDarkTheme ? images.eventDefaultDark : images.eventDefault;
 
     return (
         isFetchingEvent
@@ -22,16 +27,16 @@ const EventInfo = () => {
                         <section className="event-info__info--image">
                             <Image
                                 className="event-info__image"
-                                src="https://vancouverhumanesociety.bc.ca/wp-content/uploads/2019/01/Upcoming-eventsiStock-978975308-e1564610924151-1024x627.jpg"
+                                src={image}
                                 alt={eventInfo.name}/>
                         </section>
                         <section className="event-info__info--desctirption">
-                            <h4>{eventInfo.name}</h4>
+                            <Typography variant="h4" gutterBottom>{eventInfo.name}</Typography>
                             <Date
                                 primaryText="Дата начала:"
                                 date={eventInfo.startDate}/>
-                            <h5>{`Описание: ${eventInfo.description}`}</h5>
-                            <h6>{`Организация: ${eventInfo.organization ? eventInfo.organization.name : "отсутствует"}`}</h6>
+                            <Typography variant="body1" gutterBottom>{eventInfo.description}</Typography>
+                            <Typography variant="body1" gutterBottom>{`Организация: ${eventInfo.organization ? eventInfo.organization.name : "отсутствует"}`}</Typography>
                         </section>
                     </section>
                     <section className="event-info__files">

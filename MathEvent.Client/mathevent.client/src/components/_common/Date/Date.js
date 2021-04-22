@@ -1,9 +1,10 @@
 import React from "react";
 import Moment from "react-moment";
+import Typography from "@material-ui/core/Typography";
 
 const Date = ({primaryText, date}) => {
     return (
-        <h5>
+        <Typography variant="h6" gutterBottom>
             {primaryText}
             <Moment
             className="date__time"
@@ -11,7 +12,7 @@ const Date = ({primaryText, date}) => {
             date={date}
             withTitle
             locale="ru"/>
-        </h5>
+        </Typography>
     );
 };
 

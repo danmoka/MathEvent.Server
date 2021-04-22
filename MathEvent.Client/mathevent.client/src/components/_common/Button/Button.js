@@ -8,10 +8,11 @@ import "./Button.scss";
 const Button = ({ className, type, color, startIcon, endIcon, onClick, children }) => {
     const buttonType = type ?? buttonTypes.contained;
     const buttonColor = color ?? colors.primary;
+    const classes = className ? className : "button";
 
     return (
         <MuiButton
-            className={`${className} button`}
+            className={classes}
             variant={buttonType}
             color={buttonColor}
             onClick={onClick}

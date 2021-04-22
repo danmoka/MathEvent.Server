@@ -5,11 +5,13 @@ import Typography from '@material-ui/core/Typography';
 const Breadcrumb = ({ primaryText, index, isLast, onClick }) => {
   return (
     isLast
-      ? (<Typography>{primaryText}</Typography>)
+      ? (<Typography variant="body1">{primaryText}</Typography>)
       : (
+        <Typography variant="body1">
           <Link onClick={onClick}>
-              {primaryText}
+            {primaryText}
           </Link>
+        </Typography>
         )
   );
 };

@@ -1,5 +1,6 @@
 import React from "react";
 import { Grid } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
 import File from "./File";
 
 const Files = ({ items }) => (
@@ -8,7 +9,7 @@ const Files = ({ items }) => (
         container 
         spacing={2}
         direction="row"
-        justifyContent="flex-start"
+        justify="flex-start"
         alignItems="center">
         {items.map((item) => (
             <Grid key={item.id} item>
@@ -23,7 +24,7 @@ const Files = ({ items }) => (
             </Grid>
         ))}
     </Grid>)
-    : (<p>Файлы отсутствуют</p>)
+    : (<Typography variant="subtitle1" gutterBottom>Файлы отсутствуют</Typography>)
 );
 
 export default Files;

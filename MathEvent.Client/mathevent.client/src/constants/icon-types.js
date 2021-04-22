@@ -6,7 +6,11 @@ const iconTypes = {
     events: "events",
     home: "home",
     logout: "logout",
+    left: "left",
+    menu: "menu",
     more: "more",
+    setDark: "setDark",
+    setLight: "setLight",
     settings: "settings",
     stats: "stats",
 };

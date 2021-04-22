@@ -11,8 +11,7 @@ import { Icon, IconButton, iconTypes } from "../Icon";
 import "./Grid.scss";
 import "../List/List.scss";
 
-const GridCard = ({ primaryText, secondaryText, additionalInfo, isSelected, index, actions, onClick }) => {
-  const classes = isSelected ? "grid-card grid-card--selected" : "grid-card";
+const GridCard = ({ primaryText, secondaryText, additionalInfo, image, isSelected, index, actions, onClick }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (e) => {
@@ -32,7 +31,8 @@ const GridCard = ({ primaryText, secondaryText, additionalInfo, isSelected, inde
 
   return (
     <Card
-      className={classes}
+      className="grid-card"
+      variant={isSelected ? "outlined" : null}
       onClick={onClick}>
       <CardHeader
         title={primaryText}
@@ -67,11 +67,11 @@ const GridCard = ({ primaryText, secondaryText, additionalInfo, isSelected, inde
       />
       <CardMedia
         className="grid-card__media"
-        image="https://vancouverhumanesociety.bc.ca/wp-content/uploads/2019/01/Upcoming-eventsiStock-978975308-e1564610924151-1024x627.jpg"
+        image={image}
         title={primaryText}
       />
       <CardContent>
-        <Typography variant="body2" component="p">
+        <Typography variant="body1" gutterBottom>
           {additionalInfo}
         </Typography>
       </CardContent>

@@ -1,6 +1,5 @@
 import React from "react";
 import Typography from '@material-ui/core/Typography';
-import colors from "../../constants/colors";
 
 const Info = ({ title, text }) => {
     return (

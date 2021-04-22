@@ -7,8 +7,8 @@ const HomeInfo = () => (
         container
         spacing={2}
         direction="row"
-        justifyContent="flex-start"
-        alignItems="start">
+        justify="flex-start"
+        alignItems="flex-start">
         <Grid item xs>
             <Info title="События" text="Создавайте свои события и находите интересующие!"/>
         </Grid>

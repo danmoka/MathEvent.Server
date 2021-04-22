@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { setHeader } from "../actions/app";
+import { setHeader, setIsDarkTheme } from "../actions/app";
 
 const initialState = {
-    header: "MathEvent"
+    header: "MathEvent",
+    isDarkTheme: true
 };
 
 const appSlice = createSlice({
@@ -11,6 +12,9 @@ const appSlice = createSlice({
     extraReducers: {
         [setHeader]: (state, { payload: { header } }) => {
             state.header = header;
+        },
+        [setIsDarkTheme]: (state, { payload: { isDarkTheme } }) => {
+            state.isDarkTheme = isDarkTheme;
         }
     }
 });

@@ -4,11 +4,10 @@
 
 .list-item {
   width: 100%;
-  padding-left: 26px !important;
   list-style-type: none;
 
   &--selected {
-    padding-left: 20px !important;
+    padding-left: 50px !important;
   }
 
   &--draggable {

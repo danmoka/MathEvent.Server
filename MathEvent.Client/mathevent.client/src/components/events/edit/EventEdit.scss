@@ -12,7 +12,9 @@
   flex-direction: column;
   width: 40%;
   max-height: 100%;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 120px);
+  margin-right: 24px;
+  padding: 5px;
 
   &__items {
     display: flex;
@@ -63,8 +65,7 @@
   align-items: flex-start;
   max-height: 100%;
   width: 60%;
-  margin: 18px;
-  padding: 24px;
+  padding: 18px;
   gap: 10px;
 
   &__section {

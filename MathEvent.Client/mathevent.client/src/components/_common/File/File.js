@@ -38,11 +38,12 @@ const File = ({ name, ext, hierarchy, actions, onClick}) => {
               alt={name}
           />
           <div className="file__content">
-            <Typography className="file__name" variant="body2" component="p">
+            <Typography className="file__name" variant="subtitle1" gutterBottom>
                 {name}
             </Typography>
             <>
               <IconButton
+                size="small"
                 type={iconTypes.more}
                 onClick={handleMenuOpen}
               />

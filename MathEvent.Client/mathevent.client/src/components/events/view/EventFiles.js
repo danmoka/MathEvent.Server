@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Typography from "@material-ui/core/Typography";
 import { fetchFile, fetchFiles, fetchFileBreadcrumbs } from "../../../store/actions/file";
 import { iconTypes } from "../../_common/Icon";
 import EventFileBreadcrumbs from "./EventFileBreadcrumbs";
@@ -77,16 +78,12 @@ const EventFiles = () => {
     return (
         <div className="event-files">
             <div className="event-files__header">
-                <p>Материалы</p>
+                <Typography variant="h5" gutterBottom>Материалы</Typography>
             </div>
             <EventFileBreadcrumbs/>
             {isFetchingFiles
                 ? (<Loader size="medium"/>)
-                : (
-                    <div className="event-files__grid">
-                        <Files items={preparedFiles}/>
-                    </div>
-                )}
+                : (<Files items={preparedFiles}/>)}
         </div>
     );
 };

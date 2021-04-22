@@ -1,18 +1,8 @@
 .grid-card {
-  width: 100%;
-  min-width: 180px;
-  margin-bottom: 10px !important;
-
-  &__action_area {
-    border: none !important;
-    outline: none !important;
-  }
+  width: 300px;
+  height: 300px;
 
   &__media {
-    height: 140px;
-  }
-
-  &--selected {
-    margin-bottom: 10px !important;
+    height: 150px;
   }
 }

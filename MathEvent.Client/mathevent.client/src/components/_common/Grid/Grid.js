@@ -8,7 +8,7 @@ const CommonGrid = ({ className, items }) => (
         container 
         spacing={2}
         direction="row"
-        justifyContent="flex-start"
+        justify="flex-start"
         alignItems="center">
         {items.map((item) => (
             <Grid key={item.id} item>
@@ -17,6 +17,7 @@ const CommonGrid = ({ className, items }) => (
                     primaryText={item.primaryText}
                     secondaryText={item.secondaryText}
                     additionalInfo={item.additionalInfo}
+                    image={item.image}
                     isSelected={item.isSelected}
                     index={item.index}
                     onClick={item.onClick}

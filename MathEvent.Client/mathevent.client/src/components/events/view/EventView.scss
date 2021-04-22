@@ -8,16 +8,25 @@
   display: flex;
   flex-direction: column;
   width: 40%;
+  min-width: 200px;
   max-height: 100%;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 120px);
+  margin-right: 24px;
 
   &__items {
     display: flex;
     flex-direction: column;
     width: 100%;
     max-height: 100%;
+    height: calc(100vh - 120px);
     overflow-y: auto;
     margin-bottom: 0;
+    padding: 5px;
+  }
+
+  &__ul {
+    padding: 0px;
+    margin: 0px;
   }
 
   &__filter {
@@ -34,8 +43,6 @@
     width: 100%;
     height: 70px;
     padding: 20px;
-    font-size: 20px;
-    font-weight: 600;
   }
 
   &__loader {
@@ -49,10 +56,11 @@
   width: 40%;
   min-width: 200px;
   max-height: 100%;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 120px);
+  margin-right: 24px;
 
   &__items {
-    padding: 5px;
+    padding: 0px;
   }
 
   &__header {
@@ -62,8 +70,6 @@
     width: 100%;
     height: 70px;
     padding: 20px;
-    font-size: 20px;
-    font-weight: 600;
   }
 
   &__loader {
@@ -75,10 +81,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-
-  &__grid {
-    padding: 5px;
-  }
+  padding: 0px;
 
   &__header {
     display: flex;
@@ -87,8 +90,6 @@
     width: 100%;
     height: 40px;
     padding: 20px;
-    font-size: 20px;
-    font-weight: 600;
   }
 
   &__breadcrumbs {
@@ -97,8 +98,6 @@
     justify-content: space-between;
     width: 100%;
     height: 48px;
-    font-size: 20px;
-    font-weight: 600;
   }
 }
 
@@ -107,17 +106,17 @@
   flex-direction: row;
   align-items: flex-start;
   overflow-y: auto;
-  height: calc(100vh - 160px);
+  max-height: 100%;
   width: 60%;
-  margin: 30px;
-  padding: 24px;
-  gap: 20px;
+  padding: 18px;
+  gap: 10px;
 
   &__info {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-start;
+    padding: 0px;
     gap: 20px;
     width: 50%;
 
@@ -136,7 +135,6 @@
 
   &__image {
     width: 100%;
-    border-radius: 4px;
     box-shadow: 0 2px 1px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 1px 3px 0px rgb(0 0 0 / 12%);
   }
 }
@@ -177,12 +175,10 @@
   }
 }
 
-.event-breadcrumbs {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-  height: 48px;
-  font-size: 20px;
-  font-weight: 600;
-}
+// .event-breadcrumbs {
+//   display: flex;
+//   flex-direction: row;
+//   justify-content: space-between;
+//   width: 100%;
+//   height: 48px;
+// }

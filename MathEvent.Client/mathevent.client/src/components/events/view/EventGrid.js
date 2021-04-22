@@ -1,5 +1,7 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, setGridView } from "../../../store/actions/event";
 import { iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
@@ -7,13 +9,15 @@ import EventBreadcrumbs from "./EventBreadcrumbs";
 import CommonGrid from "../../_common/Grid";
 import Loader from "../../_common/Loader";
 import Switch from "../../_common/Switch";
+import images from "../../../constants/images";
 
-const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClick) =>
+const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClick, isDarkTheme) =>
     events.map((event, index) => ({
         id: event.id,
         primaryText: event.name,
         secondaryText: event.startDate,
         additionalInfo: event.description,
+        image: isDarkTheme ? images.eventDefaultDark : images.eventDefault, 
         isSelected: selectedEvent && event.id === selectedEvent.id,
         index: index + 1,
         onClick: () => onClick(event),
@@ -36,6 +40,7 @@ const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClic
 const EventGrid = () => {
     const dispatch = useDispatch();
     const { events, selectedEvent, isFetchingEvents, isGridView } = useSelector(state => state.event);
+    const { isDarkTheme } = useSelector(state => state.app);
 
     const handleEventClick = useCallback((event) => {
         dispatch(selectEvent(event));
@@ -61,7 +66,8 @@ const EventGrid = () => {
         selectedEvent,
         handleEventEdit,
         handleEventDelete,
-        handleEventClick
+        handleEventClick,
+        isDarkTheme
     );
 
     const handleViewChange = useCallback((isGridView) => {
@@ -70,10 +76,10 @@ const EventGrid = () => {
 
     return (
         <div className="event-grid">
-            <div className="event-grid__header">
-                <p>Карточки событий</p>
+            <Paper className="event-grid__header">
+                <Typography variant="h5" gutterBottom>Карточки событий</Typography>
                 <Switch label="Карточки" checked={isGridView} onChange={handleViewChange}/>
-            </div>
+            </Paper>
             <EventBreadcrumbs/>
             {isFetchingEvents
                 ? (<Loader className="event-grid__loader" size="medium"/>)

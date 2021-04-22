@@ -5,6 +5,7 @@ import Breadcrumb from "./Breadcrumb";
 
 const CommonBreadcrumbs = ({ className, items, backButtonOnClick }) => (
     <Breadcrumbs
+            aria-label="breadcrumb"
             className={className}>
             <IconButton
                 type={iconTypes.back}

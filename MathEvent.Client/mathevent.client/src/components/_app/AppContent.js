@@ -6,14 +6,12 @@ import Login from "../account";
 import routes from "../../utils/routes";
 
 const AppContent = () => (
-    <div className="app__content">
-        <Switch>
-            <Route path="/" exact component={Home}/>
-            <Route path={routes.home} component={Home}/>
-            <Route path={routes.events} component={Events}/>
-            <Route path={routes.login} component={Login}/>
-        </Switch>
-    </div>
+    <Switch>
+        <Route path="/" exact component={Home}/>
+        <Route path={routes.home} component={Home}/>
+        <Route path={routes.events} component={Events}/>
+        <Route path={routes.login} component={Login}/>
+    </Switch>
 );
 
 export default AppContent;
