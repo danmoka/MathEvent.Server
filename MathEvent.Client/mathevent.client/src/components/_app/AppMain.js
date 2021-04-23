@@ -16,7 +16,7 @@ import Typography from '@material-ui/core/Typography';
 import Popover from "@material-ui/core/Popover";
 
 import { useCurrentUser } from "../../hooks";
-import { logout, revocation } from "../../store/actions/account";
+import { showLogoutModal } from "../../store/actions/account";
 import { navigateToEvents, navigateToHome, navigateToLogin } from "../../utils/navigator";
 import { setIsDarkTheme } from "../../store/actions/app";
 import { Icon, IconButton, iconTypes } from "../_common/Icon";
@@ -126,9 +126,8 @@ const AppMain = () => {
 
   const handleLoginClick = () => navigateToLogin();
   const handleLogoutClick = () => {
-    dispatch(logout());
-    dispatch(revocation());
-    handleMenuClose();
+    setAnchorEl(null);
+    dispatch(showLogoutModal());
   };
 
   const handleDrawerOpen = () => {
@@ -274,6 +273,33 @@ const AppMain = () => {
               </ListItemIcon>
               <ListItemText primary="События" />
             </ListItem>
+            {isAuthenticated
+            ? (
+              <ListItem
+                button
+                key="Выйти"
+                onClick={handleLogoutClick}>
+                <ListItemIcon>
+                  <Icon
+                    type={iconTypes.exit}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Выйти" />
+              </ListItem>
+            )
+            : (
+              <ListItem
+                button
+                key="Войти"
+                onClick={handleLoginClick}>
+                <ListItemIcon>
+                  <Icon
+                    type={iconTypes.login}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Войти" />
+              </ListItem>
+            )}
           </List>
           <Divider />
           {isDarkTheme

@@ -1,9 +1,12 @@
 const iconTypes = {
     back: "back",
+    close: "close",
     delete: "delete",
     download: "download",
     edit: "edit",
     events: "events",
+    exit: "exit",
+    login: "login",
     home: "home",
     logout: "logout",
     left: "left",

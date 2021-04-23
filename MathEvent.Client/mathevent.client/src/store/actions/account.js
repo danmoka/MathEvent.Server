@@ -1,9 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { clearAccessToken, clearRefreshToken, getRefreshToken, setAccessToken, setRefreshToken } from "../../utils/local-storage-manager";
+import { hideModal, showModal } from "./modal";
 import { navigateToHome } from "../../utils/navigator";
 import accountService from "../../api/services/account-service";
 import statusCode from "../../utils/status-code-reader";
 import config from "../../config";
+import modalTypes from "../../constants/modal-types";
 
 export const fetchTokens = createAsyncThunk("fetchTokens", async ({ userName, password }) => {
     let data = {
@@ -58,10 +60,16 @@ export const fetchUserInfo = createAsyncThunk("fetchUserInfo", async () => {
     return { userInfo: {}, isAuthenticated: false };
 });
 
-export const logout = createAsyncThunk("logout", () => {
+export const logout = createAsyncThunk("logout", (params, thunkAPI) => {
+    thunkAPI.dispatch(hideModal());
+
     clearAccessToken();
     clearRefreshToken();
     navigateToHome();
+});
+
+export const showLogoutModal = createAsyncThunk("showLogoutModal", (params, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.logout));
 });
 
 export const revocation = createAsyncThunk("revocation", async () => {

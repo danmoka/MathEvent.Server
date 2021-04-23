@@ -3,10 +3,13 @@ import iconTypes from "../../../constants/icon-types";
 
 const icons = {
     [iconTypes.back]: materialIcons.ArrowBack,
+    [iconTypes.close]: materialIcons.Close,
     [iconTypes.delete]: materialIcons.Delete,
     [iconTypes.download]: materialIcons.SaveAlt,
     [iconTypes.edit]: materialIcons.Edit,
     [iconTypes.events]: materialIcons.Event,
+    [iconTypes.exit]: materialIcons.MeetingRoomOutlined,
+    [iconTypes.login]: materialIcons.MeetingRoom,
     [iconTypes.home]: materialIcons.Home,
     [iconTypes.left]: materialIcons.KeyboardArrowLeft,
     [iconTypes.logout]: materialIcons.ExitToApp,
