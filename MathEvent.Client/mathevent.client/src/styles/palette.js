@@ -70,9 +70,9 @@ const paletteDark = {
         contrastText: "#fff"
     },
     primary: {
-        light: "#81c784",
-        main: "#66bb6a",
-        dark: "#4caf50",
+        light: "#f3e5f5",
+        main: "#e1bee7",
+        dark: "#ce93d8",
         contrastText: "#424242"
     },
     success: {

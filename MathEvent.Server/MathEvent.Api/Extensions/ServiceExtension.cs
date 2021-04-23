@@ -67,7 +67,7 @@ namespace MathEvent.Api.Extensions
                 {
                     policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", new string[] { "matheventapi", "openid", "offline_access" });
+                    policy.RequireClaim("scope", new string[] { "matheventapi" });
                 });
             });
         }
