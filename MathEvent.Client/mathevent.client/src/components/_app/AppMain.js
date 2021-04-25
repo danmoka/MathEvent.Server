@@ -17,6 +17,7 @@ import Popover from "@material-ui/core/Popover";
 
 import { useCurrentUser } from "../../hooks";
 import { showLogoutModal } from "../../store/actions/account";
+import { setGridView } from "../../store/actions/event";
 import { navigateToEvents, navigateToHome, navigateToLogin } from "../../utils/navigator";
 import { setIsDarkTheme } from "../../store/actions/app";
 import { Icon, IconButton, iconTypes } from "../_common/Icon";
@@ -107,6 +108,7 @@ const useStyles = makeStyles((theme) => ({
 const AppMain = () => {
   const dispatch = useDispatch();
   const { isDarkTheme } = useSelector(state => state.app);
+  const { isGridView } = useSelector(state => state.event);
   const currentRoute = useSelector(state => state.router.location.pathname);
   const { userInfo, isAuthenticated, isFetching } = useCurrentUser();
 
@@ -122,6 +124,14 @@ const AppMain = () => {
 
   const handleDarkTheme = () => {
     dispatch(setIsDarkTheme(true));
+  };
+
+  const handleListView = () => {
+    dispatch(setGridView(false));
+  };
+
+  const handleGridView = () => {
+    dispatch(setGridView(true));
   };
 
   const handleLoginClick = () => navigateToLogin();
@@ -327,6 +337,33 @@ const AppMain = () => {
                   />
                 </ListItemIcon>
                 <ListItemText primary="Темная" />
+              </ListItem>
+            )}
+          {isGridView
+            ? (
+              <ListItem
+                button
+                key="Список"
+                onClick={handleListView}>
+                <ListItemIcon>
+                  <Icon
+                    type={iconTypes.list}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Вид: список" />
+              </ListItem>
+            )
+            : (
+              <ListItem
+                button
+                key="Карточки"
+                onClick={handleGridView}>
+                <ListItemIcon>
+                  <Icon
+                    type={iconTypes.dashboard}
+                  />
+                </ListItemIcon>
+                <ListItemText primary="Вид: карточки" />
               </ListItem>
             )}
         </Drawer>

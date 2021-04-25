@@ -17,6 +17,11 @@ const eventService = {
 
         return await baseService.get(url);
     },
+    createEvent: async (createdEvent) => {
+        const url = api.events.createEvent();
+
+        return await baseService.post(url, createdEvent);
+    },
     updateEvent: async (eventId, updatedEvent) => {
         const url = api.events.updateEvent(eventId);
 

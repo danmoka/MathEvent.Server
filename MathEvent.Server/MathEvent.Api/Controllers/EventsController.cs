@@ -77,10 +77,10 @@ namespace MathEvent.Api.Controllers
 
                 if (createdEvent is null)
                 {
-                    return Ok();
+                    return StatusCode(201);
                 }
 
-                return StatusCode(201, createdEvent.Id);
+                return StatusCode(201, createdEvent);
             }
             else
             {

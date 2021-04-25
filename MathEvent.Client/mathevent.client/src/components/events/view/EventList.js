@@ -2,13 +2,12 @@ import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { iconTypes } from "../../_common/Icon";
+import { IconButton, iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
-import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, setGridView } from "../../../store/actions/event";
+import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, showCreateEventModal } from "../../../store/actions/event";
 import EventBreadcrumbs from "./EventBreadcrumbs";
 import List from "../../_common/List";
 import Loader from "../../_common/Loader";
-import Switch from "../../_common/Switch";
 
 const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClick) =>
     events.map((event, index) => ({
@@ -58,6 +57,8 @@ const EventList = () => {
 
     });
 
+    const handleEventCreate = () => dispatch(showCreateEventModal());
+
     const preparedEvents = prepareEvents(
         events,
         selectedEvent,
@@ -66,15 +67,14 @@ const EventList = () => {
         handleEventClick
     );
 
-    const handleViewChange = useCallback((isGridView) => {
-        dispatch(setGridView(isGridView));
-    }, [dispatch, isGridView]);
-
     return (
         <div className="event-list">
             <Paper className="event-list__header">
-                <Typography variant="h5" gutterBottom>Список событий</Typography>
-                <Switch label="Карточки" checked={isGridView} onChange={handleViewChange}/>
+                <Typography variant="h6" gutterBottom>События</Typography>
+                <IconButton
+                    type={iconTypes.add}
+                    onClick={handleEventCreate}
+                />
             </Paper>
             <EventBreadcrumbs/>
             {isFetchingEvents

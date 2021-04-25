@@ -12,7 +12,7 @@ import { hideModal } from "../../../store/actions/modal";
 import modalSizes from "../../../constants/modal-sizes";
 import "./Modal.scss";
 
-const InfoModal = ({ infoText, okButtonText="Готово", size=modalSizes.small, title, onSubmit }) => {
+const CreateModal = ({ children, createButtonText = "Создать", size = modalSizes.small, title, onCreate }) => {
     const dispatch = useDispatch();
     const handleClose = () => dispatch(hideModal());
 
@@ -22,15 +22,13 @@ const InfoModal = ({ infoText, okButtonText="Готово", size=modalSizes.smal
                 <Typography variant="h6" gutterBottom>{title}</Typography>
                 <IconButton type={iconTypes.close} onClick={handleClose}/>
             </DialogTitle>
-            <DialogContent className="modal-common__content">
-                <Typography variant="body1" gutterBottom>{infoText}</Typography>
-            </DialogContent>
+            <DialogContent className="modal-common__content"  dividers>{children}</DialogContent>
             <DialogActions>
                 <Button type={buttonTypes.text} onClick={handleClose}>Отмена</Button>
-                <Button onClick={onSubmit}>{okButtonText}</Button>
+                <Button onClick={onCreate}>{createButtonText}</Button>
             </DialogActions>
         </Dialog>
     );
 };
 
-export default InfoModal;
+export default CreateModal;

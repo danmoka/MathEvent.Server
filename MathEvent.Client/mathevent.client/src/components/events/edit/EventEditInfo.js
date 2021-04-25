@@ -4,14 +4,15 @@ import Paper from "@material-ui/core/Paper";
 import { fetchOrganizations } from "../../../store/actions/organization";
 import { patchEvent } from "../../../store/actions/event";
 import { DateField } from "../../_common/Date";
+import Checkbox from "../../_common/Checkbox";
 import Dropdown from "../../_common/Dropdown";
 import TextField from "../../_common/TextField";
 
 const prepareOrganizations = (organizations) =>
-        [{ value: "", name: "Без организации" }, ...organizations.map((organization) => ({
-        value: organization.id,
-        name: organization.name
-    }))];
+    [{ value: "", name: "Без организации" }, ...organizations.map((organization) => ({
+    value: organization.id,
+    name: organization.name
+}))];
 
 const EventEditInfo = () => {
     const dispatch = useDispatch();
@@ -21,9 +22,10 @@ const EventEditInfo = () => {
 
     const [eventId, setEventId] = useState(null);
     const [name, setName] = useState("");
-    const [startDate, setStartDate] = useState(Date.now());
+    const [startDate, setStartDate] = useState(event ? event.startDate : new Date(Date.now()));
     const [description, setDesctiption] = useState("");
     const [organization, setOrganization] = useState(preparedOrganizations[0].value);
+    const [hierarchy, setHierarchy] = useState(event ? event.hierarchy : false);
 
     useEffect(() => {
         dispatch(fetchOrganizations())
@@ -97,9 +99,25 @@ const EventEditInfo = () => {
         ]);
     }, [handlePatchEvent, event]);
 
+    const handleHierarchyValueChange = useCallback((newValue) => {
+        setHierarchy(newValue);
+        handlePatchEvent([
+            {
+                value: newValue,
+                path: "/Hierarchy",
+                op: "replace"
+            }
+        ]);
+    }, [handlePatchEvent, event]);
+
     return (
         <Paper className="event-edit-info">
             <section className="event-edit-info__section--description">
+                <Checkbox
+                    className="event-edit-form__checkbox"
+                    label="Является множеством других событий"
+                    value={hierarchy}
+                    onChange={handleHierarchyValueChange}/>
                 <TextField
                     className="event-edit-form__control"
                     label="Название"

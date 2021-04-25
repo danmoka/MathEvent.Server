@@ -1,9 +1,11 @@
 import React from "react";
 import { useSelector } from "react-redux";
+import CreateEventModal from "../../events/view/CreateEventModal";
 import LogoutModal from "../../_app/LogoutModal";
 import modalTypes from "../../../constants/modal-types";
 
 const modals = {
+    [modalTypes.createEvent]: CreateEventModal,
     [modalTypes.logout]: LogoutModal
 };
 

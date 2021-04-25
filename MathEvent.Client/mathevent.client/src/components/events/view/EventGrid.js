@@ -2,13 +2,12 @@ import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, setGridView } from "../../../store/actions/event";
-import { iconTypes } from "../../_common/Icon";
+import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, showCreateEventModal } from "../../../store/actions/event";
+import { IconButton, iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
 import EventBreadcrumbs from "./EventBreadcrumbs";
 import CommonGrid from "../../_common/Grid";
 import Loader from "../../_common/Loader";
-import Switch from "../../_common/Switch";
 import images from "../../../constants/images";
 
 const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClick, isDarkTheme) =>
@@ -39,7 +38,7 @@ const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClic
 
 const EventGrid = () => {
     const dispatch = useDispatch();
-    const { events, selectedEvent, isFetchingEvents, isGridView } = useSelector(state => state.event);
+    const { events, selectedEvent, isFetchingEvents } = useSelector(state => state.event);
     const { isDarkTheme } = useSelector(state => state.app);
 
     const handleEventClick = useCallback((event) => {
@@ -61,6 +60,8 @@ const EventGrid = () => {
 
     });
 
+    const handleEventCreate = () => dispatch(showCreateEventModal());
+
     const preparedEvents = prepareEvents(
         events,
         selectedEvent,
@@ -70,15 +71,14 @@ const EventGrid = () => {
         isDarkTheme
     );
 
-    const handleViewChange = useCallback((isGridView) => {
-        dispatch(setGridView(isGridView));
-    }, [dispatch, isGridView]);
-
     return (
         <div className="event-grid">
             <Paper className="event-grid__header">
-                <Typography variant="h5" gutterBottom>Карточки событий</Typography>
-                <Switch label="Карточки" checked={isGridView} onChange={handleViewChange}/>
+                <Typography variant="h6" gutterBottom>События</Typography>
+                <IconButton
+                    type={iconTypes.add}
+                    onClick={handleEventCreate}
+                />
             </Paper>
             <EventBreadcrumbs/>
             {isFetchingEvents

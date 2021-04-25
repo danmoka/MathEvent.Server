@@ -1,4 +1,5 @@
 const modalTypes = {
+    createEvent: "createEvent",
     logout: "logout"
 };
 

@@ -11,6 +11,7 @@ import {
     onRejectedEventBreadcrumbs } from "./defaults";
 import { fetchEvents,
     fetchEvent,
+    createEvent,
     selectEvent,
     setGridView,
     fetchEventBreadcrumbs,
@@ -62,6 +63,19 @@ const eventSlice = createSlice({
         [fetchEvent.rejected]: (state) => {
             onRejectedEvent(state);
             state.eventInfo = null;
+        },
+        [createEvent.pending]: (state) => {
+            onPendingEvent(state);
+        },
+        [createEvent.fulfilled]: (state, { payload: { createdEvent, hasError } }) => {
+            onFulfilledEvent(state, hasError);
+
+            if (!hasError) {
+                state.eventInfo = createdEvent;
+            }
+        },
+        [createEvent.rejected]: (state) => {
+            onRejectedEvent(state);
         },
 
         [selectEvent]: (state, { payload: { event } }) => {

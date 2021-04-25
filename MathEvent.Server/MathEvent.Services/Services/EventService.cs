@@ -33,7 +33,9 @@ namespace MathEvent.Services.Services
 
         public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
         {
-            var events = await Filter(_repositoryWrapper.Event.FindAll(), filters).ToListAsync();
+            var events = await Filter(_repositoryWrapper.Event.FindAll(), filters)
+                .OrderBy(e => e.StartDate)
+                .ToListAsync();
 
             if (events is not null)
             {
@@ -115,10 +117,14 @@ namespace MathEvent.Services.Services
                 };
             }
 
+            // TODO: где нить еще овнер нужен?
+            EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
+            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+
             return new MessageResult<EventWithUsersReadModel>
             {
                 Succeeded = true,
-                Entity = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb))
+                Entity = eventReadModel
             };
         }
 
@@ -150,10 +156,13 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.Event.Update(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
+            EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+
             return new MessageResult<EventWithUsersReadModel>
             {
                 Succeeded = true,
-                Entity = _mapper.Map<EventWithUsersReadModel>(eventDTO)
+                Entity = eventReadModel
             };
         }
 

@@ -1,6 +1,8 @@
 import { createAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { showModal, hideModal } from "./modal";
 import eventService from "../../api/services/event-service";
 import statusCode from "../../utils/status-code-reader";
+import modalTypes from "../../constants/modal-types";
 
 export const fetchEvents = createAsyncThunk("fetchEvents", async (eventId) => {
     const response = await eventService.fetchEvents(eventId);
@@ -42,6 +44,20 @@ export const fetchEventBreadcrumbs = createAsyncThunk("fetchEventBreadcrumbs", a
     return { crumbs: [] };
 });
 
+export const createEvent = createAsyncThunk("createEvent", async ({ event }, thunkAPI) => {
+    thunkAPI.dispatch(hideModal());
+    const response = await eventService.createEvent(event);
+
+    if (statusCode(response).created) {
+        const createdEvent = await response.json();
+        thunkAPI.dispatch(fetchEvents(createdEvent.parentId));
+
+        return { createdEvent, hasError: false };
+    }
+
+    return { hasError: true };
+});
+
 export const updateEvent = createAsyncThunk("updateEvent", async ({ eventId, event }) => {
     const response = await eventService.updateEvent(eventId, event);
 
@@ -68,3 +84,7 @@ export const patchEvent = createAsyncThunk("patchEvent", async ({ eventId, data 
 
 export const selectEvent = createAction("selectEvent", (event) => ({ payload: { event } }));
 export const setGridView = createAction("setGridView", (isGridView) => ({ payload: { isGridView } }));
+
+export const showCreateEventModal = createAsyncThunk("showCreateEventModal", async (params, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.createEvent));
+});

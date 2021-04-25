@@ -2,8 +2,10 @@ import * as materialIcons from "@material-ui/icons";
 import iconTypes from "../../../constants/icon-types";
 
 const icons = {
+    [iconTypes.add]: materialIcons.Add,
     [iconTypes.back]: materialIcons.ArrowBack,
     [iconTypes.close]: materialIcons.Close,
+    [iconTypes.dashboard]: materialIcons.Dashboard,
     [iconTypes.delete]: materialIcons.Delete,
     [iconTypes.download]: materialIcons.SaveAlt,
     [iconTypes.edit]: materialIcons.Edit,
@@ -12,6 +14,7 @@ const icons = {
     [iconTypes.login]: materialIcons.MeetingRoom,
     [iconTypes.home]: materialIcons.Home,
     [iconTypes.left]: materialIcons.KeyboardArrowLeft,
+    [iconTypes.list]: materialIcons.ViewList,
     [iconTypes.logout]: materialIcons.ExitToApp,
     [iconTypes.menu]: materialIcons.Menu,
     [iconTypes.more]: materialIcons.MoreVert,
