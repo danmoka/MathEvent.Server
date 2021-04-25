@@ -19,7 +19,7 @@ const prepareOrganizations = (organizations) =>
 const CreateEventModal = () => {
     const dispatch = useDispatch();
     const { organizations } = useSelector((state) => state.organization);
-    const { crumbs, events } = useSelector((state) => state.event);
+    const { crumbs } = useSelector((state) => state.event);
     const preparedOrganizations = prepareOrganizations(organizations);
     const parent = crumbs.length > 0 ? crumbs[crumbs.length - 1] : null;
 

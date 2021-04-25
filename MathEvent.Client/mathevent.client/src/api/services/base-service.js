@@ -54,6 +54,18 @@ const baseService = {
         } catch (e) {
             console.log(e);
         }
+    },
+    delete: async (url) => {
+        try {
+            return await fetch(url, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${getAccessToken()}`
+                }
+            });
+        } catch (e) {
+            console.log(e);
+        }
     }
 };
 

@@ -16,7 +16,8 @@ import { fetchEvents,
     setGridView,
     fetchEventBreadcrumbs,
     updateEvent,
-    patchEvent} from "../actions/event";
+    patchEvent,
+    deleteEvent} from "../actions/event";
 
 const initialState = {
     events: [],
@@ -125,6 +126,23 @@ const eventSlice = createSlice({
         [patchEvent.rejected]: (state) => {
             onRejectedEvent(state);
             state.eventInfo = null;
+        },
+
+        [deleteEvent.pending]: (state) => {
+            onPendingEvent(state);
+        },
+        [deleteEvent.fulfilled]: (state, { payload: { eventId, hasError } }) => {
+            onFulfilledEvent(state, hasError);
+        
+            if (!hasError) {
+                state.events = state.events.filter((event) => event.id !== eventId);
+
+                if (state.selectedEvent && state.selectedEvent.id === eventId) state.selectedEvent = state.events[0];
+                if (state.eventInfo && state.eventInfo.id === eventId) state.eventInfo = null;
+            }
+        },
+        [deleteEvent.rejected]: (state) => {
+        onRejectedEvent(state);
         },
     }
 });

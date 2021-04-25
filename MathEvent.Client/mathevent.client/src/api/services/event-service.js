@@ -32,6 +32,11 @@ const eventService = {
 
         return await baseService.patch(url, data);
     },
+    deleteEvent: async (eventId) => {
+        const url = api.events.deleteEvent(eventId);
+
+        return await baseService.delete(url);
+    },
 };
 
 export default eventService;

@@ -82,9 +82,23 @@ export const patchEvent = createAsyncThunk("patchEvent", async ({ eventId, data 
     return { hasError: true };
 });
 
+export const deleteEvent = createAsyncThunk("deleteEvent", async ({ eventId }, thunkAPI) => {
+    thunkAPI.dispatch(hideModal());
+    const response = await eventService.deleteEvent(eventId);
+
+    if (statusCode(response).noContent) {
+        return { eventId, hasError: false };
+    }
+  
+    return { hasError: true };
+});
+
 export const selectEvent = createAction("selectEvent", (event) => ({ payload: { event } }));
 export const setGridView = createAction("setGridView", (isGridView) => ({ payload: { isGridView } }));
 
 export const showCreateEventModal = createAsyncThunk("showCreateEventModal", async (params, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.createEvent));
 });
+export const showDeleteEventModal = createAsyncThunk("showDeleteEventModal", async ({ event }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.deleteEvent, { event }));
+})

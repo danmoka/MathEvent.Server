@@ -4,7 +4,7 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { IconButton, iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
-import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, showCreateEventModal } from "../../../store/actions/event";
+import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, showCreateEventModal, showDeleteEventModal } from "../../../store/actions/event";
 import EventBreadcrumbs from "./EventBreadcrumbs";
 import List from "../../_common/List";
 import Loader from "../../_common/Loader";
@@ -36,7 +36,7 @@ const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClic
 
 const EventList = () => {
     const dispatch = useDispatch();
-    const { events, selectedEvent, isFetchingEvents, isGridView } = useSelector(state => state.event);
+    const { events, selectedEvent, isFetchingEvents } = useSelector(state => state.event);
 
     const handleEventClick = useCallback((event) => {
         dispatch(selectEvent(event));
@@ -53,9 +53,12 @@ const EventList = () => {
         navigateToEventEdit(event.id);
     });
 
-    const handleEventDelete = useCallback((event) => {
-
-    });
+    const handleEventDelete = useCallback(
+        (event) => {
+            dispatch(showDeleteEventModal({ event }));
+        },
+        [dispatch]
+    );
 
     const handleEventCreate = () => dispatch(showCreateEventModal());
 
