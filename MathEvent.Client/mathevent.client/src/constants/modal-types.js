@@ -3,6 +3,7 @@ const modalTypes = {
     deleteEvent: "deleteEvent",
     createFolder: "createFolder",
     deleteFile: "deleteFile",
+    uploadFiles: "uploadFiles",
     logout: "logout"
 };
 

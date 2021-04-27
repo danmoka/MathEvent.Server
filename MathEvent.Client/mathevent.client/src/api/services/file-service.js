@@ -1,5 +1,6 @@
 import api from "../api";
 import { baseService } from "./base-service";
+import { getAccessToken } from "../../utils/local-storage-manager";
 
 const fileService = {
     fetchFiles: async (fileId, ownerId) => {
@@ -27,6 +28,26 @@ const fileService = {
 
         return await baseService.delete(url);
     },
+    uploadFiles: async (fileId, ownerId, files) => {
+        const url = api.files.uploadFiles(fileId, ownerId);
+
+        try {
+            const formData = new FormData();
+            files.map((file) => {
+                formData.append('files', file, file.name);
+            });
+
+            return await fetch(url, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${getAccessToken()}`,
+                },
+            });
+            } catch (e) {
+                console.log(e);
+            }
+    }
 };
 
 export default fileService;

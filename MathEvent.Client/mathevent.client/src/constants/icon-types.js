@@ -19,6 +19,8 @@ const iconTypes = {
     setLight: "setLight",
     settings: "settings",
     stats: "stats",
+    upload: "upload",
+    uploadCloud: "uploadCloud"
 };
 
 export default iconTypes;

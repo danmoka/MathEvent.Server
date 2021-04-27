@@ -22,4 +22,8 @@
     <ProjectReference Include="..\MathEvent.Services\MathEvent.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="media\62df8729-8c6b-4700-a2bb-cd97fc87519a\2021\3\12\" />
+  </ItemGroup>
+
 </Project>

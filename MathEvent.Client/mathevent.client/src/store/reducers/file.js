@@ -14,7 +14,8 @@ import {
     fetchFile,
     fetchFileBreadcrumbs,
     deleteFile,
-    createFile} from "../actions/file";
+    createFile,
+    uploadFiles} from "../actions/file";
 
 const initialState = {
     files: [],
@@ -99,6 +100,20 @@ const fileSlice = createSlice({
             }
         },
         [deleteFile.rejected]: (state) => {
+            onRejectedFile(state);
+        },
+
+        [uploadFiles.pending]: (state) => {
+            onPendingFile(state);
+        },
+        [uploadFiles.fulfilled]: (state, { payload: { hasError } }) => {
+            onFulfilledFile(state, hasError);
+
+            if (!hasError) {
+                state.fileInfo = null;
+            }
+        },
+        [uploadFiles.rejected]: (state) => {
             onRejectedFile(state);
         },
     }

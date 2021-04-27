@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Typography from "@material-ui/core/Typography";
-import { fetchFile, fetchFiles, fetchFileBreadcrumbs, showDeleteFileModal, showCreateFolderModal } from "../../../store/actions/file";
+import { fetchFile, fetchFiles, fetchFileBreadcrumbs, showDeleteFileModal, showCreateFolderModal, showUploadFilesModal } from "../../../store/actions/file";
 import { IconButton, iconTypes } from "../../_common/Icon";
 import EventFileBreadcrumbs from "./EventFileBreadcrumbs";
 import Files from "../../_common/File/Files";
@@ -64,8 +64,12 @@ const EventFiles = () => {
         () => {
             dispatch(showCreateFolderModal({ owner: eventInfo, crumbs: crumbs }));
         },
-        [dispatch]
+        [dispatch, eventInfo, crumbs]
     );
+
+    const handleFilesUpload = useCallback(() => {
+        dispatch(showUploadFilesModal({ owner: eventInfo, crumbs: crumbs }));
+    }, [dispatch, eventInfo, crumbs]);
 
     const preparedFiles = prepareFiles(
         files,
@@ -77,11 +81,19 @@ const EventFiles = () => {
     return (
         <div className="event-files">
             <div className="event-files__header">
-                <Typography variant="h5" gutterBottom>Материалы</Typography>
-                <IconButton
-                    type={iconTypes.add}
-                    onClick={handleFolderCreate}
-                />
+                <section className="event-files__header__section">
+                    <Typography variant="h5" gutterBottom>Материалы</Typography>
+                </section>
+                <section className="event-files__header__section">
+                    <IconButton
+                        type={iconTypes.upload}
+                        onClick={handleFilesUpload}
+                    />
+                    <IconButton
+                        type={iconTypes.add}
+                        onClick={handleFolderCreate}
+                    />
+                </section>
             </div>
             <EventFileBreadcrumbs/>
             {isFetchingFiles

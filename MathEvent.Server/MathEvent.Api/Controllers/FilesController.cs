@@ -151,8 +151,22 @@ namespace MathEvent.Api.Controllers
 
         // POST api/Files/Upload
         [HttpPost("Upload")]
-        public async Task<ActionResult> Upload([FromForm] IEnumerable<IFormFile> files, [FromQuery] int? parentId, [FromQuery] int? ownerId)
+        public async Task<ActionResult> Upload([FromForm] IEnumerable<IFormFile> files, [FromQuery] string parentId, [FromQuery] string ownerId)
         {
+            int? parent = null;
+            int? owner = null;
+
+            if (int.TryParse(parentId, out int parentParam))
+            {
+                parent = parentParam;
+            }
+
+            if (int.TryParse(ownerId, out int ownerParam))
+            {
+                owner = ownerParam;
+            }
+
+
             foreach (var formFile in files)
             {
                 var checkResult = _fileService.IsCorrectFile(formFile);
@@ -172,16 +186,16 @@ namespace MathEvent.Api.Controllers
                 {
                     Name = Path.GetFileNameWithoutExtension(formFile.FileName),
                     Hierarchy = null,
-                    ParentId = parentId,
+                    ParentId = parent,
                     AuthorId = user.Id,
-                    OwnerId = ownerId
+                    OwnerId = owner
                 };
 
                 var createResult = await _fileService.Upload(formFile, fileCreateModel);
 
                 if (!createResult.Succeeded)
                 {
-                    return BadRequest();
+                    return BadRequest(createResult.Messages);
                 }
                 else
                 {

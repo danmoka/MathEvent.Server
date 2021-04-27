@@ -5,7 +5,8 @@ const fileRoutes = {
     fetchFile: (fileId) => getRoute(`files/${fileId}`),
     fetchFileBreadcrumbs: (fileId) => getRoute(`files/breadcrumbs/${fileId}`),
     createFile: () => getRoute(`files/`),
-    deleteFile: (fileId) => getRoute(`files/${fileId}`)
+    deleteFile: (fileId) => getRoute(`files/${fileId}`),
+    uploadFiles: (fileId, ownerId) => getRoute(`files/upload/?parentId=${fileId}&ownerId=${ownerId}`)
 };
 
 export default fileRoutes;

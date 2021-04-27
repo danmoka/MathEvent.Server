@@ -19,7 +19,7 @@ namespace MathEvent.Services.Services
 
         private readonly string _folder = "media";
 
-        private readonly string[] _permittedExtensions = { ".txt", ".pdf", ".docx", ".png", ".jpg" };
+        private readonly string[] _permittedExtensions = { ".pdf", ".docx", ".doc", ".ppt", ".pptx", ".png", ".jpg", ".jpeg", ".bmp" };
 
         private readonly long _fileSizeLimit;
 
@@ -64,7 +64,8 @@ namespace MathEvent.Services.Services
                 Directory.CreateDirectory(path);
             }
 
-            var filePath = Path.Combine(path, Path.GetRandomFileName());
+            var fileName = $"{Path.GetRandomFileName()}{file.FileName}";
+            var filePath = Path.Combine(path, fileName);
             using var stream = new FileStream(filePath, FileMode.Create);
 
             try

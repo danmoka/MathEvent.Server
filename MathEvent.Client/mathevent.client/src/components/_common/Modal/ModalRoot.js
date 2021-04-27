@@ -5,6 +5,7 @@ import CreateFolderModal from "../../files/view/CreateFolderModal";
 import DeleteEventModal from "../../events/view/DeleteEventModal";
 import DeleteFileModal from "../../files/view/DeleteFileModal";
 import LogoutModal from "../../_app/LogoutModal";
+import UploadFilesModal from "../../files/view/UploadFilesModal";
 import modalTypes from "../../../constants/modal-types";
 
 const modals = {
@@ -12,11 +13,12 @@ const modals = {
     [modalTypes.deleteEvent]: DeleteEventModal,
     [modalTypes.createFolder]: CreateFolderModal,
     [modalTypes.deleteFile]: DeleteFileModal,
+    [modalTypes.uploadFiles]: UploadFilesModal,
     [modalTypes.logout]: LogoutModal
 };
 
 const ModalRoot = () => {
-    const { modalType, modalProps } = useSelector(state => state.modal);
+    const { modalType, modalProps } = useSelector((state) => state.modal);
 
     if (!modalType) {
         return null;

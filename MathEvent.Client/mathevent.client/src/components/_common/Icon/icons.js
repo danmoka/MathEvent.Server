@@ -22,6 +22,8 @@ const icons = {
     [iconTypes.setLight]: materialIcons.BrightnessHigh,
     [iconTypes.settings]: materialIcons.Settings,
     [iconTypes.stats]: materialIcons.Equalizer,
+    [iconTypes.upload]: materialIcons.Publish,
+    [iconTypes.uploadCloud]: materialIcons.CloudUpload
 };
 
 export default icons;

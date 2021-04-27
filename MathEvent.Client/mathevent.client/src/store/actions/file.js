@@ -69,9 +69,31 @@ export const deleteFile = createAsyncThunk("deleteFile", async ({ fileId }, thun
     return { hasError: true };
 });
 
-export const showCreateFolderModal = createAsyncThunk("showCreateFolderModal", async ({ owner }, thunkAPI) => {
-    thunkAPI.dispatch(showModal(modalTypes.createFolder, { owner }));
+export const uploadFiles = createAsyncThunk(
+    "uploadFiles",
+    async ({ fileId, ownerId, files }, thunkAPI) => {
+        thunkAPI.dispatch(hideModal());
+        const response = await fileService.uploadFiles(fileId, ownerId, files);
+
+        if (statusCode(response).ok) {
+            thunkAPI.dispatch(fetchFiles({ fileId, ownerId }));
+
+            return { hasError: false };
+        }
+    
+        return { hasError: true };
+    }
+  );
+
+export const showCreateFolderModal = createAsyncThunk("showCreateFolderModal", async ({ owner, crumbs }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.createFolder, { owner, crumbs }));
 });
 export const showDeleteFileModal = createAsyncThunk("showDeleteFileModal", async ({ file }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.deleteFile, { file }));
 });
+export const showUploadFilesModal = createAsyncThunk(
+    "showUploadFilesModal",
+    ({ owner, crumbs }, thunkAPI) => {
+        thunkAPI.dispatch(showModal(modalTypes.uploadFiles, { owner, crumbs }));
+    }
+);
