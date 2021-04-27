@@ -12,7 +12,9 @@ import {
 import {
     fetchFiles,
     fetchFile,
-    fetchFileBreadcrumbs} from "../actions/file";
+    fetchFileBreadcrumbs,
+    deleteFile,
+    createFile} from "../actions/file";
 
 const initialState = {
     files: [],
@@ -68,6 +70,36 @@ const fileSlice = createSlice({
         [fetchFileBreadcrumbs.rejected]: (state) => {
             onRejectedFileBreadcrumbs(state);
             state.crumbs = [];
+        },
+
+        [createFile.pending]: (state) => {
+            onPendingFile(state);
+        },
+        [createFile.fulfilled]: (state, { payload: { createdFile, hasError } }) => {
+            onFulfilledFile(state, hasError);
+
+            if (!hasError) {
+                state.fileInfo = createdFile;
+            }
+        },
+        [createFile.rejected]: (state) => {
+            onRejectedFile(state);
+        },
+
+        [deleteFile.pending]: (state) => {
+            onPendingFile(state);
+        },
+        [deleteFile.fulfilled]: (state, { payload: { fileId, hasError } }) => {
+            onFulfilledFile(state, hasError);
+
+            if (!hasError) {
+                state.files = state.files.filter((file) => file.id !== fileId);
+
+                if (state.fileInfo && state.fileInfo.id === fileId) state.fileInfo = null;
+            }
+        },
+        [deleteFile.rejected]: (state) => {
+            onRejectedFile(state);
         },
     }
 });

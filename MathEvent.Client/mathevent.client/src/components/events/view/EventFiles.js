@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Typography from "@material-ui/core/Typography";
-import { fetchFile, fetchFiles, fetchFileBreadcrumbs } from "../../../store/actions/file";
-import { iconTypes } from "../../_common/Icon";
+import { fetchFile, fetchFiles, fetchFileBreadcrumbs, showDeleteFileModal, showCreateFolderModal } from "../../../store/actions/file";
+import { IconButton, iconTypes } from "../../_common/Icon";
 import EventFileBreadcrumbs from "./EventFileBreadcrumbs";
 import Files from "../../_common/File/Files";
 import Loader from "../../_common/Loader";
 
-const prepareFiles = (files, onFileDownload, onFileEdit, onFileDelete, onClick) =>
+const prepareFiles = (files, onFileDownload, onFileDelete, onClick) =>
     files.map((file, index) => ({
         id: file.id,
         name: file.name,
@@ -23,12 +23,6 @@ const prepareFiles = (files, onFileDownload, onFileEdit, onFileDelete, onClick) 
                 onClick: () => onFileDownload(file),
             },
             {
-                id: "edit",
-                label: "Редактировать",
-                icon: iconTypes.edit,
-                onClick: () => onFileEdit(file),
-            },
-            {
                 id: "delete",
                 label: "Удалить",
                 icon: iconTypes.delete,
@@ -40,7 +34,7 @@ const prepareFiles = (files, onFileDownload, onFileEdit, onFileDelete, onClick) 
 const EventFiles = () => {
     const dispatch = useDispatch();
     const { eventInfo } = useSelector(state => state.event);
-    const { files, isFetchingFiles } = useSelector(state => state.file);
+    const { files, crumbs, isFetchingFiles } = useSelector(state => state.file);
 
     useEffect(() => {
         dispatch(fetchFiles({fileId: null, ownerId: eventInfo.ownerId}));
@@ -55,22 +49,27 @@ const EventFiles = () => {
         }
     });
 
-    const handleFileEdit = useCallback((file) => {
-
-    });
-
-    const handleFileDelete = useCallback((file) => {
-
-    });
+    const handleFileDelete = useCallback(
+        (file) => {
+            dispatch(showDeleteFileModal({ file }));
+        },
+        [dispatch]
+    );
 
     const handleFileDownload = useCallback((file) => {
 
     });
 
+    const handleFolderCreate = useCallback(
+        () => {
+            dispatch(showCreateFolderModal({ owner: eventInfo, crumbs: crumbs }));
+        },
+        [dispatch]
+    );
+
     const preparedFiles = prepareFiles(
         files,
         handleFileDownload,
-        handleFileEdit,
         handleFileDelete,
         handleFileClick
     );
@@ -79,6 +78,10 @@ const EventFiles = () => {
         <div className="event-files">
             <div className="event-files__header">
                 <Typography variant="h5" gutterBottom>Материалы</Typography>
+                <IconButton
+                    type={iconTypes.add}
+                    onClick={handleFolderCreate}
+                />
             </div>
             <EventFileBreadcrumbs/>
             {isFetchingFiles

@@ -1,5 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { showModal, hideModal } from "./modal";
 import fileService from "../../api/services/file-service";
+import modalTypes from "../../constants/modal-types";
 import statusCode from "../../utils/status-code-reader";
 
 export const fetchFiles = createAsyncThunk("fetchFiles", async ({fileId, ownerId}) => {
@@ -40,4 +42,36 @@ export const fetchFileBreadcrumbs = createAsyncThunk("fetchFileBreadcrumbs", asy
     }
 
     return { crumbs: [] };
+});
+
+export const createFile = createAsyncThunk("createFile", async ({ file }, thunkAPI) => {
+    thunkAPI.dispatch(hideModal());
+    const response = await fileService.createFile(file);
+
+    if (statusCode(response).created) {
+        const createdFile = await response.json();
+        thunkAPI.dispatch(fetchFiles({fileId: createdFile.parentId, ownerId: createdFile.ownerId}));
+
+        return { createdFile, hasError: false };
+    }
+
+    return { hasError: true };
+});
+
+export const deleteFile = createAsyncThunk("deleteFile", async ({ fileId }, thunkAPI) => {
+    thunkAPI.dispatch(hideModal());
+    const response = await fileService.deleteFile(fileId);
+
+    if (statusCode(response).noContent) {
+        return { fileId, hasError: false };
+    }
+
+    return { hasError: true };
+});
+
+export const showCreateFolderModal = createAsyncThunk("showCreateFolderModal", async ({ owner }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.createFolder, { owner }));
+});
+export const showDeleteFileModal = createAsyncThunk("showDeleteFileModal", async ({ file }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.deleteFile, { file }));
 });

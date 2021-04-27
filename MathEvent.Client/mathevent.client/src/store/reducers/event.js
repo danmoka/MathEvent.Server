@@ -142,7 +142,7 @@ const eventSlice = createSlice({
             }
         },
         [deleteEvent.rejected]: (state) => {
-        onRejectedEvent(state);
+            onRejectedEvent(state);
         },
     }
 });

@@ -18,7 +18,7 @@ namespace MathEvent.Services.Services
         FileCreateModel,
         FileUpdateModel,
         int,
-        AResult<IMessage, File>>
+        AResult<IMessage, FileReadModel>>
     {
         Task<File> GetFileEntityAsync(int id);
 

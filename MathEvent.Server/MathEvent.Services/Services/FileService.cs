@@ -61,7 +61,7 @@ namespace MathEvent.Services.Services
             return null;
         }
 
-        public async Task<AResult<IMessage, File>> CreateAsync(FileCreateModel createModel)
+        public async Task<AResult<IMessage, FileReadModel>> CreateAsync(FileCreateModel createModel)
         {
             var fileDTO = _mapper.Map<FileDTO>(createModel);
             fileDTO.Date = DateTime.Now;
@@ -69,7 +69,7 @@ namespace MathEvent.Services.Services
 
             if (fileEntity is null)
             {
-                return new MessageResult<File>
+                return new MessageResult<FileReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -85,20 +85,20 @@ namespace MathEvent.Services.Services
             await _repositoryWrapper.File.CreateAsync(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<File>
+            return new MessageResult<FileReadModel>
             {
                 Succeeded = true,
-                Entity = fileEntity
+                Entity = _mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(fileEntity))
             };
         }
 
-        public async Task<AResult<IMessage, File>> UpdateAsync(int id, FileUpdateModel updateModel)
+        public async Task<AResult<IMessage, FileReadModel>> UpdateAsync(int id, FileUpdateModel updateModel)
         {
             var fileEntity = await GetFileEntityAsync(id);
 
             if (fileEntity is null)
             {
-                return new MessageResult<File>
+                return new MessageResult<FileReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -118,20 +118,20 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.File.Update(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<File>
+            return new MessageResult<FileReadModel>
             {
                 Succeeded = true,
-                Entity = fileEntity
+                Entity = _mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(fileEntity))
             };
         }
 
-        public async Task<AResult<IMessage, File>> DeleteAsync(int id)
+        public async Task<AResult<IMessage, FileReadModel>> DeleteAsync(int id)
         {
             var fileEntity = await GetFileEntityAsync(id);
 
             if (fileEntity is null)
             {
-                return new MessageResult<File>
+                return new MessageResult<FileReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -151,7 +151,7 @@ namespace MathEvent.Services.Services
 
                 if (deleteMessage is not null)
                 {
-                    return new MessageResult<File>
+                    return new MessageResult<FileReadModel>
                     {
                         Succeeded = false,
                         Messages = new List<SimpleMessage>
@@ -168,7 +168,7 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.File.Delete(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<File>
+            return new MessageResult<FileReadModel>
             {
                 Succeeded = true
             };

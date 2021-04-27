@@ -74,10 +74,10 @@ namespace MathEvent.Api.Controllers
 
                 if (createdFile is null)
                 {
-                    return Ok();
+                    return StatusCode(201);
                 }
 
-                return StatusCode(201, createdFile.Id);
+                return StatusCode(201, createdFile);
             }
             else
             {
@@ -108,7 +108,14 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var createdFile = updateResult.Entity;
+
+                if (createdFile is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(createdFile);
             }
             else
             {

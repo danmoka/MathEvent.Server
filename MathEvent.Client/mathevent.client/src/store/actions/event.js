@@ -101,4 +101,4 @@ export const showCreateEventModal = createAsyncThunk("showCreateEventModal", asy
 });
 export const showDeleteEventModal = createAsyncThunk("showDeleteEventModal", async ({ event }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.deleteEvent, { event }));
-})
+});
