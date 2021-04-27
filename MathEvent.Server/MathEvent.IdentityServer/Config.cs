@@ -39,8 +39,8 @@ namespace IdentityServer
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     RequireClientSecret = false,
                     AllowOfflineAccess = true,
-                    AbsoluteRefreshTokenLifetime = 3600,
-                    AccessTokenLifetime = 3600,
+                    AbsoluteRefreshTokenLifetime = 1296000,
+                    AccessTokenLifetime = 300,
                     AllowedScopes = new List<string>
                     {
                         "matheventapi",

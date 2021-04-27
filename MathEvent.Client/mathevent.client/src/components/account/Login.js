@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import { fetchTokens } from "../../store/actions/account";
+import { navigateToHome } from "../../utils/navigator";
 import { useTitle } from "../../hooks";
 import Button from "../_common/Button";
 import TextField from "../_common/TextField";
@@ -24,6 +25,7 @@ const Login = () => {
         const credentials = { userName, password };
         dispatch(fetchTokens(credentials));
         clearFields();
+        navigateToHome();
     };
 
     useTitle("Вход");

@@ -5,7 +5,7 @@ import Typography from "@material-ui/core/Typography";
 import { Icon, iconTypes } from "../Icon";
 import "./FileDropzone.scss";
 
-function fileValidator(file) {
+const fileValidator = (file) => {
     const maxNameLength = 20;
     const maxSize = 2097152;
 
@@ -24,7 +24,7 @@ function fileValidator(file) {
     }
 
     return null
-  }
+}
 
 const FileDropzone = ({ acceptedFileTypes, acceptedFileValues, maxFiles = 5, onDrop }) => {
     const handleDrop = useCallback((files) => {
