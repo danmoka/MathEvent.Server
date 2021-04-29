@@ -139,3 +139,19 @@ export const onRejectedAccount = (state) => {
     state.isFetchingAccount = false;
     onRejectedDefault(state);
 };
+
+// Users
+export const onPendingUsers = (state) => {
+    state.isFetchingUsers = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledUsers = (state, hasError) => {
+    state.isFetchingUsers = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedUsers = (state) => {
+    state.isFetchingUsers = false;
+    onRejectedDefault(state);
+};

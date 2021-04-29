@@ -1,9 +1,11 @@
 ﻿using IdentityServer;
+using IdentityServer4.Services;
 using MathEvent.Entities;
 using MathEvent.Entities.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace MathEvent.IdentityServer.Extensions
 {
@@ -44,6 +46,16 @@ namespace MathEvent.IdentityServer.Extensions
                 .AddInMemoryClients(Config.Clients)
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddDeveloperSigningCredential(); // not recommended for production - you need to store your key material somewhere secure
+
+            services.AddSingleton<ICorsPolicyService>((container) =>
+            {
+                var logger = container.GetRequiredService<ILogger<DefaultCorsPolicyService>>();
+
+                return new DefaultCorsPolicyService(logger)
+                {
+                    AllowedOrigins = { "http://localhost:8080", "https://localhost:8080" }
+                };
+            });
         }
     }
 }

@@ -7,6 +7,7 @@ import MuiListItemSecondaryAction from "@material-ui/core/ListItemSecondaryActio
 import MuiListItemIcon from "@material-ui/core/ListItemIcon";
 import Popover from "@material-ui/core/Popover";
 import { Icon, IconButton, iconTypes } from "../Icon";
+import Checkbox from "../Checkbox";
 import "./List.scss";
 
 const useStyles = makeStyles({
@@ -18,7 +19,7 @@ const useStyles = makeStyles({
     }
 });
 
-const ListItem = ({ primaryText, secondaryText, isSelected, index, actions, onClick }) => {
+const ListItem = ({ id, primaryText, secondaryText, isSelected, checked, index, actions, onClick, onCheck }) => {
     const itemClasses = isSelected ? "list-item list-item--selected" : "list-item";
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -48,6 +49,10 @@ const ListItem = ({ primaryText, secondaryText, isSelected, index, actions, onCl
         action();
       }, [handleMenuClose]);
 
+    const handleCheck = useCallback((newValue) => {
+        onCheck(id, newValue);
+    }, [id, onCheck]);
+
     return (
         <MuiListItem
             className={itemClasses}
@@ -56,6 +61,13 @@ const ListItem = ({ primaryText, secondaryText, isSelected, index, actions, onCl
             onClick={onClick}
             selected={isSelected}
             button>
+
+            {onCheck && (
+                <MuiListItemIcon>
+                    <Checkbox value={checked} onChange={handleCheck} />
+                </MuiListItemIcon>
+            )}
+
             <MuiListItemText classes={classes} primary={primaryText} secondary={secondaryText}/>
 
             {actions && (

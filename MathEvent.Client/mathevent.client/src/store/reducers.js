@@ -5,6 +5,7 @@ import eventReducer from "./reducers/event";
 import fileReducer from "./reducers/file";
 import modalReducer from "./reducers/modal";
 import organizationReducer from "./reducers/organization";
+import userReducer from "./reducers/user";
 
 const createRootReducer = (history) => ({
     account: accountReducer,
@@ -14,6 +15,7 @@ const createRootReducer = (history) => ({
     modal: modalReducer,
     organization: organizationReducer,
     router: connectRouter(history),
+    user: userReducer
 });
 
 export default createRootReducer;

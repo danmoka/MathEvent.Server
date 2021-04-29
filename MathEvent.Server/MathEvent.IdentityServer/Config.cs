@@ -36,9 +36,12 @@ namespace IdentityServer
                     ClientId = "react_spa",
                     ClientName = "React SPA",
                     ClientSecrets = { new Secret("secret".Sha256()) },
+                    AllowAccessTokensViaBrowser = true,
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     RequireClientSecret = false,
                     AllowOfflineAccess = true,
+                    RefreshTokenExpiration = TokenExpiration.Sliding,
+                    RefreshTokenUsage = TokenUsage.ReUse,
                     AbsoluteRefreshTokenLifetime = 1296000,
                     AccessTokenLifetime = 300,
                     AllowedScopes = new List<string>
@@ -46,7 +49,8 @@ namespace IdentityServer
                         "matheventapi",
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
-                        IdentityServerConstants.StandardScopes.Email
+                        IdentityServerConstants.StandardScopes.Email,
+                        IdentityServerConstants.StandardScopes.OfflineAccess
                     }
                 }
             };
