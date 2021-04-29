@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { makeStyles } from "@material-ui/core";
+import { useTheme } from '@material-ui/core/styles';
+import Avatar from '@material-ui/core/Avatar';
 import MuiMenuItem from "@material-ui/core/MenuItem";
 import MuiListItem from "@material-ui/core/ListItem";
 import MuiListItemText from "@material-ui/core/ListItemText";
@@ -19,11 +21,19 @@ const useStyles = makeStyles({
     }
 });
 
-const ListItem = ({ id, primaryText, secondaryText, isSelected, checked, index, actions, onClick, onCheck }) => {
+const useAvatarStyles = makeStyles((theme) => ({
+    avatar: {
+        backgroundColor: theme.palette.primary.main,
+        marginRight: 10
+    }
+}));
+
+const ListItem = ({ id, primaryText, secondaryText, avatarText, isSelected, checked, index, actions, onClick, onCheck }) => {
     const itemClasses = isSelected ? "list-item list-item--selected" : "list-item";
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const classes = useStyles();
+    const listItemTextClasses = useStyles();
+    const avatarClasses = useAvatarStyles(useTheme());
 
     const handleMenuOpen = (e) => {
         e.stopPropagation();
@@ -62,13 +72,19 @@ const ListItem = ({ id, primaryText, secondaryText, isSelected, checked, index, 
             selected={isSelected}
             button>
 
+            {avatarText && (
+                <Avatar aria-label="Avatar" className={avatarClasses.avatar}>
+                    {avatarText}
+                </Avatar>
+            )}
+
             {onCheck && (
                 <MuiListItemIcon>
                     <Checkbox value={checked} onChange={handleCheck} />
                 </MuiListItemIcon>
             )}
 
-            <MuiListItemText classes={classes} primary={primaryText} secondary={secondaryText}/>
+            <MuiListItemText classes={listItemTextClasses} primary={primaryText} secondary={secondaryText}/>
 
             {actions && (
                 <>

@@ -26,6 +26,7 @@ const List = ({ className, items, onCheck }) => {
                     id={item.id}
                     primaryText={item.primaryText}
                     secondaryText={item.secondaryText}
+                    avatarText={item.avatarText}
                     isSelected={item.isSelected}
                     checked={checkedItemIds.includes(item.id)}
                     index={item.index}

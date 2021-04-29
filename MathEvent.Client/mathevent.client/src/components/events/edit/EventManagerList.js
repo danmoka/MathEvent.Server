@@ -21,6 +21,7 @@ const prepareManagers = (managers) =>
         id: manager.id,
         primaryText: `${manager.name} ${manager.surname}`,
         secondaryText: manager.userName,
+        avatarText: `${manager.name.slice(0, 1)}${manager.surname.slice(0, 1)}`,
         index: index + 1,
         onClick: () => {},
 }));
