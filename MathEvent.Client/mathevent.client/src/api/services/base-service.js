@@ -70,18 +70,6 @@ const baseService = {
 };
 
 const accountBaseService = {
-    get: async (url) => {
-        try {
-            return await fetch(url, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${getAccessToken()}`
-                }
-            });
-        } catch (e) {
-            console.log(e);
-        }
-    },
     post: async (url, data) => {
         try {
             return await fetch(url, {

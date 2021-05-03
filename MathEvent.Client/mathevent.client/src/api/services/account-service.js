@@ -1,5 +1,5 @@
 import api from "../api";
-import { accountBaseService } from "./base-service";
+import { accountBaseService, baseService } from "./base-service";
 
 const accountService = {
     token: async (data) => {
@@ -10,7 +10,7 @@ const accountService = {
     userInfo: async () => {
         const url = api.account.infoUrl();
 
-        return await accountBaseService.get(url);
+        return await baseService.get(url);
     },
     revocation: async (data) => {
         const url = api.account.revocationUrl();

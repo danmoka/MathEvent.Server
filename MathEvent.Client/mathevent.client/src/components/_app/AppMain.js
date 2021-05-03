@@ -18,7 +18,7 @@ import Popover from "@material-ui/core/Popover";
 import { useCurrentUser } from "../../hooks";
 import { showLogoutModal } from "../../store/actions/account";
 import { setGridView } from "../../store/actions/event";
-import { navigateToEvents, navigateToHome, navigateToLogin } from "../../utils/navigator";
+import { navigateToEvents, navigateToHome, navigateToLogin, navigateToRegister } from "../../utils/navigator";
 import { setIsDarkTheme } from "../../store/actions/app";
 import { Icon, IconButton, iconTypes } from "../_common/Icon";
 import { palette, paletteDark } from "../../styles/palette";
@@ -135,6 +135,7 @@ const AppMain = () => {
   };
 
   const handleLoginClick = () => navigateToLogin();
+  const handleRegisterClick = () => navigateToRegister();
   const handleLogoutClick = () => {
     setAnchorEl(null);
     dispatch(showLogoutModal());
@@ -180,7 +181,7 @@ const AppMain = () => {
                   <>
                     <Button
                       className={classes.menuButton}
-                      onClick={() => { console.log("register button clicked"); }}
+                      onClick={handleRegisterClick}
                     >
                       Регистрация
                     </Button>

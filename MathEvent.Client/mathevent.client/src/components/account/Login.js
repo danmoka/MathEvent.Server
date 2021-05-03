@@ -22,10 +22,13 @@ const Login = () => {
     const handlePasswordChange = (value) => setPassword(value);
 
     const handleSubmit = () => {
-        const credentials = { userName, password };
+        const credentials = {
+            userName,
+            password,
+            successAction: () => { navigateToHome() }
+        };
         dispatch(fetchTokens(credentials));
         clearFields();
-        navigateToHome();
     };
 
     useTitle("Вход");

@@ -7,6 +7,11 @@ const userService = {
 
         return await baseService.get(url);
     },
+    register: async (credentials) => {
+        const url = api.users.registerUrl();
+
+        return await baseService.post(url, credentials);
+    }
 };
 
 export default userService;
