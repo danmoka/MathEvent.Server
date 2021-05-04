@@ -30,10 +30,10 @@ const EventInfo = () => {
     useEffect(() => {
         if (eventInfo) {
             setApplicationUsers(eventInfo.applicationUsers);
-            setSubscribed(eventInfo ? applicationUsers.filter((user) => user.id === userInfo.sub).length > 0 : false);
+            setSubscribed(eventInfo ? eventInfo.applicationUsers.filter((user) => user.id == userInfo.sub).length > 0 : false);
             setName(eventInfo.name);
             setStartDate(eventInfo.startDate);
-            setDesctiption(eventInfo.description);
+            setDesctiption(eventInfo.description ? eventInfo.description : "Отсутствует");
             setOrganizationName(eventInfo.organization ? eventInfo.organization.name : "Отсутствует");
             setEventId(eventInfo.id);
         }

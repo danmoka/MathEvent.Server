@@ -8,7 +8,7 @@ const Date = ({primaryText, date, variant="h6"}) => {
             {primaryText}
             <Moment
             className="date__time"
-            format=" MMMM Do YYYY, h:mm:ss a"
+            format="LLLL"
             date={date}
             withTitle
             locale="ru"/>

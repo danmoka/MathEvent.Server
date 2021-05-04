@@ -3,21 +3,6 @@
 }
 
 .list-item {
-  width: 100%;
-  list-style-type: none;
-
-  &--selected {
-    padding-left: 50px !important;
-  }
-
-  &--draggable {
-    cursor: move !important;
-  }
-
-  &:last-child {
-    margin-bottom: 75px;
-  }
-
   &__secondary {
     visibility: hidden;
 

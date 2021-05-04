@@ -116,7 +116,7 @@ const AppMain = () => {
   const [open, setOpen] = useState(false);
 
   const theme = createMuiTheme({ palette: isDarkTheme ? paletteDark : palette });
-  const classes = useStyles();
+  const classes = useStyles(theme);
 
   const handleLightTheme = () => {
     dispatch(setIsDarkTheme(false));

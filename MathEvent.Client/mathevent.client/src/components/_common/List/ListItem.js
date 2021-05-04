@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { makeStyles } from "@material-ui/core";
-import { useTheme } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import MuiMenuItem from "@material-ui/core/MenuItem";
 import MuiListItem from "@material-ui/core/ListItem";
@@ -12,7 +11,7 @@ import { Icon, IconButton, iconTypes } from "../Icon";
 import Checkbox from "../Checkbox";
 import "./List.scss";
 
-const useStyles = makeStyles({
+const useItemTextStyles = makeStyles({
     primary: {
         fontSize: "18px"
     },
@@ -21,19 +20,28 @@ const useStyles = makeStyles({
     }
 });
 
-const useAvatarStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme) => ({
+    notSelected: {
+        width: '100%',
+        listStyleType: 'none',
+        borderLeft: `6px !important`
+    },
+    selected: {
+        width: '100%',
+        listStyleType: 'none',
+        borderLeft: `6px solid ${theme.palette.primary.main} !important`
+    },
     avatar: {
         backgroundColor: theme.palette.primary.main,
         marginRight: 10
     }
-}));
+  }));
 
 const ListItem = ({ id, primaryText, secondaryText, avatarText, isSelected, checked, index, actions, onClick, onCheck }) => {
-    const itemClasses = isSelected ? "list-item list-item--selected" : "list-item";
+    const classes = useStyles(useTheme());
+    const listItemTextClasses = useItemTextStyles();
     const [isHovered, setIsHovered] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const listItemTextClasses = useStyles();
-    const avatarClasses = useAvatarStyles(useTheme());
 
     const handleMenuOpen = (e) => {
         e.stopPropagation();
@@ -65,7 +73,7 @@ const ListItem = ({ id, primaryText, secondaryText, avatarText, isSelected, chec
 
     return (
         <MuiListItem
-            className={itemClasses}
+            className={isSelected ? classes.selected : classes.notSelected}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={onClick}
@@ -73,7 +81,7 @@ const ListItem = ({ id, primaryText, secondaryText, avatarText, isSelected, chec
             button>
 
             {avatarText && (
-                <Avatar aria-label="Avatar" className={avatarClasses.avatar}>
+                <Avatar aria-label="Avatar" className={classes.avatar}>
                     {avatarText}
                 </Avatar>
             )}

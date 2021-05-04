@@ -9,7 +9,7 @@ const CommonGrid = ({ className, items }) => (
         spacing={2}
         direction="row"
         justify="flex-start"
-        alignItems="center">
+        alignItems="flex-start">
         {items.map((item) => (
             <Grid key={item.id} item>
                 <GridCard

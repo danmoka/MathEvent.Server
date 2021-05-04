@@ -1,5 +1,7 @@
 import React, { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import moment from 'moment';
+import 'moment/locale/ru';
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, showCreateEventModal, showDeleteEventModal } from "../../../store/actions/event";
@@ -14,7 +16,7 @@ const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClic
     events.map((event, index) => ({
         id: event.id,
         primaryText: event.name,
-        secondaryText: event.startDate,
+        secondaryText: moment(event.startDate).format("LL"),
         additionalInfo: event.description,
         image: isDarkTheme ? images.eventDefaultDark : images.eventDefault, 
         isSelected: selectedEvent && event.id === selectedEvent.id,

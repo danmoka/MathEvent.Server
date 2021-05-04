@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
@@ -11,7 +12,21 @@ import { Icon, IconButton, iconTypes } from "../Icon";
 import "./Grid.scss";
 import "../List/List.scss";
 
+const width = 245;
+
+const useStyles = makeStyles((theme) => ({
+  notSelected: {
+    width: width,
+    borderBottom: `6px !important`
+  },
+  selected: {
+    width: width,
+    borderBottom: `6px solid ${theme.palette.primary.main} !important`
+  },
+}));
+
 const GridCard = ({ primaryText, secondaryText, additionalInfo, image, isSelected, index, actions, onClick }) => {
+  const classes = useStyles(useTheme());
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (e) => {
@@ -31,11 +46,12 @@ const GridCard = ({ primaryText, secondaryText, additionalInfo, image, isSelecte
 
   return (
     <Card
-      className="grid-card"
-      variant={isSelected ? "outlined" : null}
+      className={isSelected ? classes.selected : classes.notSelected}
       onClick={onClick}>
       <CardHeader
+        titleTypographyProps={{variant:'body1' }}
         title={primaryText}
+        subheaderTypographyProps={{variant:'body2' }}
         subheader={secondaryText}
         action={
           <>
@@ -71,7 +87,7 @@ const GridCard = ({ primaryText, secondaryText, additionalInfo, image, isSelecte
         title={primaryText}
       />
       <CardContent>
-        <Typography variant="body1" gutterBottom>
+        <Typography variant="body2" color="textSecondary" component="p">
           {additionalInfo}
         </Typography>
       </CardContent>
