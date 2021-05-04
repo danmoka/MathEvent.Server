@@ -48,6 +48,7 @@ namespace MathEvent.Api
                 builder.AllowCredentials();
                 builder.AllowAnyHeader();
                 builder.AllowAnyMethod();
+                builder.WithExposedHeaders("Content-Disposition");
             });
 
             app.UseHttpsRedirection();

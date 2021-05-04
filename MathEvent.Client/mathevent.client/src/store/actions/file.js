@@ -83,7 +83,27 @@ export const uploadFiles = createAsyncThunk(
     
         return { hasError: true };
     }
-  );
+);
+
+export const downloadFile = createAsyncThunk("downloadFile", async (fileId) => {
+    const response = await fileService.downloadFile(fileId);
+
+    if (statusCode(response).ok) {
+        const fileName = response.headers.get("content-disposition").split('"')[1];
+
+        response.blob().then(blob => {
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = fileName ? fileName : "file";
+            link.click();
+        })
+
+        return { hasError: false };
+    }
+
+    return { hasError: true };
+});
 
 export const showCreateFolderModal = createAsyncThunk("showCreateFolderModal", async ({ owner, crumbs }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.createFolder, { owner, crumbs }));

@@ -44,10 +44,15 @@ const fileService = {
                     Authorization: `Bearer ${getAccessToken()}`,
                 },
             });
-            } catch (e) {
-                console.log(e);
-            }
-    }
+        } catch (e) {
+            console.log(e);
+        }
+    },
+    downloadFile: async (fileId) => {
+        const url = api.files.downloadFile(fileId);
+
+        return await baseService.get(url);
+    },
 };
 
 export default fileService;

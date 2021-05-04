@@ -229,7 +229,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            return File(fileStream, "application/octet-stream", $"{file.Name}{file.Extension}");
+            return File(fileStream, "application/octet-stream", $"\"{file.Name}{file.Extension}\"");
         }
 
         // GET api/Files/Breadcrumbs/{id}

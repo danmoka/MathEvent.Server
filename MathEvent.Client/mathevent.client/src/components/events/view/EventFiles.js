@@ -2,35 +2,47 @@ import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { fetchFile, fetchFiles, fetchFileBreadcrumbs, showDeleteFileModal, showCreateFolderModal, showUploadFilesModal } from "../../../store/actions/file";
+import { downloadFile, fetchFile, fetchFiles, fetchFileBreadcrumbs, showDeleteFileModal, showCreateFolderModal, showUploadFilesModal } from "../../../store/actions/file";
 import { IconButton, iconTypes } from "../../_common/Icon";
 import EventFileBreadcrumbs from "./EventFileBreadcrumbs";
 import Files from "../../_common/File/Files";
 import Loader from "../../_common/Loader";
 
-const prepareFiles = (files, onFileDownload, onFileDelete, onClick) =>
-    files.map((file, index) => ({
+const prepareFiles = (files, onFileDownload, onFileDelete, onClick) => {
+    const fileActions = (file) => [
+        {
+            id: "download",
+            label: "Скачать",
+            icon: iconTypes.download,
+            onClick: () => onFileDownload(file),
+        },
+        {
+            id: "delete",
+            label: "Удалить",
+            icon: iconTypes.delete,
+            onClick: () => onFileDelete(file),
+        }
+    ];
+    const folderActions = (file) => [
+        {
+            id: "delete",
+            label: "Удалить",
+            icon: iconTypes.delete,
+            onClick: () => onFileDelete(file),
+        }
+    ];
+
+    files = files.map((file, index) => ({
         id: file.id,
         name: file.name,
         ext: file.extension,
         hierarchy: file.hierarchy,
         index: index + 1,
         onClick: () => onClick(file),
-        actions: [
-            {
-                id: "download",
-                label: "Скачать",
-                icon: iconTypes.download,
-                onClick: () => onFileDownload(file),
-            },
-            {
-                id: "delete",
-                label: "Удалить",
-                icon: iconTypes.delete,
-                onClick: () => onFileDelete(file),
-            }
-        ]
-}));
+        actions: file.hierarchy ? folderActions(file) : fileActions(file)}))
+
+    return files;
+};
 
 const EventFiles = () => {
     const dispatch = useDispatch();
@@ -60,7 +72,7 @@ const EventFiles = () => {
     );
 
     const handleFileDownload = useCallback((file) => {
-
+        dispatch(downloadFile(file.id));
     });
 
     const handleFolderCreate = useCallback(

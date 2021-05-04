@@ -12,7 +12,7 @@ const DeleteFileModal = () => {
     return (
         <DeleteModal
             title={file.name}
-            deleteText={`Вы действительно хотите удалить ${file.hierarchy ? 'папку' : 'файл'}? Сначала удалите все вложенные файлы и папки!`}
+            deleteText={`Вы действительно хотите удалить ${file.hierarchy ? 'папку? Сначала удалите все вложенные файлы и папки!' : 'файл?'}`}
             onDelete={handleFileDelete}
         />
     );

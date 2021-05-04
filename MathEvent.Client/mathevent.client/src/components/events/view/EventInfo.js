@@ -89,7 +89,7 @@ const EventInfo = () => {
                             <Typography variant="h5">{name}</Typography>
                         </Paper>
                         <Paper className="event-info__info--subscribe">
-                            <div className="event-info__info__horizontal_icon_text">
+                            <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.supervisedUser}/>
                                 <Typography variant="body1">{applicationUsers.length}</Typography>
                             </div>
@@ -100,17 +100,17 @@ const EventInfo = () => {
                                 </Button>
                         </Paper>
                         <Paper className="event-info__info--description">
-                            <div className="event-info__info__horizontal_icon_text">
+                            <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.accessTime}/>
                                 <Date
                                     date={startDate}
                                     variant="body1"/>
                             </div>
-                            <div className="event-info__info__horizontal_icon_text">
+                            <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.description}/>
                                 <Typography variant="body1" gutterBottom>{description}</Typography>
                             </div>
-                            <div className="event-info__info__horizontal_icon_text">
+                            <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.business}/>
                                 <Typography variant="body1" gutterBottom>{`${organizationName}`}</Typography>
                             </div>
