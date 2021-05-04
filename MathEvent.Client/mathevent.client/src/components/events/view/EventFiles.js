@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { fetchFile, fetchFiles, fetchFileBreadcrumbs, showDeleteFileModal, showCreateFolderModal, showUploadFilesModal } from "../../../store/actions/file";
 import { IconButton, iconTypes } from "../../_common/Icon";
@@ -37,7 +38,9 @@ const EventFiles = () => {
     const { files, crumbs, isFetchingFiles } = useSelector(state => state.file);
 
     useEffect(() => {
-        dispatch(fetchFiles({fileId: null, ownerId: eventInfo.ownerId}));
+        if (eventInfo) {
+            dispatch(fetchFiles({fileId: null, ownerId: eventInfo.ownerId}));
+        }
     }, [dispatch, eventInfo]);
 
     const handleFileClick = useCallback((file) => {
@@ -80,7 +83,7 @@ const EventFiles = () => {
 
     return (
         <div className="event-files">
-            <div className="event-files__header">
+            <Paper className="event-files__header">
                 <section className="event-files__header__section">
                     <Typography variant="h5" gutterBottom>Материалы</Typography>
                 </section>
@@ -94,7 +97,7 @@ const EventFiles = () => {
                         onClick={handleFolderCreate}
                     />
                 </section>
-            </div>
+            </Paper>
             <EventFileBreadcrumbs/>
             {isFetchingFiles
                 ? (<Loader size="medium"/>)

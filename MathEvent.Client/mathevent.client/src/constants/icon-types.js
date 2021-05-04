@@ -1,9 +1,12 @@
 const iconTypes = {
+    accessTime: "accessTime",
     add: "add",
     back: "back",
+    business: "business",
     close: "close",
     dashboard: "dashboard",
     delete: "delete",
+    description: "description",
     download: "download",
     edit: "edit",
     events: "events",
@@ -15,10 +18,13 @@ const iconTypes = {
     logout: "logout",
     menu: "menu",
     more: "more",
+    personAdd: "personAdd",
+    personAddDisabled: "personAddDisabled",
     setDark: "setDark",
     setLight: "setLight",
     settings: "settings",
     stats: "stats",
+    supervisedUser: "supervisedUser",
     upload: "upload",
     uploadCloud: "uploadCloud"
 };
