@@ -18,7 +18,7 @@ import Popover from "@material-ui/core/Popover";
 import { useCurrentUser } from "../../hooks";
 import { showLogoutModal } from "../../store/actions/account";
 import { setGridView } from "../../store/actions/event";
-import { navigateToEvents, navigateToHome, navigateToLogin, navigateToRegister } from "../../utils/navigator";
+import { navigateToEvents, navigateToHome, navigateToLogin, navigateToRegister, navigateToEventsStatistics } from "../../utils/navigator";
 import { setIsDarkTheme } from "../../store/actions/app";
 import { Icon, IconButton, iconTypes } from "../_common/Icon";
 import { palette, paletteDark } from "../../styles/palette";
@@ -275,7 +275,7 @@ const AppMain = () => {
             <ListItem
               button
               key="События"
-              selected={isSelected(routes.events)}
+              selected={isSelected(routes.events.main)}
               onClick={navigateToEvents}>
               <ListItemIcon>
                 <Icon
@@ -283,6 +283,18 @@ const AppMain = () => {
                 />
               </ListItemIcon>
               <ListItemText primary="События" />
+            </ListItem>
+            <ListItem
+              button
+              key="Статистика"
+              selected={isSelected(routes.statistics.main)}
+              onClick={navigateToEventsStatistics}>
+              <ListItemIcon>
+                <Icon
+                  type={iconTypes.stats}
+                />
+              </ListItemIcon>
+              <ListItemText primary="Статистика" />
             </ListItem>
             {isAuthenticated
             ? (

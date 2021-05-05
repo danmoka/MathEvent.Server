@@ -8,12 +8,12 @@ const Events = () => {
     return (
         <>
             <Route
-                path={routes.events}
+                path={routes.events.main}
                 exact
                 render={(props) => <EventView {...props}/>}
             />
             <Route
-                path={`${routes.events}/:id/edit`}
+                path={`${routes.events.edit(":id")}`}
                 exact
                 render={(props) => <EventEdit {...props}/>}
             />

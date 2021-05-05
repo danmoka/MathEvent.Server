@@ -1,0 +1,16 @@
+.statistics {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 200px;
+    max-height: 100%;
+    height: calc(100vh - 120px);
+
+    &__tabs {
+      width: 100%;
+    }
+
+    &__content {
+      padding: 0px;
+    }
+  }

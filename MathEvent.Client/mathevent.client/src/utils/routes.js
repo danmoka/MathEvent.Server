@@ -1,9 +1,20 @@
 const routes = {
     home: "/home",
-    login: "/login",
-    register: "/register",
-    events: "/events",
-    organizations: "/organizations",
+    account: {
+        login: "/login",
+        register: "/register",
+    },
+    events: {
+        main: "/events",
+        edit: (eventId) => `events/${eventId}/edit`,
+    },
+    organizations: {
+        main: "/organizations",
+    },
+    statistics: {
+        main: "/statistics",
+        event: "/statistics/event"
+    }
 };
 
 export default routes;

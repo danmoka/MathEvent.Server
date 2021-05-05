@@ -5,6 +5,7 @@ import Home from "../home";
 import Login from "../account/Login";
 import Register from "../account/Register";
 import ModalRoot from "../_common/Modal/ModalRoot";
+import Statistics from "../statistics";
 import routes from "../../utils/routes";
 
 const AppContent = () => (
@@ -12,9 +13,10 @@ const AppContent = () => (
         <Switch>
             <Route path="/" exact component={Home}/>
             <Route path={routes.home} component={Home}/>
-            <Route path={routes.events} component={Events}/>
-            <Route path={routes.login} component={Login}/>
-            <Route path={routes.register} component={Register}/>
+            <Route path={routes.events.main} component={Events}/>
+            <Route path={routes.account.login} component={Login}/>
+            <Route path={routes.account.register} component={Register}/>
+            <Route path={routes.statistics.main} component={Statistics}/>
         </Switch>
         <ModalRoot/>
     </div>

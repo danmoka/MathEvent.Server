@@ -3,8 +3,10 @@ import { history } from "../components/_app/AppContainer";
 
 export const navigateToHome = () => history.push(routes.home);
 
-export const navigateToLogin = () => history.push(routes.login);
-export const navigateToRegister = () => history.push(routes.register);
+export const navigateToLogin = () => history.push(routes.account.login);
+export const navigateToRegister = () => history.push(routes.account.register);
 
-export const navigateToEvents = () => history.push(routes.events);
-export const navigateToEventEdit = (eventId) => history.push(`${routes.events}/${eventId}/edit`);
+export const navigateToEvents = () => history.push(routes.events.main);
+export const navigateToEventEdit = (eventId) => history.push(`${routes.events.edit(eventId)}`);
+
+export const navigateToEventsStatistics = () => history.push(routes.statistics.event);
