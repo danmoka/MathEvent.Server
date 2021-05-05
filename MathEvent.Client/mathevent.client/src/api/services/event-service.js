@@ -17,6 +17,11 @@ const eventService = {
 
         return await baseService.get(url);
     },
+    fetchStatistics: async (eventSubsStatisticsTop) => {
+        const url = api.events.fetchStatistics(eventSubsStatisticsTop);
+
+        return await baseService.get(url);
+    },
     createEvent: async (createdEvent) => {
         const url = api.events.createEvent();
 

@@ -7,7 +7,9 @@ using MathEvent.Entities.Entities;
 using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -249,6 +251,87 @@ namespace MathEvent.Services.Services
                 Succeeded = true,
                 Entity = breadcrumbs.ToList()
             };
+        }
+
+        public async Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters)
+        {
+            int eventSubsStatisticsTop = 10;
+
+            if (filters is not null)
+            {
+                if (filters.TryGetValue("eventSubsStatisticsTop", out string eventSubsStatisticsTopParam))
+                {
+                    if (int.TryParse(eventSubsStatisticsTopParam, out int eventSubsStatisticsTopValue))
+                    {
+                        eventSubsStatisticsTop = eventSubsStatisticsTopValue;
+                    }
+                }
+            }
+
+            ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>();
+
+            simpleStatistics.Add(await GetSubcribersStatistics(eventSubsStatisticsTop));
+            simpleStatistics.Add(await GetMounthStatistics());
+
+            return simpleStatistics;
+        }
+
+        private async Task<SimpleStatistics> GetSubcribersStatistics(int number)
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Топ {number} самых популярных событий по подписчикам",
+                Data = new List<ChartDataPiece>()
+            };
+
+            var subscribersCountPerEvent = await _repositoryWrapper.Subscription
+                .FindAll()
+                .GroupBy(s => s.EventId)
+                .Select(g => new { eventId = g.Key, count = g.Count() })
+                .Take(number)
+                .ToDictionaryAsync(k => k.eventId, i => i.count);
+
+            foreach (var entry in subscribersCountPerEvent)
+            {
+                var eventEntity = await GetEventEntityAsync(entry.Key);
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = eventEntity.Name,
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
+        }
+
+        private async Task<SimpleStatistics> GetMounthStatistics()
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Самые загруженные месяцы по количеству событий",
+                Type = ChartTypes.Bar,
+                Data = new List<ChartDataPiece>()
+            };
+
+            var numberOfEventsPerMonthResult = await _repositoryWrapper.Event
+                .FindByCondition(e => e.StartDate >= DateTime.Now.AddYears(-1))
+                .GroupBy(e => e.StartDate.Month)
+                .Select(g => new { month = g.Key, count = g.Count() })
+                .ToDictionaryAsync(k => k.month, i => i.count);
+
+            foreach (var entry in numberOfEventsPerMonthResult)
+            {
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(entry.Key),
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
         }
 
         private async Task CreateNewSubscriptions(IEnumerable<string> newIds, int eventId)

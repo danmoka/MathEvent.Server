@@ -60,6 +60,22 @@ export const onRejectedEventBreadcrumbs = (state) => {
     onRejectedDefault(state);
 };
 
+// EventStatistics
+export const onPendingEventStatistics = (state) => {
+    state.isFetchingEventStatistics = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledEventStatistics = (state, hasError) => {
+    state.isFetchingEventStatistics = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedEventStatistics = (state) => {
+    state.isFetchingEventStatistics = false;
+    onRejectedDefault(state);
+};
+
 // Organizations
 export const onPendingOrganizations = (state) => {
     state.isFetchingOrganizations = defaultOnPendingFetchValue;

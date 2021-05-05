@@ -44,6 +44,18 @@ export const fetchEventBreadcrumbs = createAsyncThunk("fetchEventBreadcrumbs", a
     return { crumbs: [] };
 });
 
+export const fetchStatistics = createAsyncThunk("fetchStatistics", async (eventSubsStatisticsTop) => {
+    const response = await eventService.fetchStatistics(eventSubsStatisticsTop);
+
+    if (statusCode(response).ok) {
+        const statistics = await response.json();
+
+        return { statistics };
+    }
+
+    return { statistics: [] };
+});
+
 export const createEvent = createAsyncThunk("createEvent", async ({ event }, thunkAPI) => {
     thunkAPI.dispatch(hideModal());
     const response = await eventService.createEvent(event);

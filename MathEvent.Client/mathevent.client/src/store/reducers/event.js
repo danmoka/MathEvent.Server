@@ -8,22 +8,29 @@ import {
     onRejectedEvent,
     onPendingEventBreadcrumbs,
     onFulfilledEventBreadcrumbs,
-    onRejectedEventBreadcrumbs } from "./defaults";
+    onRejectedEventBreadcrumbs,
+    onPendingEventStatistics,
+    onFulfilledEventStatistics,
+    onRejectedEventStatistics
+} from "./defaults";
 import { fetchEvents,
     fetchEvent,
     createEvent,
     selectEvent,
     setGridView,
     fetchEventBreadcrumbs,
+    fetchStatistics,
     updateEvent,
     patchEvent,
-    deleteEvent} from "../actions/event";
+    deleteEvent
+} from "../actions/event";
 
 const initialState = {
     events: [],
     eventInfo: null,
     selectedEvent: null,
     crumbs: [],
+    statistics: [],
     isGridView: true,
     isFetchingEvents: false,
     isFetchingEvent: false,
@@ -96,6 +103,21 @@ const eventSlice = createSlice({
         [fetchEventBreadcrumbs.rejected]: (state) => {
             onRejectedEventBreadcrumbs(state);
             state.crumbs = [];
+        },
+
+        [fetchStatistics.pending]: (state) => {
+            onPendingEventStatistics(state);
+        },
+        [fetchStatistics.fulfilled]: (state, { payload: { statistics, hasError } }) => {
+            onFulfilledEventStatistics(state, hasError);
+
+            if (!hasError) {
+                state.statistics = statistics;
+            }
+        },
+        [fetchStatistics.rejected]: (state) => {
+            onRejectedEventStatistics(state);
+            state.statistics = [];
         },
 
         [updateEvent.pending]: (state) => {
