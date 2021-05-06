@@ -22,3 +22,15 @@ export const register = createAsyncThunk("register", async (credentials) => {
       navigateToLogin();
     }
 });
+
+export const fetchStatistics = createAsyncThunk("fetchStatistics", async (activeUsersTop) => {
+    const response = await userService.fetchStatistics(activeUsersTop);
+
+    if (statusCode(response).ok) {
+        const statistics = await response.json();
+
+        return { statistics };
+    }
+
+    return { statistics: [] };
+});

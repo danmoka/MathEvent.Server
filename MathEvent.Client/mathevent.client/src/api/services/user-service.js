@@ -11,7 +11,12 @@ const userService = {
         const url = api.users.registerUrl();
 
         return await baseService.post(url, credentials);
-    }
+    },
+    fetchStatistics: async (activeUsersTop) => {
+        const url = api.users.fetchStatistics(activeUsersTop);
+
+        return await baseService.get(url);
+    },
 };
 
 export default userService;

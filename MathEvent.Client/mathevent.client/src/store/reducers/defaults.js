@@ -187,3 +187,19 @@ export const onRejectedUsers = (state) => {
     state.isFetchingUsers = false;
     onRejectedDefault(state);
 };
+
+// UserStatistics
+export const onPendingUserStatistics = (state) => {
+    state.isFetchingUserStatistics = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledUserStatistics = (state, hasError) => {
+    state.isFetchingUserStatistics = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedUserStatistics = (state) => {
+    state.isFetchingUserStatistics = false;
+    onRejectedDefault(state);
+};

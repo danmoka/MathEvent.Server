@@ -3,22 +3,26 @@ import { useSelector } from "react-redux";
 import { Route } from "react-router-dom";
 import {
     navigateToEventsStatistics,
-    navigateToOrganizationsStatistics
+    navigateToOrganizationsStatistics,
+    navigateToUsersStatistics
 } from "../../utils/navigator";
 import routes from "../../utils/routes";
 import TabPanel from "../_common/TabPanel";
 import "./Statistics.scss";
-import EventStatisticsPanel from "./event/EventStatisticsPanel";
-import OrganizationStatisticsPanel from "./organization/OrganizationStatisticsPanel";
+import EventsStatisticsPanel from "./event/EventsStatisticsPanel";
+import OrganizationsStatisticsPanel from "./organization/OrganizationsStatisticsPanel";
+import UsersStatisticsPanel from "./user/UsersStatisticsPanel";
 
 const tabRoutes = [
-    routes.statistics.event,
-    routes.statistics.organization
+    routes.statistics.events,
+    routes.statistics.organizations,
+    routes.statistics.users
 ];
 
 const tabs = [
     { label: "События", onClick: () => navigateToEventsStatistics() },
-    { label: "Организации", onClick: () => navigateToOrganizationsStatistics() }
+    { label: "Организации", onClick: () => navigateToOrganizationsStatistics() },
+    { label: "Пользователи", onClick: () => navigateToUsersStatistics() }
 ];
 
 const Statistics = () => {
@@ -31,12 +35,16 @@ const Statistics = () => {
             </div>
             <div className="statistics__content">
             <Route
-                path={routes.statistics.event}
-                component={EventStatisticsPanel}
+                path={routes.statistics.events}
+                component={EventsStatisticsPanel}
             />
             <Route
-                path={routes.statistics.organization}
-                component={OrganizationStatisticsPanel}
+                path={routes.statistics.organizations}
+                component={OrganizationsStatisticsPanel}
+            />
+            <Route
+                path={routes.statistics.users}
+                component={UsersStatisticsPanel}
             />
             </div>
         </div>

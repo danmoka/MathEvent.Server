@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchStatistics } from "../../../store/actions/event";
+import { fetchStatistics } from "../../../store/actions/user";
 import BarChart from "../../_common/Chart/BarChart";
 import Loader from "../../_common/Loader";
 import PieChart from "../../_common/Chart/PieChart";
-import "./EventStatistics.scss";
+import "./UsersStatistics.scss";
 
-const EventStatisticsPanel = () => {
+const UsersStatisticsPanel = () => {
     const dispatch = useDispatch();
-    const { statistics, isFetchingEventStatistics } = useSelector((state) => state.event);
-    const [eventSubsStatisticsTop, setEventSubsStatisticsTop] = useState(10);
+    const { statistics, isFetchingUserStatistics } = useSelector((state) => state.user);
+    const [activeUsersTop, setActiveUsersTop] = useState(20);
 
     useEffect(() => {
-        dispatch(fetchStatistics(eventSubsStatisticsTop));
-    }, [dispatch, eventSubsStatisticsTop]);
+        dispatch(fetchStatistics(activeUsersTop));
+    }, [dispatch, activeUsersTop]);
 
     return (
-        isFetchingEventStatistics || statistics.length < 1
-        ? (<Loader className="event-statistics-panel__loader" size="medium"/>)
+        isFetchingUserStatistics || statistics.length < 1
+        ? (<Loader className="users-statistics-panel__loader" size="medium"/>)
         : (
-            <div className="event-statistics-panel">
+            <div className="users-statistics-panel">
                 {statistics.map((chart, index) => {
                     switch(chart.type) {
                         case "pie":
                             return (
-                                <div key={index} className="event-statistics-panel__item">
+                                <div key={index} className="users-statistics-panel__item">
                                     <PieChart
                                         data={chart.data}
                                         title={chart.title}
@@ -35,7 +35,7 @@ const EventStatisticsPanel = () => {
                             );
                         case "bar":
                             return (
-                                <div key={index} className="event-statistics-panel__item">
+                                <div key={index} className="users-statistics-panel__item">
                                     <BarChart
                                         data={chart.data}
                                         title={chart.title}
@@ -46,7 +46,7 @@ const EventStatisticsPanel = () => {
                             );
                         default:
                             return (
-                                <div key={index} className="event-statistics-panel__item">
+                                <div key={index} className="users-statistics-panel__item">
                                     <PieChart
                                         data={chart.data}
                                         title={chart.title}
@@ -62,4 +62,4 @@ const EventStatisticsPanel = () => {
     );
 };
 
-export default EventStatisticsPanel;
+export default UsersStatisticsPanel;

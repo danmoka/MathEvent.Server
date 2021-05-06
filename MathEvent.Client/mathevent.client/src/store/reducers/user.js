@@ -2,12 +2,18 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
     onPendingUsers,
     onFulfilledUsers,
-    onRejectedUsers } from "./defaults";
-import { fetchUsers } from "../actions/user";
+    onRejectedUsers,
+    onPendingUserStatistics,
+    onFulfilledUserStatistics,
+    onRejectedUserStatistics
+} from "./defaults";
+import { fetchUsers, fetchStatistics } from "../actions/user";
 
 const initialState = {
     users: [],
+    statistics: [],
     isFetchingUsers: false,
+    isFetchingUserStatistics: false,
     hasError: false,
 }
 
@@ -28,6 +34,21 @@ const userSlice = createSlice({
         [fetchUsers.rejected]: (state) => {
             onRejectedUsers(state);
             state.users = [];
+        },
+
+        [fetchStatistics.pending]: (state) => {
+            onPendingUserStatistics(state);
+        },
+        [fetchStatistics.fulfilled]: (state, { payload: { statistics, hasError } }) => {
+            onFulfilledUserStatistics(state, hasError);
+
+            if (!hasError) {
+                state.statistics = statistics;
+            }
+        },
+        [fetchStatistics.rejected]: (state) => {
+            onRejectedUserStatistics(state);
+            state.statistics = [];
         },
     }
 });

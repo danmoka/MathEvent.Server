@@ -2,6 +2,7 @@
 using MathEvent.Contracts;
 using MathEvent.Converters.Identities.DTOs;
 using MathEvent.Converters.Identities.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
@@ -222,6 +223,59 @@ namespace MathEvent.Services.Services
         public async Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user)
         {
             return await _userManager.GetUserAsync(user);
+        }
+
+        public async Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters)
+        {
+            int activeUsersTop = 10;
+
+            if (filters is not null)
+            {
+                if (filters.TryGetValue("activeUsersTop", out string activeUsersTopParam))
+                {
+                    if (int.TryParse(activeUsersTopParam, out int activeUsersTopValue))
+                    {
+                        activeUsersTop = activeUsersTopValue;
+                    }
+                }
+            }
+
+            ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>
+            {
+                await GetMostActiveUsersStatistics(activeUsersTop),
+            };
+
+            return simpleStatistics;
+        }
+
+        private async Task<SimpleStatistics> GetMostActiveUsersStatistics(int number)
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Топ самых активных пользователей по количеству посещаемых событий",
+                Data = new List<ChartDataPiece>()
+            };
+
+            var eventsCountPerUser = await _repositoryWrapper.Subscription
+                .FindAll()
+                .GroupBy(s => s.ApplicationUserId)
+                .Select(g => new { userId = g.Key, count = g.Count() })
+                .Take(number)
+                .ToDictionaryAsync(k => k.userId, i => i.count);
+
+            foreach (var entry in eventsCountPerUser)
+            {
+                var userEntity = await GetUserEntityAsync(entry.Key);
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = $"{userEntity.Name[0]}. {userEntity.Surname} ({userEntity.UserName})",
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
         }
 
         private async Task CreateNewSubscriptions(IEnumerable<int> newIds, string userId)

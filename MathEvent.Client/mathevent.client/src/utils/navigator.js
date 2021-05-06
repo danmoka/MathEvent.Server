@@ -9,5 +9,6 @@ export const navigateToRegister = () => history.push(routes.account.register);
 export const navigateToEvents = () => history.push(routes.events.main);
 export const navigateToEventEdit = (eventId) => history.push(`${routes.events.edit(eventId)}`);
 
-export const navigateToEventsStatistics = () => history.push(routes.statistics.event);
-export const navigateToOrganizationsStatistics = () => history.push(routes.statistics.organization);
+export const navigateToEventsStatistics = () => history.push(routes.statistics.events);
+export const navigateToOrganizationsStatistics = () => history.push(routes.statistics.organizations);
+export const navigateToUsersStatistics = () => history.push(routes.statistics.users);

@@ -1,7 +1,9 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Converters.Identities.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Results;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -20,5 +22,6 @@ namespace MathEvent.Services.Services
     {
         Task<ApplicationUser> GetUserEntityAsync(string id);
         Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user);
+        Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters);
     }
 }
