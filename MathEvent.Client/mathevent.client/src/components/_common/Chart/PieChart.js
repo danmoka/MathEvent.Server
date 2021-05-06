@@ -7,7 +7,6 @@ import {
     PieSeries,
     Title
 } from '@devexpress/dx-react-chart-material-ui';
-import { Animation } from '@devexpress/dx-react-chart';
 import { Palette } from '@devexpress/dx-react-chart';
 import schemeCollection from "../../../constants/chart-color-scheme";
 
@@ -40,7 +39,6 @@ const PieChart = ({ data, valueField, argumentField, title }) => {
                 <Title
                     text={title}
                 />
-                <Animation />
             </Chart>
         </Paper>
     );
