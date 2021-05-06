@@ -92,6 +92,22 @@ export const onRejectedOrganizations = (state) => {
     onRejectedDefault(state);
 };
 
+// OrganizationStatistics
+export const onPendingOrganizationStatistics = (state) => {
+    state.isFetchingOrganizationStatistics = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledOrganizationStatistics = (state, hasError) => {
+    state.isFetchingOrganizationStatistics = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedOrganizationStatistics = (state) => {
+    state.isFetchingOrganizationStatistics = false;
+    onRejectedDefault(state);
+};
+
 // Files
 export const onPendingFiles = (state) => {
     state.isFetchingFiles = defaultOnPendingFetchValue;

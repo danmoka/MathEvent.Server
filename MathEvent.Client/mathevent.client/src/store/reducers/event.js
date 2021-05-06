@@ -35,6 +35,7 @@ const initialState = {
     isFetchingEvents: false,
     isFetchingEvent: false,
     isFetchingEventBreadcrumbs: false,
+    isFetchingEventStatistics: false,
     hasError: false,
 };
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.Converters.Organizations.DTOs;
 using MathEvent.Converters.Organizations.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
@@ -184,6 +185,13 @@ namespace MathEvent.Api.Controllers
             {
                 return BadRequest(deleteResult.Messages);
             }
+        }
+
+        // GET api/Organizations/Statistics/?key1=value1&key2=value2
+        [HttpGet("Statistics/")]
+        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
+        {
+            return Ok(await _organizationService.GetSimpleStatistics(filters));
         }
     }
 }

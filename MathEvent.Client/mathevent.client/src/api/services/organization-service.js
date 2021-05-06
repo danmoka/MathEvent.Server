@@ -7,6 +7,11 @@ const organizationService = {
 
         return await baseService.get(url);
     },
+    fetchStatistics: async () => {
+        const url = api.organizations.fetchStatistics();
+
+        return await baseService.get(url);
+    },
 };
 
 export default organizationService;

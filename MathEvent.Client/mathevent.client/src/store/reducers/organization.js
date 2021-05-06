@@ -1,10 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { onPendingOrganizations, onFulfilledOrganizations, onRejectedOrganizations } from "./defaults";
-import { fetchOrganizations} from "../actions/organization";
+import {
+    onPendingOrganizations,
+    onFulfilledOrganizations,
+    onRejectedOrganizations,
+    onPendingOrganizationStatistics,
+    onFulfilledOrganizationStatistics,
+    onRejectedOrganizationStatistics
+} from "./defaults";
+import { fetchOrganizations, fetchStatistics } from "../actions/organization";
 
 const initialState = {
     organizations: [],
+    statistics: [],
     isFetchingOrganizations: false,
+    isFetchingOrganizationStatistics: false,
     hasError: false
 };
 
@@ -25,6 +34,21 @@ const organizationSlice = createSlice({
         [fetchOrganizations.rejected]: (state) => {
             onRejectedOrganizations(state);
             state.organizations = [];
+        },
+
+        [fetchStatistics.pending]: (state) => {
+            onPendingOrganizationStatistics(state);
+        },
+        [fetchStatistics.fulfilled]: (state, { payload: { statistics, hasError } }) => {
+            onFulfilledOrganizationStatistics(state, hasError);
+
+            if (!hasError) {
+                state.statistics = statistics;
+            }
+        },
+        [fetchStatistics.rejected]: (state) => {
+            onRejectedOrganizationStatistics(state);
+            state.statistics = [];
         },
     }
 });

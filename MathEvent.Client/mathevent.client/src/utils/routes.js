@@ -13,7 +13,8 @@ const routes = {
     },
     statistics: {
         main: "/statistics",
-        event: "/statistics/event"
+        event: "/statistics/event",
+        organization: "/statistics/organization"
     }
 };
 

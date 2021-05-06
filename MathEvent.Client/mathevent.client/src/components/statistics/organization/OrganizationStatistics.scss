@@ -1,0 +1,12 @@
+.organization-statistics-panel {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 2%;
+
+    &__item {
+        width: 32%;
+    }
+}

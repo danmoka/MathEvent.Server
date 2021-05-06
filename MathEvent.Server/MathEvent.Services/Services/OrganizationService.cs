@@ -2,10 +2,12 @@
 using MathEvent.Contracts;
 using MathEvent.Converters.Organizations.DTOs;
 using MathEvent.Converters.Organizations.Models;
+using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -162,6 +164,116 @@ namespace MathEvent.Services.Services
             return await _repositoryWrapper.Organization
                 .FindByCondition(ev => ev.Id == id)
                 .SingleOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters)
+        {
+            ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>
+            {
+                await GetMostPopularOrganizationStatistics(),
+                await GetMostProductiveOrganizationsStatistics()
+            };
+
+            return simpleStatistics;
+        }
+
+        private async Task<SimpleStatistics> GetMostProductiveOrganizationsStatistics()
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Самые активные организации по количеству созданных событий за последний год",
+                Type = ChartTypes.Bar,
+                Data = new List<ChartDataPiece>()
+            };
+
+            var numberOfEventsPerMonthResult = await _repositoryWrapper.Event
+                .FindByCondition(e => e.StartDate >= DateTime.Now.AddYears(-1))
+                .GroupBy(e => e.OrganizationId)
+                .Select(g => new { orgId = g.Key, count = g.Count() })
+                .ToDictionaryAsync(k => k.orgId is null ? -1 : k.orgId, i => i.count);
+
+            foreach (var entry in numberOfEventsPerMonthResult)
+            {
+                var name = "Без организации";
+
+                if (entry.Key != -1)
+                {
+                    var organization = await GetOrganizationEntityAsync(entry.Key.Value);
+                    name = organization.Name;
+                }
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = name,
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
+        }
+
+        private async Task<SimpleStatistics> GetMostPopularOrganizationStatistics()
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Топ самых популярных организаций по количеству подписчиков на их события за последний год",
+                Data = new List<ChartDataPiece>()
+            };
+
+            var subscribersCountPerEvent = await _repositoryWrapper.Subscription
+                .FindAll()
+                .GroupBy(s => s.EventId)
+                .Select(g => new { eventId = g.Key, count = g.Count() })
+                .ToDictionaryAsync(k => k.eventId, i => i.count);
+
+            var organizationSubcribersPerEvent = new Dictionary<int, int>();
+            var events = await _repositoryWrapper.Event
+                .FindByCondition(e => e.StartDate >= DateTime.Now.AddYears(-1))
+                .ToListAsync();
+
+            foreach (var ev in events)
+            {
+                if (subscribersCountPerEvent.ContainsKey(ev.Id))
+                {
+                    var subsCount = subscribersCountPerEvent[ev.Id];
+                    var orgId = -1;
+
+                    if (ev.OrganizationId is not null)
+                    {
+                        orgId = ev.OrganizationId.Value;
+                    }
+
+                    if (organizationSubcribersPerEvent.ContainsKey(orgId))
+                    {
+                        organizationSubcribersPerEvent[orgId] += subsCount;
+                    }
+                    else
+                    {
+                        organizationSubcribersPerEvent.Add(orgId, subsCount);
+                    }
+                }
+            }
+
+            foreach (var entry in organizationSubcribersPerEvent)
+            {
+                var name = "Без организации";
+
+                if (entry.Key != -1)
+                {
+                    var organization = await GetOrganizationEntityAsync(entry.Key);
+                    name = organization.Name;
+                }
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = name,
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
         }
 
         private static IQueryable<Organization> Filter(IQueryable<Organization> organizationQuery, IDictionary<string, string> filters)

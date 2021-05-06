@@ -10,3 +10,4 @@ export const navigateToEvents = () => history.push(routes.events.main);
 export const navigateToEventEdit = (eventId) => history.push(`${routes.events.edit(eventId)}`);
 
 export const navigateToEventsStatistics = () => history.push(routes.statistics.event);
+export const navigateToOrganizationsStatistics = () => history.push(routes.statistics.organization);

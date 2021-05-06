@@ -13,3 +13,15 @@ export const fetchOrganizations = createAsyncThunk("fetchOrganizations", async (
 
     return { organizations: [] };
 });
+
+export const fetchStatistics = createAsyncThunk("fetchStatistics", async () => {
+    const response = await organizationService.fetchStatistics();
+
+    if (statusCode(response).ok) {
+        const statistics = await response.json();
+
+        return { statistics };
+    }
+
+    return { statistics: [] };
+});

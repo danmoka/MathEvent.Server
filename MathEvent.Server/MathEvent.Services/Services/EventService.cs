@@ -310,7 +310,7 @@ namespace MathEvent.Services.Services
         {
             var statistics = new SimpleStatistics
             {
-                Title = $"Самые загруженные месяцы по количеству событий",
+                Title = $"Самые загруженные месяцы по количеству событий за последний год",
                 Type = ChartTypes.Bar,
                 Data = new List<ChartDataPiece>()
             };
