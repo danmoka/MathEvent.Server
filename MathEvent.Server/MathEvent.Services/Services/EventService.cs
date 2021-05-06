@@ -268,10 +268,11 @@ namespace MathEvent.Services.Services
                 }
             }
 
-            ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>();
-
-            simpleStatistics.Add(await GetSubcribersStatistics(eventSubsStatisticsTop));
-            simpleStatistics.Add(await GetMounthStatistics());
+            ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>
+            {
+                await GetSubcribersStatistics(eventSubsStatisticsTop),
+                await GetMounthStatistics()
+            };
 
             return simpleStatistics;
         }
@@ -280,7 +281,7 @@ namespace MathEvent.Services.Services
         {
             var statistics = new SimpleStatistics
             {
-                Title = $"Топ {number} самых популярных событий по подписчикам",
+                Title = $"Топ самых популярных событий по подписчикам",
                 Data = new List<ChartDataPiece>()
             };
 

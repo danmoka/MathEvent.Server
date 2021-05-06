@@ -171,7 +171,8 @@ namespace MathEvent.Services.Services
             ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>
             {
                 await GetMostPopularOrganizationStatistics(),
-                await GetMostProductiveOrganizationsStatistics()
+                await GetMostProductiveOrganizationsStatistics(),
+                await GetCountOfUsersInOrganizationStatistics()
             };
 
             return simpleStatistics;
@@ -262,6 +263,42 @@ namespace MathEvent.Services.Services
                 if (entry.Key != -1)
                 {
                     var organization = await GetOrganizationEntityAsync(entry.Key);
+                    name = organization.Name;
+                }
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = name,
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
+        }
+
+        private async Task<SimpleStatistics> GetCountOfUsersInOrganizationStatistics()
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Количество представителей организаций",
+                Data = new List<ChartDataPiece>(),
+                Type = ChartTypes.Bar
+            };
+
+            var usersCountPerOrganization = await _repositoryWrapper.User
+                .FindAll()
+                .GroupBy(u => u.OrganizationId)
+                .Select(g => new { orgId = g.Key, count = g.Count() })
+                .ToDictionaryAsync(k => k.orgId is null ? -1 : k.orgId, i => i.count);
+
+            foreach (var entry in usersCountPerOrganization)
+            {
+                var name = "Без организации";
+
+                if (entry.Key != -1)
+                {
+                    var organization = await GetOrganizationEntityAsync(entry.Key.Value);
                     name = organization.Name;
                 }
 
