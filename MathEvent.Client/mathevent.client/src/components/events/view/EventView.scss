@@ -124,6 +124,13 @@
     gap: 20px;
     width: 50%;
 
+    &--stats {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     &--description {
       width: 100%;
       padding: 20px;
@@ -156,7 +163,7 @@
   &__horizontal_icon_text {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
     overflow-y: auto;
     gap: 10px;
   }

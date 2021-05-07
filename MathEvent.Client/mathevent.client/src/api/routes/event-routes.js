@@ -8,7 +8,8 @@ const eventRoutes = {
     patchEvent: (eventId) => getRoute(`events/${eventId}/`),
     deleteEvent: (eventId) => getRoute(`events/${eventId}/`),
     fetchEventBreadcrumbs: (eventId) => getRoute(`events/breadcrumbs/${eventId}`),
-    fetchStatistics: (eventSubsStatisticsTop) => getRoute(`events/statistics/?eventSubsStatisticsTop=${eventSubsStatisticsTop}`)
+    fetchStatistics: (eventSubsStatisticsTop) => getRoute(`events/statistics/?eventSubsStatisticsTop=${eventSubsStatisticsTop}`),
+    fetchEventStatistics: (eventId) => getRoute(`events/statistics/${eventId}`)
 };
 
 export default eventRoutes;

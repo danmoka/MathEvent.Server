@@ -56,6 +56,18 @@ export const fetchStatistics = createAsyncThunk("fetchStatistics", async (eventS
     return { statistics: [] };
 });
 
+export const fetchEventStatistics = createAsyncThunk("fetchEventStatistics", async (eventId) => {
+    const response = await eventService.fetchEventStatistics(eventId);
+
+    if (statusCode(response).ok) {
+        const statistics = await response.json();
+
+        return { statistics };
+    }
+
+    return { statistics: [] };
+});
+
 export const createEvent = createAsyncThunk("createEvent", async ({ event }, thunkAPI) => {
     thunkAPI.dispatch(hideModal());
     const response = await eventService.createEvent(event);
@@ -116,4 +128,7 @@ export const showDeleteEventModal = createAsyncThunk("showDeleteEventModal", asy
 });
 export const showEditManagersEventModal = createAsyncThunk("showEditManagersEventModal", async ({ event, preparedNewManagers }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.editManagersEventModal, { event, preparedNewManagers }));
+});
+export const showEventStatistics = createAsyncThunk("showEventStatistics", async ({ event }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.eventStatistics, { event }));
 });

@@ -9,6 +9,9 @@ import {
     onPendingEventBreadcrumbs,
     onFulfilledEventBreadcrumbs,
     onRejectedEventBreadcrumbs,
+    onPendingEventsStatistics,
+    onFulfilledEventsStatistics,
+    onRejectedEventsStatistics,
     onPendingEventStatistics,
     onFulfilledEventStatistics,
     onRejectedEventStatistics
@@ -19,6 +22,7 @@ import { fetchEvents,
     selectEvent,
     setGridView,
     fetchEventBreadcrumbs,
+    fetchEventStatistics,
     fetchStatistics,
     updateEvent,
     patchEvent,
@@ -30,12 +34,13 @@ const initialState = {
     eventInfo: null,
     selectedEvent: null,
     crumbs: [],
+    eventStatistics: [],
     statistics: [],
     isGridView: true,
     isFetchingEvents: false,
     isFetchingEvent: false,
     isFetchingEventBreadcrumbs: false,
-    isFetchingEventStatistics: false,
+    isFetchingEventsStatistics: false,
     hasError: false,
 };
 
@@ -107,18 +112,33 @@ const eventSlice = createSlice({
         },
 
         [fetchStatistics.pending]: (state) => {
-            onPendingEventStatistics(state);
+            onPendingEventsStatistics(state);
         },
         [fetchStatistics.fulfilled]: (state, { payload: { statistics, hasError } }) => {
-            onFulfilledEventStatistics(state, hasError);
+            onFulfilledEventsStatistics(state, hasError);
 
             if (!hasError) {
                 state.statistics = statistics;
             }
         },
         [fetchStatistics.rejected]: (state) => {
-            onRejectedEventStatistics(state);
+            onRejectedEventsStatistics(state);
             state.statistics = [];
+        },
+
+        [fetchEventStatistics.pending]: (state) => {
+            onPendingEventStatistics(state);
+        },
+        [fetchEventStatistics.fulfilled]: (state, { payload: { statistics, hasError } }) => {
+            onFulfilledEventStatistics(state, hasError);
+
+            if (!hasError) {
+                state.eventStatistics = statistics;
+            }
+        },
+        [fetchEventStatistics.rejected]: (state) => {
+            onRejectedEventStatistics(state);
+            state.eventStatistics = [];
         },
 
         [updateEvent.pending]: (state) => {

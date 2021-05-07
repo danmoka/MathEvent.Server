@@ -14,3 +14,20 @@
         margin: auto;
     }
 }
+
+.event-statistics-panel {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 0%;
+
+    &__item {
+        width: 100%;
+    }
+
+    &__loader {
+        margin: auto;
+    }
+}

@@ -26,11 +26,17 @@ namespace MathEvent.Services.Services
 
         private readonly IOwnerService _ownerService;
 
-        public EventService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IOwnerService ownerService)
+        private readonly IUserService _userService;
+
+        private readonly IOrganizationService _organizationService;
+
+        public EventService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IOwnerService ownerService, IUserService userService, IOrganizationService organizationService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _ownerService = ownerService;
+            _userService = userService;
+            _organizationService = organizationService;
         }
 
         public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
@@ -253,6 +259,16 @@ namespace MathEvent.Services.Services
             };
         }
 
+        public async Task<IEnumerable<SimpleStatistics>> GetEventStatistics(int id)
+        {
+            ICollection<SimpleStatistics> eventStatistics = new List<SimpleStatistics>
+            {
+                await GetOrganizationSubscribersCountStatistics(id)
+            };
+
+            return eventStatistics;
+        }
+
         public async Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters)
         {
             int eventSubsStatisticsTop = 10;
@@ -328,6 +344,67 @@ namespace MathEvent.Services.Services
                     new ChartDataPiece
                     {
                         X = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(entry.Key),
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
+        }
+
+        private async Task<SimpleStatistics> GetOrganizationSubscribersCountStatistics(int eventId)
+        {
+            var statistics = new SimpleStatistics
+            {
+                Title = $"Представители организаций",
+                Data = new List<ChartDataPiece>()
+            };
+
+            var subscriptions = await _repositoryWrapper.Subscription
+                .FindByCondition(s => s.EventId == eventId)
+                .ToListAsync();
+
+            var subscribers = new List<ApplicationUser>();
+
+            foreach (var subscription in subscriptions)
+            {
+                subscribers.Add(await _userService.GetUserEntityAsync(subscription.ApplicationUserId));
+            }
+
+            var organizationSubcribersCount = new Dictionary<int, int>();
+
+            foreach (var user in subscribers)
+            {
+                int orgId = -1;
+
+                if (user.OrganizationId != null)
+                {
+                    orgId = user.OrganizationId.Value;
+                }
+
+                if (organizationSubcribersCount.ContainsKey(orgId))
+                {
+                    organizationSubcribersCount[orgId]++;
+                }
+                else
+                {
+                    organizationSubcribersCount.Add(orgId, 1);
+                }
+            }
+
+            foreach (var entry in organizationSubcribersCount)
+            {
+                var name = "Без организации";
+
+                if (entry.Key != -1)
+                {
+                    var organization = await _organizationService.GetOrganizationEntityAsync(entry.Key);
+                    name = organization.Name;
+                }
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = name,
                         Y = entry.Value
                     });
             }

@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { patchEvent } from "../../../store/actions/event";
+import { patchEvent, showEventStatistics } from "../../../store/actions/event";
 import { useCurrentUser } from "../../../hooks";
 import { Date } from "../../_common/Date";
-import { Icon, iconTypes } from "../../_common/Icon";
+import { Icon, IconButton, iconTypes } from "../../_common/Icon";
 import Button from "../../_common/Button";
 import EventFiles from "./EventFiles";
 import Image from "../../_common/Image";
@@ -74,6 +74,13 @@ const EventInfo = () => {
         ]);
     }, [handlePatchEvent, userInfo, applicationUsers]);
 
+    const handleShowStatistics = useCallback(
+        () => {
+            dispatch(showEventStatistics({ event: eventInfo }));
+        },
+        [dispatch, eventInfo]
+    );
+
     return (
         isFetchingEvent
         ? (<Loader className="event-grid__loader" size="medium"/>)
@@ -86,7 +93,13 @@ const EventInfo = () => {
                                 className="event-info__image"
                                 src={image}
                                 alt={name}/>
-                            <Typography variant="h5">{name}</Typography>
+                            <div className="event-info__info--stats">
+                                <Typography variant="h5">{name}</Typography>
+                                <IconButton
+                                    type={iconTypes.stats}
+                                    onClick={handleShowStatistics}
+                                />
+                            </div>
                         </Paper>
                         <Paper className="event-info__info--subscribe">
                             <div className="event-info__horizontal_icon_text">

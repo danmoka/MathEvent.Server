@@ -22,5 +22,6 @@ namespace MathEvent.Services.Services
         Task<Event> GetEventEntityAsync(int id);
         Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id);
         Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters);
+        Task<IEnumerable<SimpleStatistics>> GetEventStatistics(int id);
     }
 }

@@ -8,7 +8,7 @@ import "./EventsStatistics.scss";
 
 const EventsStatisticsPanel = () => {
     const dispatch = useDispatch();
-    const { statistics, isFetchingEventStatistics } = useSelector((state) => state.event);
+    const { statistics, isFetchingEventsStatistics } = useSelector((state) => state.event);
     const [eventSubsStatisticsTop, setEventSubsStatisticsTop] = useState(10);
 
     useEffect(() => {
@@ -16,7 +16,7 @@ const EventsStatisticsPanel = () => {
     }, [dispatch, eventSubsStatisticsTop]);
 
     return (
-        isFetchingEventStatistics || statistics.length < 1
+        isFetchingEventsStatistics || statistics.length < 1
         ? (<Loader className="events-statistics-panel__loader" size="medium"/>)
         : (
             <div className="events-statistics-panel">

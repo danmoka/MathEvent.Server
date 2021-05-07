@@ -189,6 +189,7 @@ namespace MathEvent.Api.Controllers
 
         // GET api/Organizations/Statistics/?key1=value1&key2=value2
         [HttpGet("Statistics/")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
         {
             return Ok(await _organizationService.GetSimpleStatistics(filters));

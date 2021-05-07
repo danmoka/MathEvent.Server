@@ -8,6 +8,7 @@ const icons = {
     [iconTypes.business]: materialIcons.Business,
     [iconTypes.close]: materialIcons.Close,
     [iconTypes.dashboard]: materialIcons.Dashboard,
+    [iconTypes.dataUsage]: materialIcons.DataUsage,
     [iconTypes.delete]: materialIcons.Delete,
     [iconTypes.description]: materialIcons.Description,
     [iconTypes.download]: materialIcons.SaveAlt,

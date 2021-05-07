@@ -220,9 +220,18 @@ namespace MathEvent.Api.Controllers
 
         // GET api/Events/Statistics/?key1=value1&key2=value2
         [HttpGet("Statistics/")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
         {
             return Ok(await _eventService.GetSimpleStatistics(filters));
+        }
+
+        // GET api/Events/Statistics/{id}
+        [HttpGet("Statistics/{id}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> EventStatisticsAsync(int id)
+        {
+            return Ok(await _eventService.GetEventStatistics(id));
         }
     }
 }

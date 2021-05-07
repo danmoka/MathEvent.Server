@@ -1,6 +1,7 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import EditManagersEventModal from "../../events/edit/EditManagersEventModal";
+import EventStatisticsModal from "../../statistics/event/EventStatisticsModal";
 import CreateEventModal from "../../events/view/CreateEventModal";
 import CreateFolderModal from "../../files/view/CreateFolderModal";
 import DeleteEventModal from "../../events/view/DeleteEventModal";
@@ -13,6 +14,7 @@ const modals = {
     [modalTypes.createEvent]: CreateEventModal,
     [modalTypes.deleteEvent]: DeleteEventModal,
     [modalTypes.editManagersEventModal]: EditManagersEventModal,
+    [modalTypes.eventStatistics]: EventStatisticsModal,
     [modalTypes.createFolder]: CreateFolderModal,
     [modalTypes.deleteFile]: DeleteFileModal,
     [modalTypes.uploadFiles]: UploadFilesModal,

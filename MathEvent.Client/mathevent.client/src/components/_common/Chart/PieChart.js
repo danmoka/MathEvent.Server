@@ -10,7 +10,7 @@ import {
 import { Palette } from '@devexpress/dx-react-chart';
 import schemeCollection from "../../../constants/chart-color-scheme";
 
-const PieChart = ({ data, valueField, argumentField, title }) => {
+const PieChart = ({ data, valueField, argumentField, title, elevation=1 }) => {
     const dispatch = useDispatch();
     const { isDarkTheme } = useSelector(state => state.app);
     const [scheme, setScheme] = useState(schemeCollection.schemeCategory10);
@@ -25,7 +25,8 @@ const PieChart = ({ data, valueField, argumentField, title }) => {
     }, [dispatch, isDarkTheme]);
 
     return (
-        <Paper>
+        <Paper
+            elevation={elevation}>
             <Chart
                 data={data}
             >

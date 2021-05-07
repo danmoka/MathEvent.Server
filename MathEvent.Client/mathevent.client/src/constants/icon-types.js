@@ -5,6 +5,7 @@ const iconTypes = {
     business: "business",
     close: "close",
     dashboard: "dashboard",
+    dataUsage: "dataUsage",
     delete: "delete",
     description: "description",
     download: "download",

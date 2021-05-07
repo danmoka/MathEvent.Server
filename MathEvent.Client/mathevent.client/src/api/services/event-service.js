@@ -22,6 +22,11 @@ const eventService = {
 
         return await baseService.get(url);
     },
+    fetchEventStatistics: async (eventId) => {
+        const url = api.events.fetchEventStatistics(eventId);
+
+        return await baseService.get(url);
+    },
     createEvent: async (createdEvent) => {
         const url = api.events.createEvent();
 
