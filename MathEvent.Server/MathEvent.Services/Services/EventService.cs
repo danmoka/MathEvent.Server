@@ -263,7 +263,7 @@ namespace MathEvent.Services.Services
         {
             ICollection<SimpleStatistics> eventStatistics = new List<SimpleStatistics>
             {
-                await GetOrganizationSubscribersCountStatistics(id)
+                await GetEventSubscribersByOrganizationStatistics(id)
             };
 
             return eventStatistics;
@@ -291,6 +291,100 @@ namespace MathEvent.Services.Services
             };
 
             return simpleStatistics;
+        }
+
+        private async Task<SimpleStatistics> GetEventSubscribersByOrganizationStatistics(int eventId)
+        {
+            var eventEntity = await GetEventEntityAsync(eventId);
+
+            var statistics = new SimpleStatistics
+            {
+                Title = eventEntity.Hierarchy is null
+                ? $"Подписчики события по организациям"
+                : $"Подписчики вложенных \"листовых\" событий по организациям",
+                Data = new List<ChartDataPiece>()
+            };
+
+            var organizationSubcribersCount = await GetEventSubscribersByOrganizationRoot(eventEntity);
+
+            foreach (var entry in organizationSubcribersCount)
+            {
+                var name = "Без организации";
+
+                if (entry.Key != -1)
+                {
+                    var organization = await _organizationService.GetOrganizationEntityAsync(entry.Key);
+                    name = organization.Name;
+                }
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = name,
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
+        }
+
+        private async Task<IDictionary<int, int>> GetEventSubscribersByOrganizationRoot(Event ev)
+        {
+            var organizationSubcribersCount = new Dictionary<int, int>();
+
+            return await GetEventSubscribersByOrganization(ev, 0, organizationSubcribersCount);
+        }
+
+        private async Task<IDictionary<int, int>> GetEventSubscribersByOrganization(Event ev, int level, IDictionary<int, int> orgSubsCount)
+        {
+            if (level > 8)
+            {
+                return orgSubsCount;
+            }
+
+            if (ev.Hierarchy is null)
+            {
+                var subscriptions = await _repositoryWrapper.Subscription
+                    .FindByCondition(s => s.EventId == ev.Id)
+                    .ToListAsync();
+
+                var subscribers = new List<ApplicationUser>();
+
+                foreach (var subscription in subscriptions)
+                {
+                    subscribers.Add(await _userService.GetUserEntityAsync(subscription.ApplicationUserId));
+                }
+
+                foreach (var user in subscribers)
+                {
+                    int orgId = -1;
+
+                    if (user.OrganizationId != null)
+                    {
+                        orgId = user.OrganizationId.Value;
+                    }
+
+                    if (orgSubsCount.ContainsKey(orgId))
+                    {
+                        orgSubsCount[orgId]++;
+                    }
+                    else
+                    {
+                        orgSubsCount.Add(orgId, 1);
+                    }
+                }
+            }
+
+            var children = await _repositoryWrapper.Event
+                .FindByCondition(e => e.ParentId == ev.Id)
+                .ToListAsync();
+
+            foreach (var child in children)
+            {
+                await GetEventSubscribersByOrganization(child, level + 1, orgSubsCount);
+            }
+
+            return orgSubsCount;
         }
 
         private async Task<SimpleStatistics> GetSubcribersStatistics(int number)
@@ -344,67 +438,6 @@ namespace MathEvent.Services.Services
                     new ChartDataPiece
                     {
                         X = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(entry.Key),
-                        Y = entry.Value
-                    });
-            }
-
-            return statistics;
-        }
-
-        private async Task<SimpleStatistics> GetOrganizationSubscribersCountStatistics(int eventId)
-        {
-            var statistics = new SimpleStatistics
-            {
-                Title = $"Представители организаций",
-                Data = new List<ChartDataPiece>()
-            };
-
-            var subscriptions = await _repositoryWrapper.Subscription
-                .FindByCondition(s => s.EventId == eventId)
-                .ToListAsync();
-
-            var subscribers = new List<ApplicationUser>();
-
-            foreach (var subscription in subscriptions)
-            {
-                subscribers.Add(await _userService.GetUserEntityAsync(subscription.ApplicationUserId));
-            }
-
-            var organizationSubcribersCount = new Dictionary<int, int>();
-
-            foreach (var user in subscribers)
-            {
-                int orgId = -1;
-
-                if (user.OrganizationId != null)
-                {
-                    orgId = user.OrganizationId.Value;
-                }
-
-                if (organizationSubcribersCount.ContainsKey(orgId))
-                {
-                    organizationSubcribersCount[orgId]++;
-                }
-                else
-                {
-                    organizationSubcribersCount.Add(orgId, 1);
-                }
-            }
-
-            foreach (var entry in organizationSubcribersCount)
-            {
-                var name = "Без организации";
-
-                if (entry.Key != -1)
-                {
-                    var organization = await _organizationService.GetOrganizationEntityAsync(entry.Key);
-                    name = organization.Name;
-                }
-
-                statistics.Data.Add(
-                    new ChartDataPiece
-                    {
-                        X = name,
                         Y = entry.Value
                     });
             }

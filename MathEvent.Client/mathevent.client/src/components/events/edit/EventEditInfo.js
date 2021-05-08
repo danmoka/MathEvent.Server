@@ -103,7 +103,7 @@ const EventEditInfo = () => {
         setHierarchy(newValue);
         handlePatchEvent([
             {
-                value: newValue,
+                value: newValue ? newValue : null,
                 path: "/Hierarchy",
                 op: "replace"
             }
