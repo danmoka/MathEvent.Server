@@ -9,11 +9,12 @@ import "./EventView.scss";
 
 const EventView = () => {
     const dispatch = useDispatch();
-    const { isGridView } = useSelector(state => state.event);
+    const { eventInfo, isGridView } = useSelector(state => state.event);
 
     useEffect(() => {
-        dispatch(fetchEvents());
-        dispatch(fetchEventBreadcrumbs());
+        const parentId = eventInfo ? eventInfo.parentId : null;
+        dispatch(fetchEvents(parentId));
+        dispatch(fetchEventBreadcrumbs(parentId));
     }, []);
 
     useTitle("События");
