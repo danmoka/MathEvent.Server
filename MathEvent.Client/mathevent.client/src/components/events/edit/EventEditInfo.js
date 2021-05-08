@@ -25,7 +25,7 @@ const EventEditInfo = () => {
     const [startDate, setStartDate] = useState(event ? event.startDate : new Date(Date.now()));
     const [description, setDesctiption] = useState("");
     const [organization, setOrganization] = useState(preparedOrganizations[0].value);
-    const [hierarchy, setHierarchy] = useState(event ? event.hierarchy : false);
+    const [hierarchy, setHierarchy] = useState(false);
 
     useEffect(() => {
         dispatch(fetchOrganizations())
@@ -37,6 +37,7 @@ const EventEditInfo = () => {
             setName(event.name);
             setStartDate(event.startDate);
             setDesctiption(event.description);
+            setHierarchy(event.hierarchy ? true : false);
             if (event.organization) {
                 setOrganization(event.organization.id);
             }

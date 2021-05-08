@@ -156,6 +156,29 @@ namespace MathEvent.Services.Services
                 };
             }
 
+            if (updateModel.Hierarchy is null && eventEntity.Hierarchy is not null)
+            {
+                var children = await _repositoryWrapper.Event
+                    .FindByCondition(ev => ev.ParentId == eventEntity.Id)
+                    .ToListAsync();
+
+                if (children.Count > 0)
+                {
+                    return new MessageResult<EventWithUsersReadModel>
+                    {
+                        Succeeded = false,
+                        Messages = new List<SimpleMessage>
+                    {
+                        new SimpleMessage
+                        {
+                            Code = "400",
+                            Message = $"Event with the ID {id} has child elements"
+                        }
+                    }
+                    };
+                }
+            }
+
             await CreateNewSubscriptions(updateModel.ApplicationUsers, id);
             await CreateNewManagers(updateModel.Managers, id);
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
