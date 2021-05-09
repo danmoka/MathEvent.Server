@@ -7,12 +7,14 @@ import CreateFolderModal from "../../files/view/CreateFolderModal";
 import DeleteEventModal from "../../events/view/DeleteEventModal";
 import DeleteFileModal from "../../files/view/DeleteFileModal";
 import LogoutModal from "../../_app/LogoutModal";
+import UploadEventAvatarModal from "../../events/edit/UploadEventAvatar";
 import UploadFilesModal from "../../files/view/UploadFilesModal";
 import modalTypes from "../../../constants/modal-types";
 
 const modals = {
     [modalTypes.createEvent]: CreateEventModal,
     [modalTypes.deleteEvent]: DeleteEventModal,
+    [modalTypes.uploadEventAvatar]: UploadEventAvatarModal,
     [modalTypes.editManagersEventModal]: EditManagersEventModal,
     [modalTypes.eventStatistics]: EventStatisticsModal,
     [modalTypes.createFolder]: CreateFolderModal,

@@ -7,6 +7,7 @@ import Typography from "@material-ui/core/Typography";
 import { selectEvent, fetchEvent, fetchEvents, fetchEventBreadcrumbs, showCreateEventModal, showDeleteEventModal } from "../../../store/actions/event";
 import { IconButton, iconTypes } from "../../_common/Icon";
 import { navigateToEventEdit } from "../../../utils/navigator";
+import { getImageSrc } from "../../../utils/get-image-src";
 import EventBreadcrumbs from "./EventBreadcrumbs";
 import CommonGrid from "../../_common/Grid";
 import Loader from "../../_common/Loader";
@@ -18,7 +19,9 @@ const prepareEvents = (events, selectedEvent, onEventEdit, onEventDelete, onClic
         primaryText: event.name,
         secondaryText: moment(event.startDate).format("LL"),
         additionalInfo: event.description,
-        image: isDarkTheme ? images.eventDefaultDark : images.eventDefault, 
+        image: event.avatarPath
+            ? getImageSrc(event.avatarPath)
+            : (isDarkTheme ? images.eventDefaultDark : images.eventDefault),
         isSelected: selectedEvent && event.id === selectedEvent.id,
         index: index + 1,
         onClick: () => onClick(event),

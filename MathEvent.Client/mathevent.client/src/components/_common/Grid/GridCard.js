@@ -9,6 +9,7 @@ import MuiMenuItem from "@material-ui/core/MenuItem";
 import Popover from "@material-ui/core/Popover";
 import Typography from '@material-ui/core/Typography';
 import { Icon, IconButton, iconTypes } from "../Icon";
+import Image from "../../_common/Image";
 import "./Grid.scss";
 import "../List/List.scss";
 
@@ -82,10 +83,14 @@ const GridCard = ({ primaryText, secondaryText, additionalInfo, image, isSelecte
         }
       />
       <CardMedia
-        className="grid-card__media"
-        image={image}
-        title={primaryText}
-      />
+        title={primaryText}>
+          <div className="grid-card__box">
+            <Image
+              className="grid-card__image"
+              src={image}
+              alt={primaryText}/>
+          </div>
+      </CardMedia>
       <CardContent>
         <Typography variant="body2" color="textSecondary" component="p">
           {additionalInfo}

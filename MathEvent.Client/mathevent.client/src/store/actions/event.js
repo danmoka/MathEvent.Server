@@ -117,6 +117,22 @@ export const deleteEvent = createAsyncThunk("deleteEvent", async ({ eventId }, t
     return { hasError: true };
 });
 
+export const uploadEventAvatar = createAsyncThunk(
+    "uploadEventAvatar",
+    async ({ eventId, file }, thunkAPI) => {
+        thunkAPI.dispatch(hideModal());
+        const response = await eventService.uploadAvatar(eventId, file);
+
+        if (statusCode(response).ok) {
+            const updatedEvent = await response.json();
+      
+            return { updatedEvent, hasError: false };
+        }
+
+        return { hasError: true };
+    }
+);
+
 export const selectEvent = createAction("selectEvent", (event) => ({ payload: { event } }));
 export const setGridView = createAction("setGridView", (isGridView) => ({ payload: { isGridView } }));
 
@@ -125,6 +141,9 @@ export const showCreateEventModal = createAsyncThunk("showCreateEventModal", asy
 });
 export const showDeleteEventModal = createAsyncThunk("showDeleteEventModal", async ({ event }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.deleteEvent, { event }));
+});
+export const showUploadEventAvatarModal = createAsyncThunk("showUploadEventAvatarModal", async ({ eventId }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.uploadEventAvatar, { eventId }));
 });
 export const showEditManagersEventModal = createAsyncThunk("showEditManagersEventModal", async ({ event, preparedNewManagers }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.editManagersEventModal, { event, preparedNewManagers }));

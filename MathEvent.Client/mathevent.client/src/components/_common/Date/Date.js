@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 
 const Date = ({primaryText, date, variant="h6"}) => {
     return (
-        <Typography variant={variant} gutterBottom>
+        <Typography variant={variant}>
             {primaryText}
             <Moment
             className="date__time"

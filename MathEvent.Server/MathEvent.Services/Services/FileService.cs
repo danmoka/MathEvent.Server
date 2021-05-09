@@ -302,6 +302,35 @@ namespace MathEvent.Services.Services
             return messageResult;
         }
 
+        public AResult<IMessage, File> IsCorrectImage(IFormFile file)
+        {
+            var messageResult = new MessageResult<File>
+            {
+                Succeeded = true,
+                Messages = new List<SimpleMessage>()
+            };
+
+            if (!_dataPathService.IsPermittedImageExtension(file))
+            {
+                messageResult.Messages.Append(
+                    new SimpleMessage
+                    {
+                        Message = $"Incorrect extension: {file.FileName}"
+                    }); ;
+            }
+
+            if (!_dataPathService.IsCorrectSize(file))
+            {
+                messageResult.Messages.Append(
+                    new SimpleMessage
+                    {
+                        Message = $"Wrong size: {file.FileName} ({file.Length})"
+                    }); ;
+            }
+
+            return messageResult;
+        }
+
         public async Task<File> GetFileEntityAsync(int id)
         {
             return await _repositoryWrapper.File

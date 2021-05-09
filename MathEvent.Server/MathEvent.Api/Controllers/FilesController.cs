@@ -14,6 +14,7 @@ namespace MathEvent.Api.Controllers
     public class FilesController : ControllerBase
     {
         private readonly IFileService _fileService;
+
         private readonly IUserService _userService;
 
         public FilesController(IFileService fileService, IUserService userService)
@@ -149,7 +150,7 @@ namespace MathEvent.Api.Controllers
             }
         }
 
-        // POST api/Files/Upload
+        // POST api/Files/Upload/?parentId=value1&ownerId=value2
         [HttpPost("Upload")]
         public async Task<ActionResult> Upload([FromForm] IEnumerable<IFormFile> files, [FromQuery] string parentId, [FromQuery] string ownerId)
         {

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import { patchEvent, showEventStatistics } from "../../../store/actions/event";
+import { getImageSrc } from "../../../utils/get-image-src";
 import { useCurrentUser } from "../../../hooks";
 import { Date } from "../../_common/Date";
 import { Icon, IconButton, iconTypes } from "../../_common/Icon";
@@ -18,7 +19,7 @@ const EventInfo = () => {
     const { isDarkTheme } = useSelector(state => state.app);
     const { userInfo } = useCurrentUser();
 
-    const [image, setImage] = useState(isDarkTheme ? images.eventDefaultDark : images.eventDefault);
+    const [avatarPath, setAvatarPath] = useState(null);
     const [name, setName] = useState("");
     const [applicationUsers, setApplicationUsers] = useState([]);
     const [startDate, setStartDate] = useState(Date.now);
@@ -36,12 +37,12 @@ const EventInfo = () => {
             setDesctiption(eventInfo.description ? eventInfo.description : "Отсутствует");
             setOrganizationName(eventInfo.organization ? eventInfo.organization.name : "Отсутствует");
             setEventId(eventInfo.id);
+
+            eventInfo.avatarPath
+                ? setAvatarPath(eventInfo.avatarPath)
+                : setAvatarPath(null);
         }
     }, [dispatch, eventInfo]);
-
-    useEffect(() => {
-        setImage(isDarkTheme ? images.eventDefaultDark : images.eventDefault);
-    }, [dispatch, isDarkTheme])
 
     const handlePatchEvent = useCallback(
         (data) => {
@@ -91,7 +92,9 @@ const EventInfo = () => {
                         <Paper className="event-info__info--main">
                             <Image
                                 className="event-info__image"
-                                src={image}
+                                src={avatarPath
+                                    ? getImageSrc(avatarPath)
+                                    : (isDarkTheme ? images.eventDefaultDark : images.eventDefault)}
                                 alt={name}/>
                             <div className="event-info__info--stats">
                                 <Typography variant="h5">{name}</Typography>
@@ -110,7 +113,7 @@ const EventInfo = () => {
                                 startIcon={subscribed ? iconTypes.personAddDisabled : iconTypes.personAdd}
                                 onClick={handleSubcribersChange}>
                                     {subscribed ? "Вы пойдете" : "Вы не пойдете"}
-                                </Button>
+                            </Button>
                         </Paper>
                         <Paper className="event-info__info--description">
                             <div className="event-info__horizontal_icon_text">
@@ -121,11 +124,11 @@ const EventInfo = () => {
                             </div>
                             <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.description}/>
-                                <Typography variant="body1" gutterBottom>{description}</Typography>
+                                <Typography variant="body1">{description}</Typography>
                             </div>
                             <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.business}/>
-                                <Typography variant="body1" gutterBottom>{`${organizationName}`}</Typography>
+                                <Typography variant="body1">{`${organizationName}`}</Typography>
                             </div>
                         </Paper>
                     </div>

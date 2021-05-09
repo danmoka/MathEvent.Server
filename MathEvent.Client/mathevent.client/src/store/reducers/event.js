@@ -26,7 +26,8 @@ import { fetchEvents,
     fetchStatistics,
     updateEvent,
     patchEvent,
-    deleteEvent
+    deleteEvent,
+    uploadEventAvatar,
 } from "../actions/event";
 
 const initialState = {
@@ -185,6 +186,20 @@ const eventSlice = createSlice({
             }
         },
         [deleteEvent.rejected]: (state) => {
+            onRejectedEvent(state);
+        },
+
+        [uploadEventAvatar.pending]: (state) => {
+            onPendingEvent(state);
+        },
+        [uploadEventAvatar.fulfilled]: (state, { payload: { updatedEvent, hasError } }) => {
+            onFulfilledEvent(state, hasError);
+
+            if (!hasError) {
+                state.eventInfo = updatedEvent;
+            }
+        },
+        [uploadEventAvatar.rejected]: (state) => {
             onRejectedEvent(state);
         },
     }

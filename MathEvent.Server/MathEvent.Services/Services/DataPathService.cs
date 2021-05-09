@@ -21,6 +21,8 @@ namespace MathEvent.Services.Services
 
         private readonly string[] _permittedExtensions = { ".pdf", ".docx", ".doc", ".ppt", ".pptx", ".png", ".jpg", ".jpeg", ".bmp" };
 
+        private readonly string[] _permittedImageExtensions = { ".png", ".jpg", ".jpeg", ".bmp" };
+
         private readonly long _fileSizeLimit;
 
         public DataPathService(string basePath, long fileSizeLimit)
@@ -30,7 +32,7 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
-        /// Возвращает путь до папки, в которую будет сохранен файл
+        /// Возвращает путь папки, в которую будет сохранен файл
         /// </summary>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns></returns>
@@ -38,8 +40,6 @@ namespace MathEvent.Services.Services
         {
             var pathParts = new string[]
             {
-                _basePath,
-                _folder,
                 userId,
                 DateTime.Now.Year.ToString(),
                 DateTime.Now.Month.ToString(),
@@ -47,6 +47,16 @@ namespace MathEvent.Services.Services
             };
 
             return Path.Combine(pathParts);
+        }
+
+        /// <summary>
+        /// Возвращает полный путь
+        /// </summary>
+        /// <param name="path">Частичный путь</param>
+        /// <returns>Полный путь</returns>
+        private string GetFullPath(string path)
+        {
+            return Path.Combine(_basePath, _folder, path);
         }
 
         /// <summary>
@@ -58,15 +68,16 @@ namespace MathEvent.Services.Services
         public async Task<AResult<IMessage, string>> Create(IFormFile file, string userId)
         {
             var path = GetPath(userId);
+            var fullPath = GetFullPath(path);
 
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(fullPath);
             }
 
             var fileName = $"{Path.GetRandomFileName()}{file.FileName}";
-            var filePath = Path.Combine(path, fileName);
-            using var stream = new FileStream(filePath, FileMode.Create);
+            var fullFilePath = Path.Combine(fullPath, fileName);
+            using var stream = new FileStream(fullFilePath, FileMode.Create);
 
             try
             {
@@ -90,7 +101,7 @@ namespace MathEvent.Services.Services
             return new MessageResult<string>()
             {
                 Succeeded = true,
-                Entity = filePath
+                Entity = Path.Combine(path, fileName)
             };
         }
 
@@ -101,12 +112,14 @@ namespace MathEvent.Services.Services
         /// <returns>Поток файла</returns>
         public FileStream GetFileStream(string path)
         {
-            if (path is null)
+            var fullPath = GetFullPath(path);
+
+            if (fullPath is null)
             {
                 return null;
             }
 
-            return File.OpenRead(path);
+            return File.OpenRead(fullPath);
         }
 
         /// <summary>
@@ -117,10 +130,11 @@ namespace MathEvent.Services.Services
         public void DeleteFile(string path, out string message)
         {
             message = null;
+            var fullPath = GetFullPath(path);
 
             try
             {
-                File.Delete(path);
+                File.Delete(fullPath);
             }
             catch (Exception ex)
             {
@@ -138,6 +152,23 @@ namespace MathEvent.Services.Services
             var extension = Path.GetExtension(file.FileName);
 
             if (!string.IsNullOrEmpty(extension) && _permittedExtensions.Contains(extension))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Проверяет, является ли расширение изображения разрешенным
+        /// </summary>
+        /// <param name="file">Файл</param>
+        /// <returns>true, если расширение разрешено, false иначе</returns>
+        public bool IsPermittedImageExtension(IFormFile file)
+        {
+            var extension = Path.GetExtension(file.FileName);
+
+            if (!string.IsNullOrEmpty(extension) && _permittedImageExtensions.Contains(extension))
             {
                 return true;
             }

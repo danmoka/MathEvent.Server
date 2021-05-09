@@ -22,6 +22,8 @@ namespace MathEvent.Converters.Events.DTOs
 
         public DateTime StartDate { get; set; }
 
+        public string AvatarPath { get; set; }
+
         #region hierarchy
         public bool? Hierarchy { get; set; }
 

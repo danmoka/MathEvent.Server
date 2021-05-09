@@ -26,6 +26,8 @@ namespace MathEvent.Services.Services
 
         AResult<IMessage, File> IsCorrectFile(IFormFile file);
 
+        AResult<IMessage, File> IsCorrectImage(IFormFile file);
+
         Task<System.IO.FileStream> Download(int id);
 
         Task<AResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id);

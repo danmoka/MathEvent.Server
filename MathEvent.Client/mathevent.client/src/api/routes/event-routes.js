@@ -9,7 +9,8 @@ const eventRoutes = {
     deleteEvent: (eventId) => getRoute(`events/${eventId}/`),
     fetchEventBreadcrumbs: (eventId) => getRoute(`events/breadcrumbs/${eventId}`),
     fetchStatistics: (eventSubsStatisticsTop) => getRoute(`events/statistics/?eventSubsStatisticsTop=${eventSubsStatisticsTop}`),
-    fetchEventStatistics: (eventId) => getRoute(`events/statistics/${eventId}`)
+    fetchEventStatistics: (eventId) => getRoute(`events/statistics/${eventId}`),
+    uploadAvatar: (eventId) => getRoute(`events/avatar/?id=${eventId}`)
 };
 
 export default eventRoutes;

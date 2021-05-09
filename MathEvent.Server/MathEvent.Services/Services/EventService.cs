@@ -2,10 +2,12 @@
 using MathEvent.Contracts;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
+using MathEvent.Converters.Files.Models;
 using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
 using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -30,13 +32,22 @@ namespace MathEvent.Services.Services
 
         private readonly IOrganizationService _organizationService;
 
-        public EventService(IRepositoryWrapper repositoryWrapper, IMapper mapper, IOwnerService ownerService, IUserService userService, IOrganizationService organizationService)
+        private readonly DataPathService _dataPathService;
+
+        public EventService(
+            IRepositoryWrapper repositoryWrapper,
+            IMapper mapper,
+            IOwnerService ownerService,
+            IUserService userService,
+            IOrganizationService organizationService,
+            DataPathService dataPathService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _ownerService = ownerService;
             _userService = userService;
             _organizationService = organizationService;
+            _dataPathService = dataPathService;
         }
 
         public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
@@ -217,10 +228,100 @@ namespace MathEvent.Services.Services
                 };
             }
 
+            var avatarPath = eventEntity.AvatarPath;
             _repositoryWrapper.Event.Delete(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
+            if (avatarPath is not null)
+            {
+                _dataPathService.DeleteFile(avatarPath, out string deleteMessage);
+
+                if (deleteMessage is not null)
+                {
+                    return new MessageResult<EventWithUsersReadModel>
+                    {
+                        Succeeded = false,
+                        Messages = new List<SimpleMessage>
+                        {
+                            new SimpleMessage
+                            {
+                                Message = deleteMessage
+                            }
+                        }
+                    };
+                }
+            }
+
             return new MessageResult<EventWithUsersReadModel> { Succeeded = true };
+        }
+
+        public async Task<AResult<IMessage, EventWithUsersReadModel>> UploadAvatar(int id, IFormFile file, FileCreateModel fileCreateModel)
+        {
+            var eventEntity = await GetEventEntityAsync(id);
+
+            if (eventEntity is null)
+            {
+                return new MessageResult<EventWithUsersReadModel>
+                {
+                    Succeeded = false,
+                    Messages = new List<SimpleMessage>
+                    {
+                        new SimpleMessage
+                        {
+                            Code = "404",
+                            Message = $"Event with the ID {id} not found"
+                        }
+                    }
+                };
+            }
+
+            var fileResult = await _dataPathService.Create(file, fileCreateModel.AuthorId);
+
+            if (!fileResult.Succeeded)
+            {
+                return new MessageResult<EventWithUsersReadModel>
+                {
+                    Succeeded = false,
+                    Messages = fileResult.Messages
+                };
+            }
+
+            if (eventEntity.AvatarPath is not null)
+            {
+                _dataPathService.DeleteFile(eventEntity.AvatarPath, out string deleteMessage);
+
+                if (deleteMessage is not null)
+                {
+                    return new MessageResult<EventWithUsersReadModel>
+                    {
+                        Succeeded = false,
+                        Messages = new List<SimpleMessage>
+                        {
+                            new SimpleMessage
+                            {
+                                Message = deleteMessage
+                            }
+                        }
+                    };
+                }
+
+                eventEntity.AvatarPath = null;
+            }
+
+            eventEntity.AvatarPath = fileResult.Entity;
+            _repositoryWrapper.Event.Update(eventEntity);
+
+            await _repositoryWrapper.SaveAsync();
+
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
+            EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+
+            return new MessageResult<EventWithUsersReadModel>
+            {
+                Succeeded = true,
+                Entity = eventReadModel
+            };
         }
 
         public async Task<Event> GetEventEntityAsync(int id)

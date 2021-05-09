@@ -2,11 +2,16 @@ import React, { useEffect, useState, useCallback }from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import { fetchOrganizations } from "../../../store/actions/organization";
-import { patchEvent } from "../../../store/actions/event";
+import { patchEvent, showUploadEventAvatarModal } from "../../../store/actions/event";
+import { getImageSrc } from "../../../utils/get-image-src";
 import { DateField } from "../../_common/Date";
+import { iconTypes } from "../../_common/Icon";
+import Button from "../../_common/Button";
 import Checkbox from "../../_common/Checkbox";
 import Dropdown from "../../_common/Dropdown";
+import Image from "../../_common/Image";
 import TextField from "../../_common/TextField";
+import images from "../../../constants/images";
 
 const prepareOrganizations = (organizations) =>
     [{ value: "", name: "Без организации" }, ...organizations.map((organization) => ({
@@ -18,9 +23,11 @@ const EventEditInfo = () => {
     const dispatch = useDispatch();
     const { eventInfo: event } = useSelector((state) => state.event);
     const { organizations } = useSelector((state) => state.organization);
+    const { isDarkTheme } = useSelector(state => state.app);
     const preparedOrganizations = prepareOrganizations(organizations);
 
     const [eventId, setEventId] = useState(null);
+    const [avatarPath, setAvatarPath] = useState(null);
     const [name, setName] = useState("");
     const [startDate, setStartDate] = useState(event ? event.startDate : new Date(Date.now()));
     const [description, setDesctiption] = useState("");
@@ -41,8 +48,11 @@ const EventEditInfo = () => {
             if (event.organization) {
                 setOrganization(event.organization.id);
             }
+            event.avatarPath
+                ? setAvatarPath(event.avatarPath)
+                : setAvatarPath(null);
         }
-    }, [event?.id]);
+    }, [event]);
 
     const handlePatchEvent = useCallback(
         (data) => {
@@ -111,6 +121,10 @@ const EventEditInfo = () => {
         ]);
     }, [handlePatchEvent, event]);
 
+    const handleEventAvatarUpload = useCallback(() => {
+        dispatch(showUploadEventAvatarModal({ eventId: eventId }));
+    }, [dispatch, eventId]);
+
     return (
         <Paper className="event-edit-info">
             <section className="event-edit-info__section--description">
@@ -144,12 +158,20 @@ const EventEditInfo = () => {
                     onChange={handleOrganizationChange}
                 />
             </section>
-            {/* <section className="event-edit-info__section--image">
-                <img
+            <section className="event-edit-info__section--image">
+                <Image
                     className="event-edit-info__image"
-                    src="https://vancouverhumanesociety.bc.ca/wp-content/uploads/2019/01/Upcoming-eventsiStock-978975308-e1564610924151-1024x627.jpg"
-                    alt={eventInfo.name}/>
-            </section> */}
+                    src={avatarPath
+                        ? getImageSrc(avatarPath)
+                        : (isDarkTheme ? images.eventDefaultDark : images.eventDefault)}
+                    alt={name}/>
+                <Button
+                    className="event-edit-form__control"
+                    startIcon={iconTypes.upload}
+                    onClick={handleEventAvatarUpload}>
+                        Загрузить изображение
+                </Button>
+            </section>
         </Paper>
     );
 };

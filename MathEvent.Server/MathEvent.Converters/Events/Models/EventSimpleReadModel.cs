@@ -12,5 +12,7 @@ namespace MathEvent.Converters.Events.Models
         public string Name { get; set; }
 
         public DateTime StartDate { get; set; }
+
+        public string AvatarPath { get; set; }
     }
 }

@@ -1,12 +1,15 @@
 ﻿using AutoMapper;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
+using MathEvent.Converters.Files.Models;
 using MathEvent.Converters.Others;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace MathEvent.Api.Controllers
@@ -19,10 +22,16 @@ namespace MathEvent.Api.Controllers
 
         private readonly IEventService _eventService;
 
-        public EventsController(IMapper mapper, IEventService eventService)
+        private readonly IFileService _fileService;
+
+        private readonly IUserService _userService;
+
+        public EventsController(IMapper mapper, IEventService eventService, IFileService fileService, IUserService userService)
         {
             _mapper = mapper;
             _eventService = eventService;
+            _fileService = fileService;
+            _userService = userService;
         }
 
         // GET api/Events/?key1=value1&key2=value2
@@ -232,6 +241,64 @@ namespace MathEvent.Api.Controllers
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> EventStatisticsAsync(int id)
         {
             return Ok(await _eventService.GetEventStatistics(id));
+        }
+
+        // POST api/Events/Avatar/?id=value1
+        [HttpPost("Avatar")]
+        public async Task<ActionResult> UploadAvatar([FromForm] IFormFile file, [FromQuery] string id)
+        {
+            int eventId = -1;
+
+            if (int.TryParse(id, out int eventIdParam))
+            {
+                eventId = eventIdParam;
+            }
+
+            if (eventId < 0)
+            {
+                return BadRequest();
+            }
+
+            if (await _eventService.GetEventEntityAsync(eventId) is null)
+            {
+                return NotFound();
+            }
+
+            var checkResult = _fileService.IsCorrectImage(file);
+
+            if (!checkResult.Succeeded)
+            {
+                return BadRequest(checkResult.Messages);
+            }
+
+            var user = await _userService.GetCurrentUserAsync(User);
+
+            var fileCreateModel = new FileCreateModel
+            {
+                Name = Path.GetFileNameWithoutExtension(file.FileName),
+                Hierarchy = null,
+                ParentId = null,
+                AuthorId = user.Id,
+                OwnerId = null
+            };
+
+            var uploadResult = await _eventService.UploadAvatar(eventId, file, fileCreateModel);
+
+            if (uploadResult.Succeeded)
+            {
+                var updatedEvent = uploadResult.Entity;
+
+                if (updatedEvent is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedEvent);
+            }
+            else
+            {
+                return BadRequest(uploadResult.Messages);
+            }
         }
     }
 }

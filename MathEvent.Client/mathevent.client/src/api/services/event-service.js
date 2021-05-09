@@ -1,5 +1,6 @@
 import api from "../api";
 import { baseService } from "./base-service";
+import { getAccessToken } from "../../utils/local-storage-manager";
 
 const eventService = {
     fetchEvents: async (eventId) => {
@@ -46,6 +47,24 @@ const eventService = {
         const url = api.events.deleteEvent(eventId);
 
         return await baseService.delete(url);
+    },
+    uploadAvatar: async (eventId, file) => {
+        const url = api.events.uploadAvatar(eventId);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file, file.name);
+
+            return await fetch(url, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${getAccessToken()}`,
+                },
+            });
+        } catch (e) {
+            console.log(e);
+        }
     },
 };
 
