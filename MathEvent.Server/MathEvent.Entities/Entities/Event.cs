@@ -12,6 +12,8 @@ namespace MathEvent.Entities.Entities
         [Key]
         public int Id { get; set; }
 
+        public string AvatarPath { get; set; }
+
         [Required]
         [MaxLength(250)]
         public string Name { get; set; }
@@ -19,7 +21,13 @@ namespace MathEvent.Entities.Entities
         [Required]
         public DateTime StartDate { get; set; }
 
-        public string AvatarPath { get; set; }
+        public string Location { get; set; }
+
+        [MaxLength(500)]
+        public string Description { get; set; }
+
+        [ForeignKey("Organization")]
+        public int? OrganizationId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }
@@ -27,11 +35,5 @@ namespace MathEvent.Entities.Entities
         [ForeignKey("Event")]
         public int? ParentId { get; set; }
         #endregion
-
-        [MaxLength(500)]
-        public string Description { get; set; }
-
-        [ForeignKey("Organization")]
-        public int? OrganizationId { get; set; }
     }
 }

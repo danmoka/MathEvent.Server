@@ -19,6 +19,7 @@ const icons = {
     [iconTypes.home]: materialIcons.Home,
     [iconTypes.left]: materialIcons.KeyboardArrowLeft,
     [iconTypes.list]: materialIcons.ViewList,
+    [iconTypes.location]: materialIcons.LocationOn,
     [iconTypes.logout]: materialIcons.ExitToApp,
     [iconTypes.menu]: materialIcons.Menu,
     [iconTypes.more]: materialIcons.MoreVert,

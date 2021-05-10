@@ -19,24 +19,26 @@ const EventInfo = () => {
     const { isDarkTheme } = useSelector(state => state.app);
     const { userInfo } = useCurrentUser();
 
+    const [eventId, setEventId] = useState(null);
     const [avatarPath, setAvatarPath] = useState(null);
     const [name, setName] = useState("");
-    const [applicationUsers, setApplicationUsers] = useState([]);
     const [startDate, setStartDate] = useState(Date.now);
+    const [location, setLocation] = useState("");
     const [description, setDesctiption] = useState("");
-    const [organizationName, setOrganizationName] = useState("Отсутствует")
+    const [organizationName, setOrganizationName] = useState("Отсутствует");
+    const [applicationUsers, setApplicationUsers] = useState([]);
     const [subscribed, setSubscribed] = useState(false);
-    const [eventId, setEventId] = useState(null);
 
     useEffect(() => {
         if (eventInfo) {
-            setApplicationUsers(eventInfo.applicationUsers);
-            setSubscribed(eventInfo ? eventInfo.applicationUsers.filter((user) => user.id == userInfo.sub).length > 0 : false);
+            setEventId(eventInfo.id);
             setName(eventInfo.name);
             setStartDate(eventInfo.startDate);
+            setLocation(eventInfo.location ? eventInfo.location : "Не указан");
             setDesctiption(eventInfo.description ? eventInfo.description : "Отсутствует");
             setOrganizationName(eventInfo.organization ? eventInfo.organization.name : "Отсутствует");
-            setEventId(eventInfo.id);
+            setApplicationUsers(eventInfo.applicationUsers);
+            setSubscribed(eventInfo ? eventInfo.applicationUsers.filter((user) => user.id == userInfo.sub).length > 0 : false);
 
             eventInfo.avatarPath
                 ? setAvatarPath(eventInfo.avatarPath)
@@ -121,6 +123,10 @@ const EventInfo = () => {
                                 <Date
                                     date={startDate}
                                     variant="body1"/>
+                            </div>
+                            <div className="event-info__horizontal_icon_text">
+                                <Icon type={iconTypes.location}/>
+                                <Typography variant="body1">{location}</Typography>
                             </div>
                             <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.description}/>

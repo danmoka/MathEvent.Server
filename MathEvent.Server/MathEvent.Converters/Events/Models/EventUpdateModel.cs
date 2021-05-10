@@ -12,6 +12,12 @@ namespace MathEvent.Converters.Events.Models
 
         public DateTime StartDate { get; set; }
 
+        public string Location { get; set; }
+
+        public string Description { get; set; }
+
+        public int? OrganizationId { get; set; }
+
         #region hierarchy
         public bool? Hierarchy { get; set; }
 
@@ -24,9 +30,5 @@ namespace MathEvent.Converters.Events.Models
         public ICollection<string> ApplicationUsers { get; set; }
 
         public ICollection<string> Managers { get; set; }
-
-        public string Description { get; set; }
-
-        public int? OrganizationId { get; set; }
     }
 }

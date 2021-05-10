@@ -30,6 +30,7 @@ const EventEditInfo = () => {
     const [avatarPath, setAvatarPath] = useState(null);
     const [name, setName] = useState("");
     const [startDate, setStartDate] = useState(event ? event.startDate : new Date(Date.now()));
+    const [location, setLocation] = useState("");
     const [description, setDesctiption] = useState("");
     const [organization, setOrganization] = useState(preparedOrganizations[0].value);
     const [hierarchy, setHierarchy] = useState(false);
@@ -43,11 +44,14 @@ const EventEditInfo = () => {
             setEventId(event.id);
             setName(event.name);
             setStartDate(event.startDate);
+            setLocation(event.location);
             setDesctiption(event.description);
             setHierarchy(event.hierarchy ? true : false);
+
             if (event.organization) {
                 setOrganization(event.organization.id);
             }
+
             event.avatarPath
                 ? setAvatarPath(event.avatarPath)
                 : setAvatarPath(null);
@@ -94,6 +98,17 @@ const EventEditInfo = () => {
             {
                 value: newStartDate,
                 path: "/StartDate",
+                op: "replace"
+            }
+        ]);
+    }, [handlePatchEvent, event]);
+
+    const handleLocationValueChange = useCallback((newLocation) => {
+        setLocation(newLocation);
+        handlePatchEvent([
+            {
+                value: newLocation,
+                path: "/Location",
                 op: "replace"
             }
         ]);
@@ -150,6 +165,12 @@ const EventEditInfo = () => {
                     value={new Date(startDate)}
                     onChange={handleDateValueChange}
                     label="Дата и время начала"/>
+                <TextField
+                    className="event-edit-form__control"
+                    label="Место"
+                    value={location}
+                    onChange={handleLocationValueChange}
+                />
                 <Dropdown
                     className="event-edit-form__control"
                     label="Организация"

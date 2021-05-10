@@ -16,6 +16,7 @@ const iconTypes = {
     home: "home",
     left: "left",
     list: "list",
+    location: "location",
     logout: "logout",
     menu: "menu",
     more: "more",

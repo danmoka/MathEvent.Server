@@ -25,6 +25,7 @@ const CreateEventModal = () => {
 
     const [name, setName] = useState("");
     const [startDate, setStartDate] = useState(new Date(Date.now()));
+    const [location, setLocation] = useState("");
     const [description, setDesctiption] = useState("");
     const [organization, setOrganization] = useState(preparedOrganizations[0].value);
     const [hierarchy, setHierarchy] = useState(false);
@@ -37,12 +38,16 @@ const CreateEventModal = () => {
         setName(newName);
     }, []);
 
-    const handleDescriptionValueChange = useCallback((newDescription) => {
-        setDesctiption(newDescription);
-    }, []);
-
     const handleDateValueChange = useCallback((newStartDate) => {
         setStartDate(newStartDate);
+    }, []);
+
+    const handleLocationValueChange = useCallback((newLocation) => {
+        setLocation(newLocation);
+    }, []);
+
+    const handleDescriptionValueChange = useCallback((newDescription) => {
+        setDesctiption(newDescription);
     }, []);
 
     const handleOrganizationChange = useCallback((newOrganization) => {
@@ -57,6 +62,7 @@ const CreateEventModal = () => {
         const event = {
             "Name": name,
             "StartDate": startDate,
+            "Location": location,
             "Description": description,
             "OrganizationId": organization,
             "ParentId": parent ? parent.id : null,
@@ -64,7 +70,7 @@ const CreateEventModal = () => {
         };
 
         dispatch(createEvent({ event }));
-      }, [ dispatch, name, startDate, description, organization]);
+      }, [ dispatch, name, startDate, location, description, organization]);
 
     return (
         <CreateModal title="Новое событие" size={modalSizes.small} onCreate={handleCreate}>
@@ -74,28 +80,29 @@ const CreateEventModal = () => {
                 variant="body1">
                     {`Событие будет создано в ${parent ? parent.name : "Корне"}`}
             </Typography>
-            <Checkbox
-                className="event-form__checkbox"
-                label="Является множеством других событий"
-                value={hierarchy}
-                onChange={handleHierarchyValueChange}/>
             <TextField
                 className="event-form__control"
                 label="Название"
                 value={name}
                 onChange={handleNameValueChange}
                 />
+            <DateField
+                className="event-form__control"
+                value={new Date(startDate)}
+                onChange={handleDateValueChange}
+                label="Дата и время начала"/>
+            <TextField
+                className="event-form__control"
+                label="Место"
+                value={location}
+                onChange={handleLocationValueChange}
+            />
             <TextField
                 className="event-form__control"
                 label="Описание"
                 value={description}
                 onChange={handleDescriptionValueChange}
             />
-            <DateField
-                className="event-form__control"
-                value={new Date(startDate)}
-                onChange={handleDateValueChange}
-                label="Дата и время начала"/>
             <Dropdown
                 className="event-form__control"
                 label="Организация"
@@ -103,6 +110,11 @@ const CreateEventModal = () => {
                 items={preparedOrganizations}
                 onChange={handleOrganizationChange}
             />
+            <Checkbox
+                className="event-form__checkbox"
+                label="Является множеством других событий"
+                value={hierarchy}
+                onChange={handleHierarchyValueChange}/>
         </CreateModal>
     );
 };
