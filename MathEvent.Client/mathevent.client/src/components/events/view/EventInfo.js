@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { patchEvent, showEventStatistics } from "../../../store/actions/event";
+import { patchEvent, showEventLocation, showEventStatistics } from "../../../store/actions/event";
+import { fetchPosition } from "../../../store/actions/map";
 import { getImageSrc } from "../../../utils/get-image-src";
 import { useCurrentUser } from "../../../hooks";
 import { Date } from "../../_common/Date";
 import { Icon, IconButton, iconTypes } from "../../_common/Icon";
-import Button from "../../_common/Button";
+import Button, { buttonTypes } from "../../_common/Button";
 import EventFiles from "./EventFiles";
 import Image from "../../_common/Image";
 import Loader from "../../_common/Loader";
@@ -23,7 +24,7 @@ const EventInfo = () => {
     const [avatarPath, setAvatarPath] = useState(null);
     const [name, setName] = useState("");
     const [startDate, setStartDate] = useState(Date.now);
-    const [location, setLocation] = useState("");
+    const [location, setLocation] = useState(null);
     const [description, setDesctiption] = useState("");
     const [organizationName, setOrganizationName] = useState("Отсутствует");
     const [applicationUsers, setApplicationUsers] = useState([]);
@@ -34,7 +35,6 @@ const EventInfo = () => {
             setEventId(eventInfo.id);
             setName(eventInfo.name);
             setStartDate(eventInfo.startDate);
-            setLocation(eventInfo.location ? eventInfo.location : "Не указан");
             setDesctiption(eventInfo.description ? eventInfo.description : "Отсутствует");
             setOrganizationName(eventInfo.organization ? eventInfo.organization.name : "Отсутствует");
             setApplicationUsers(eventInfo.applicationUsers);
@@ -43,6 +43,11 @@ const EventInfo = () => {
             eventInfo.avatarPath
                 ? setAvatarPath(eventInfo.avatarPath)
                 : setAvatarPath(null);
+
+            if (eventInfo.location) {
+                dispatch(fetchPosition(eventInfo.location));
+                setLocation(eventInfo.location);
+            }
         }
     }, [dispatch, eventInfo]);
 
@@ -76,6 +81,13 @@ const EventInfo = () => {
             }
         ]);
     }, [handlePatchEvent, userInfo, applicationUsers]);
+
+    const handleShowLocation = useCallback(
+        () => {
+            dispatch(showEventLocation());
+        },
+        [dispatch, location]
+    );
 
     const handleShowStatistics = useCallback(
         () => {
@@ -126,7 +138,17 @@ const EventInfo = () => {
                             </div>
                             <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.location}/>
-                                <Typography variant="body1">{location}</Typography>
+                                {
+                                    location
+                                        ? (
+                                            <Button
+                                                type={buttonTypes.text}
+                                                onClick={handleShowLocation}>
+                                                    {location}
+                                            </Button>
+                                        )
+                                        : (<Typography variant="body1">Местоположение не указано</Typography>)
+                                }
                             </div>
                             <div className="event-info__horizontal_icon_text">
                                 <Icon type={iconTypes.description}/>

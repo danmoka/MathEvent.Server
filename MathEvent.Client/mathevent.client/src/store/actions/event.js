@@ -148,6 +148,9 @@ export const showUploadEventAvatarModal = createAsyncThunk("showUploadEventAvata
 export const showEditManagersEventModal = createAsyncThunk("showEditManagersEventModal", async ({ event, preparedNewManagers }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.editManagersEventModal, { event, preparedNewManagers }));
 });
+export const showEventLocation = createAsyncThunk("showEventLocation", async (params, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.eventLocation));
+});
 export const showEventStatistics = createAsyncThunk("showEventStatistics", async ({ event }, thunkAPI) => {
     thunkAPI.dispatch(showModal(modalTypes.eventStatistics, { event }));
 });

@@ -3,6 +3,7 @@ const modalTypes = {
     deleteEvent: "deleteEvent",
     uploadEventAvatar: "uploadEventAvatar",
     editManagersEventModal: "editManagersEventModal",
+    eventLocation: "eventLocationModal",
     eventStatistics: "eventStatistics",
     createFolder: "createFolder",
     deleteFile: "deleteFile",

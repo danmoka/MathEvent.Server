@@ -219,3 +219,19 @@ export const onRejectedUserStatistics = (state) => {
     state.isFetchingUserStatistics = false;
     onRejectedDefault(state);
 };
+
+// Map
+export const onPendingPosition = (state) => {
+    state.isFetchingPosition = defaultOnPendingFetchValue;
+    onPendingDefault(state);
+};
+
+export const onFulfilledPosition = (state, hasError) => {
+    state.isFetchingPosition = false;
+    onFulfilledDefault(state, hasError);
+};
+
+export const onRejectedPosition = (state) => {
+    state.isFetchingPosition = false;
+    onRejectedDefault(state);
+};
