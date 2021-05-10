@@ -17,6 +17,7 @@ import images from "../../../constants/images";
 const EventInfo = () => {
     const dispatch = useDispatch();
     const { eventInfo, isFetchingEvent } = useSelector(state => state.event);
+    const { positionResults, isFetchingPosition } = useSelector((state) => state.map);
     const { isDarkTheme } = useSelector(state => state.app);
     const { userInfo } = useCurrentUser();
 
@@ -29,6 +30,7 @@ const EventInfo = () => {
     const [organizationName, setOrganizationName] = useState("Отсутствует");
     const [applicationUsers, setApplicationUsers] = useState([]);
     const [subscribed, setSubscribed] = useState(false);
+    const [position, setPosition] = useState(null);
 
     useEffect(() => {
         if (eventInfo) {
@@ -48,8 +50,17 @@ const EventInfo = () => {
                 dispatch(fetchPosition(eventInfo.location));
                 setLocation(eventInfo.location);
             }
+            else {
+                setLocation(null);
+            }
         }
     }, [dispatch, eventInfo]);
+
+    useEffect(() => {
+        positionResults.length > 0
+            ? setPosition(positionResults[0])
+            : setPosition(null);
+    }, [dispatch, positionResults]);
 
     const handlePatchEvent = useCallback(
         (data) => {
@@ -84,9 +95,9 @@ const EventInfo = () => {
 
     const handleShowLocation = useCallback(
         () => {
-            dispatch(showEventLocation());
+            dispatch(showEventLocation({ position: position }));
         },
-        [dispatch, location]
+        [dispatch, position]
     );
 
     const handleShowStatistics = useCallback(
@@ -141,11 +152,15 @@ const EventInfo = () => {
                                 {
                                     location
                                         ? (
-                                            <Button
-                                                type={buttonTypes.text}
-                                                onClick={handleShowLocation}>
-                                                    {location}
-                                            </Button>
+                                            isFetchingPosition
+                                            ? (<Loader className="event-grid__loader" size="small"/>)
+                                            : (
+                                                <Button
+                                                    type={buttonTypes.text}
+                                                    onClick={handleShowLocation}>
+                                                        {location}
+                                                </Button>
+                                            )
                                         )
                                         : (<Typography variant="body1">Местоположение не указано</Typography>)
                                 }
