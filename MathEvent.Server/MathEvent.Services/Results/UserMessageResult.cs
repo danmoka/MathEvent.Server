@@ -1,5 +1,4 @@
-﻿using MathEvent.Entities.Entities;
-using MathEvent.Services.Messages;
+﻿using MathEvent.Services.Messages;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
@@ -8,7 +7,7 @@ namespace MathEvent.Services.Results
     /// <summary>
     /// Результат выполнения с сущностью пользователя
     /// </summary>
-    public class UserMessageResult : MessageResult<ApplicationUser>
+    public class UserMessageResult<T> : MessageResult<T> where T : class
     {
         /// <summary>
         /// Преобразует перечисление IdentityError в перечисление IdentityMessage

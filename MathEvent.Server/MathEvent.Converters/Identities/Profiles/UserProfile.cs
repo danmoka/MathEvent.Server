@@ -23,6 +23,7 @@ namespace MathEvent.Converters.Identities.Profiles
             CreateMap<UserCreateModel, UserDTO>(); // создание
             CreateMap<UserUpdateModel, UserWithEventsDTO>() // обновление
                 .ForMember(dest => dest.Events, opt => opt.MapFrom<IdToEventDTOResolver>())
+                .ForMember(dest => dest.ManagedEvents, opt => opt.MapFrom<IdToMangedEventResolver>())
                 .ForMember(dest => dest.Organization, opt => opt.MapFrom<IdToOrganizationDTOResolver>());
 
             // DTO -> Model
@@ -31,6 +32,7 @@ namespace MathEvent.Converters.Identities.Profiles
             CreateMap<UserWithEventsDTO, UserWithEventsReadModel>(); // чтение
             CreateMap<UserWithEventsDTO, UserUpdateModel>() // обновление
                 .ForMember(dest => dest.Events, opt => opt.MapFrom<EventDTOToIdResolver>())
+                .ForMember(dest => dest.ManagedEvents, opt => opt.MapFrom<ManagedEventDTOToIdResolver>())
                 .ForMember(dest => dest.OrganizationId, opt => opt.MapFrom<OrganizationDTOToIdResolver>());
 
             // DTO -> Entity
@@ -40,7 +42,8 @@ namespace MathEvent.Converters.Identities.Profiles
             // Entity -> DTO
             CreateMap<ApplicationUser, UserWithEventsDTO>()
                 .ForMember(dest => dest.Events, opt => opt.MapFrom<GetEventsDTOResolver>())
-                .ForMember(dest => dest.Organization, opt => opt.MapFrom<GetOrganizationDTOResolver>());
+                .ForMember(dest => dest.Organization, opt => opt.MapFrom<GetOrganizationDTOResolver>())
+                .ForMember(dest => dest.ManagedEvents, opt => opt.MapFrom<GetManagedEventsDTOResolver>());
             CreateMap<ApplicationUser, UserDTO>();
         }
 
@@ -116,6 +119,85 @@ namespace MathEvent.Converters.Identities.Profiles
                 {
                     events.Add(_mapper.Map<EventDTO>(_repositoryWrapper.Event
                         .FindByCondition(ev => ev.Id == subscription.EventId)
+                        .SingleOrDefault()));
+                }
+
+                return events;
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий маппинг id события под управлением на transfer объект события
+        /// </summary>
+        public class IdToMangedEventResolver : IValueResolver<UserUpdateModel, UserWithEventsDTO, ICollection<EventDTO>>
+        {
+            private readonly IRepositoryWrapper _repositoryWrapper;
+            private readonly IMapper _mapper;
+
+            public IdToMangedEventResolver(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+            {
+                _repositoryWrapper = repositoryWrapper;
+                _mapper = mapper;
+            }
+
+            public ICollection<EventDTO> Resolve(UserUpdateModel source, UserWithEventsDTO destination, ICollection<EventDTO> destMember, ResolutionContext context)
+            {
+                var events = new HashSet<EventDTO>();
+
+                foreach (var id in source.ManagedEvents)
+                {
+                    events.Add(_mapper.Map<EventDTO>(_repositoryWrapper.Event
+                        .FindByCondition(ev => ev.Id == id)
+                        .SingleOrDefault()));
+                }
+
+                return events;
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий маппинг transfer объектов сущности события под управлением на id события
+        /// </summary>
+        public class ManagedEventDTOToIdResolver : IValueResolver<UserWithEventsDTO, UserUpdateModel, ICollection<int>>
+        {
+            public ICollection<int> Resolve(UserWithEventsDTO source, UserUpdateModel destination, ICollection<int> destMember, ResolutionContext context)
+            {
+                var ids = new HashSet<int>();
+
+                foreach (var ev in source.ManagedEvents)
+                {
+                    ids.Add(ev.Id);
+                }
+
+                return ids;
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий получение transfer объектов событий, связанных с управлением
+        /// </summary>
+        public class GetManagedEventsDTOResolver : IValueResolver<ApplicationUser, UserWithEventsDTO, ICollection<EventDTO>>
+        {
+            private readonly IRepositoryWrapper _repositoryWrapper;
+            private readonly IMapper _mapper;
+
+            public GetManagedEventsDTOResolver(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+            {
+                _repositoryWrapper = repositoryWrapper;
+                _mapper = mapper;
+            }
+
+            public ICollection<EventDTO> Resolve(ApplicationUser source, UserWithEventsDTO destination, ICollection<EventDTO> destMember, ResolutionContext context)
+            {
+                var events = new HashSet<EventDTO>();
+                var management = _repositoryWrapper.Management
+                    .FindByCondition(s => s.ApplicationUserId == source.Id)
+                    .ToList();
+
+                foreach (var value in management)
+                {
+                    events.Add(_mapper.Map<EventDTO>(_repositoryWrapper.Event
+                        .FindByCondition(ev => ev.Id == value.EventId)
                         .SingleOrDefault()));
                 }
 

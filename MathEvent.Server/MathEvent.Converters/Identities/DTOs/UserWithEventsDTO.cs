@@ -12,6 +12,7 @@ namespace MathEvent.Converters.Identities.DTOs
         public UserWithEventsDTO()
         {
             Events = new HashSet<EventDTO>();
+            ManagedEvents = new HashSet<EventDTO>();
         }
 
         public string Id { get; set; }
@@ -26,8 +27,10 @@ namespace MathEvent.Converters.Identities.DTOs
 
         public string UserName { get; set; }
 
+        public OrganizationDTO Organization { get; set; }
+
         public virtual ICollection<EventDTO> Events { get; set; }
 
-        public OrganizationDTO Organization { get; set; }
+        public virtual ICollection<EventDTO> ManagedEvents { get; set; }
     }
 }

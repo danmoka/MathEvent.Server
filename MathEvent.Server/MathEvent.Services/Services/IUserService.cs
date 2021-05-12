@@ -18,7 +18,7 @@ namespace MathEvent.Services.Services
         UserCreateModel,
         UserUpdateModel,
         string,
-        AResult<IMessage, ApplicationUser>>
+        AResult<IMessage, UserWithEventsReadModel>>
     {
         Task<ApplicationUser> GetUserEntityAsync(string id);
         Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user);

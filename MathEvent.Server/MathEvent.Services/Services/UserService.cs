@@ -70,13 +70,13 @@ namespace MathEvent.Services.Services
             return null;
         }
 
-        public async Task<AResult<IMessage, ApplicationUser>> CreateAsync(UserCreateModel createModel)
+        public async Task<AResult<IMessage, UserWithEventsReadModel>> CreateAsync(UserCreateModel createModel)
         {
             var user = _mapper.Map<ApplicationUser>(_mapper.Map<UserDTO>(createModel));
 
             if (user is null)
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -94,11 +94,10 @@ namespace MathEvent.Services.Services
 
             if (!createResult.Succeeded)
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
-                    Messages = UserMessageResult.GetMessagesFromErrors(createResult.Errors),
-                    Entity = user
+                    Messages = UserMessageResult<UserWithEventsReadModel>.GetMessagesFromErrors(createResult.Errors)
                 };
             }
 
@@ -106,7 +105,7 @@ namespace MathEvent.Services.Services
 
             if (await _ownerService.CreateUserOwner(user.Id, Owner.Type.File) is null)
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -119,21 +118,24 @@ namespace MathEvent.Services.Services
                 };
             }
 
-            return new UserMessageResult
+            UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
+            userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+
+            return new UserMessageResult<UserWithEventsReadModel>
             {
                 Succeeded = true,
-                Entity = user
+                Entity = userReadModel
             };
         }
 
-        public async Task<AResult<IMessage, ApplicationUser>> UpdateAsync(string id, UserUpdateModel updateModel)
+        public async Task<AResult<IMessage, UserWithEventsReadModel>> UpdateAsync(string id, UserUpdateModel updateModel)
         {
             var user = await GetUserEntityAsync(id);
             // TODO: ? AddToRoleAsync
 
             if (user is null)
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -148,39 +150,44 @@ namespace MathEvent.Services.Services
             }
 
             await CreateNewSubscriptions(updateModel.Events, id);
+            await CreateNewManagers(updateModel.ManagedEvents, id);
             var userDTO = _mapper.Map<UserWithEventsDTO>(user);
             _mapper.Map(updateModel, userDTO);
             _mapper.Map(userDTO, user);
             var updateResult = await _repositoryWrapper.User
                 .UpdateAsync(user);
+            await _repositoryWrapper.SaveAsync();
+
+            UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
+            userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
             if (updateResult.Succeeded)
             {
                 await _repositoryWrapper.SaveAsync();
 
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = true,
-                    Entity = user
+                    Entity = userReadModel
                 };
             }
             else
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
-                    Messages = UserMessageResult.GetMessagesFromErrors(updateResult.Errors)
+                    Messages = UserMessageResult<UserWithEventsReadModel>.GetMessagesFromErrors(updateResult.Errors)
                 };
             }
         }
 
-        public async Task<AResult<IMessage, ApplicationUser>> DeleteAsync(string id)
+        public async Task<AResult<IMessage, UserWithEventsReadModel>> DeleteAsync(string id)
         {
             var user = await GetUserEntityAsync(id);
 
             if (user is null)
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -201,14 +208,14 @@ namespace MathEvent.Services.Services
             {
                 await _repositoryWrapper.SaveAsync();
 
-                return new UserMessageResult { Succeeded = true };
+                return new UserMessageResult<UserWithEventsReadModel> { Succeeded = true };
             }
             else
             {
-                return new UserMessageResult
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
-                    Messages = UserMessageResult.GetMessagesFromErrors(deleteResult.Errors)
+                    Messages = UserMessageResult<UserWithEventsReadModel>.GetMessagesFromErrors(deleteResult.Errors)
                 };
             }
         }
@@ -288,6 +295,23 @@ namespace MathEvent.Services.Services
             {
                 await _repositoryWrapper.Subscription
                     .CreateAsync(new Subscription()
+                    {
+                        ApplicationUserId = userId,
+                        EventId = eventId
+                    });
+            }
+        }
+
+        private async Task CreateNewManagers(IEnumerable<int> newIds, string userId)
+        {
+            await _repositoryWrapper.Management
+                .FindByCondition(m => m.ApplicationUserId == userId)
+                .ForEachAsync(m => _repositoryWrapper.Management.Delete(m));
+
+            foreach (var eventId in newIds)
+            {
+                await _repositoryWrapper.Management
+                    .CreateAsync(new Management()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId

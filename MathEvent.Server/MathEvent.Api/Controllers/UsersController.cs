@@ -16,6 +16,7 @@ namespace MathEvent.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IMapper _mapper;
+
         private readonly IUserService _userService;
 
         public UsersController(IMapper mapper, IUserService userService)
@@ -77,10 +78,10 @@ namespace MathEvent.Api.Controllers
 
                 if (createdUser is null)
                 {
-                    return Ok();
+                    return StatusCode(201);
                 }
 
-                return StatusCode(201, createdUser.Id);
+                return StatusCode(201, createdUser);
             }
             else
             {
@@ -111,7 +112,14 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var updatedUser = updateResult.Entity;
+
+                if (updatedUser is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedUser);
             }
             else
             {
@@ -153,7 +161,14 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var updatedUser = updateResult.Entity;
+
+                if (updatedUser is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedUser);
             }
             else
             {

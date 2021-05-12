@@ -1,33 +1,58 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchEvents, fetchEventBreadcrumbs } from "../../../store/actions/event";
-import { useTitle } from "../../../hooks";
-import EventGrid from "./EventGrid";
-import EventInfo from "./EventInfo";
-import EventList from "./EventList";
-import "./EventView.scss";
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { useTitle } from '../../../hooks';
+import EventGrid from './EventGrid';
+import EventInfo from './EventInfo';
+import EventList from './EventList';
+import './EventView.scss';
 
 const EventView = () => {
-    const dispatch = useDispatch();
-    const { eventInfo, isGridView } = useSelector(state => state.event);
+  const { isGridView } = useSelector((state) => state.event);
 
-    useEffect(() => {
-        const parentId = eventInfo ? eventInfo.parentId : null;
-        dispatch(fetchEvents(parentId));
-        dispatch(fetchEventBreadcrumbs(parentId));
-    }, []);
+  useTitle('События');
 
-    useTitle("События");
-
-    return (
-        <div className="event-view">
-            {isGridView
-                ? (<EventGrid/>)
-                : (<EventList/>)
-            }
-            <EventInfo/>
-        </div>
-    );
+  return (
+    <div className="event-view">
+      {isGridView ? <EventGrid /> : <EventList />}
+      <EventInfo />
+    </div>
+  );
 };
 
 export default EventView;
+
+// import React from 'react';
+// import { useSelector } from 'react-redux';
+// import { useTitle } from '../../../hooks';
+// import Loader from '../../_common/Loader';
+// import EventGrid from './EventGrid';
+// import EventInfo from './EventInfo';
+// import EventList from './EventList';
+// import './EventView.scss';
+
+// const EventView = () => {
+//   const { isFetchingEvent, isFetchingEvents, isGridView } = useSelector(
+//     (state) => state.event
+//   );
+
+//   useTitle('События');
+
+//   return (
+//     <div className="event-view">
+//       {isFetchingEvents ? (
+//         <Loader className="event-view__loader" size="medium" />
+//       ) : isGridView ? (
+//         <EventGrid />
+//       ) : (
+//         <EventList />
+//       )}
+//       {isFetchingEvent ? (
+//         <Loader className="event-view__loader" size="medium" />
+//       ) : (
+//         <EventInfo />
+//       )}
+//     </div>
+//   );
+// };
+
+// export default EventView;

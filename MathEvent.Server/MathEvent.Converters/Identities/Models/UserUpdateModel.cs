@@ -17,8 +17,10 @@ namespace MathEvent.Converters.Identities.Models
 
         public string Patronymic { get; set; }
 
+        public int? OrganizationId { get; set; }
+
         public virtual ICollection<int> Events { get; set; }
 
-        public int? OrganizationId { get; set; }
+        public virtual ICollection<int> ManagedEvents { get; set; }
     }
 }
