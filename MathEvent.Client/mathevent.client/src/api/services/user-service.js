@@ -32,6 +32,12 @@ const userService = {
 
     return response;
   },
+  fetchUserStatistics: async (userId) => {
+    const url = api.users.fetchUserStatistics(userId);
+    const response = await baseService.get(url);
+
+    return response;
+  },
 };
 
 export default userService;

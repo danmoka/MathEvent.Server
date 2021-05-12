@@ -22,6 +22,7 @@ namespace MathEvent.Services.Services
     {
         Task<ApplicationUser> GetUserEntityAsync(string id);
         Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user);
+        Task<IEnumerable<SimpleStatistics>> GetUserStatistics(string id);
         Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters);
     }
 }

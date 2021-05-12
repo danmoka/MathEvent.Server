@@ -209,5 +209,12 @@ namespace MathEvent.Api.Controllers
         {
             return Ok(await _userService.GetSimpleStatistics(filters));
         }
+
+        // GET api/Users/Statistics/{id}
+        [HttpGet("Statistics/{id}")]
+        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync(string id)
+        {
+            return Ok(await _userService.GetUserStatistics(id));
+        }
     }
 }

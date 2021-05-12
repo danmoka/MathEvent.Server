@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import clsx from 'clsx';
 import {
@@ -31,6 +31,7 @@ import {
   navigateToUserEdit,
 } from '../../utils/navigator';
 import { setIsDarkTheme } from '../../store/actions/app';
+import { showUserStatistics } from '../../store/actions/user';
 import { Icon, IconButton, iconTypes } from '../_common/Icon';
 import { palette, paletteDark } from '../../styles/palette';
 import App from './App';
@@ -167,13 +168,21 @@ const AppMain = () => {
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
 
-  const handleMenuSettings = () => {
+  const handleMenuSettings = useCallback(() => {
     if (userInfo.sub) {
       navigateToUserEdit(userInfo.sub);
     }
 
     setAnchorEl(null);
-  };
+  }, [dispatch, userInfo]);
+
+  const handleMenuStatistics = useCallback(() => {
+    if (userInfo) {
+      dispatch(showUserStatistics({ user: userInfo }));
+    }
+
+    setAnchorEl(null);
+  }, [dispatch, userInfo]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -236,7 +245,7 @@ const AppMain = () => {
                       {userInfo.email} {userInfo.name}
                     </MenuItem>
                     <Divider />
-                    <MenuItem onClick={handleMenuClose}>
+                    <MenuItem onClick={handleMenuStatistics}>
                       <ListItemIcon>
                         <Icon type={iconTypes.stats} />
                       </ListItemIcon>

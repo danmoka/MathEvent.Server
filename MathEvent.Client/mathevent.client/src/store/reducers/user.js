@@ -9,21 +9,27 @@ import {
   onPendingUserStatistics,
   onFulfilledUserStatistics,
   onRejectedUserStatistics,
+  onPendingUsersStatistics,
+  onFulfilledUsersStatistics,
+  onRejectedUsersStatistics,
 } from './defaults';
 import {
   fetchUser,
   fetchUsers,
   patchUser,
   fetchStatistics,
+  fetchUserStatistics,
 } from '../actions/user';
 
 const initialState = {
   users: [],
   userInfo: null,
   statistics: [],
-  isFetchingUsers: false,
+  userStatistics: [],
   isFetchingUser: false,
+  isFetchingUsers: false,
   isFetchingUserStatistics: false,
+  isFetchingUsersStatistics: false,
   hasError: false,
 };
 
@@ -77,19 +83,37 @@ const userSlice = createSlice({
     },
 
     [fetchStatistics.pending]: (state) => {
-      onPendingUserStatistics(state);
+      onPendingUsersStatistics(state);
     },
     [fetchStatistics.fulfilled]: (
       state,
       { payload: { statistics, hasError } }
     ) => {
-      onFulfilledUserStatistics(state, hasError);
+      onFulfilledUsersStatistics(state, hasError);
 
       if (!hasError) {
         state.statistics = statistics;
       }
     },
     [fetchStatistics.rejected]: (state) => {
+      onRejectedUsersStatistics(state);
+      state.statistics = [];
+    },
+
+    [fetchUserStatistics.pending]: (state) => {
+      onPendingUserStatistics(state);
+    },
+    [fetchUserStatistics.fulfilled]: (
+      state,
+      { payload: { statistics, hasError } }
+    ) => {
+      onFulfilledUserStatistics(state, hasError);
+
+      if (!hasError) {
+        state.userStatistics = statistics;
+      }
+    },
+    [fetchUserStatistics.rejected]: (state) => {
       onRejectedUserStatistics(state);
       state.statistics = [];
     },

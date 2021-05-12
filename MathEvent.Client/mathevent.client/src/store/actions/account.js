@@ -59,6 +59,9 @@ export const fetchTokens = createAsyncThunk(
       };
     }
 
+    clearAccessToken();
+    clearRefreshToken();
+
     return {
       hasToken: false,
       hasError: true,

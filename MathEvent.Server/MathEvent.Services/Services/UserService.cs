@@ -28,6 +28,11 @@ namespace MathEvent.Services.Services
 
         private readonly IOwnerService _ownerService;
 
+        // Циклическая зависимость. Мб стоит также убрать во стальных сервисах, например, то, что используется для статистики
+        //private readonly IEventService _eventService;
+
+        //private readonly IOrganizationService _organizationService;
+
         public UserService(
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
@@ -230,6 +235,65 @@ namespace MathEvent.Services.Services
         public async Task<ApplicationUser> GetCurrentUserAsync(ClaimsPrincipal user)
         {
             return await _userManager.GetUserAsync(user);
+        }
+
+        public async Task<IEnumerable<SimpleStatistics>> GetUserStatistics(string id)
+        {
+            ICollection<SimpleStatistics> statistics = new List<SimpleStatistics>
+            {
+                await GetFavoriteOrganizationsBySubscriptions(id)
+            };
+
+            return statistics;
+        }
+
+        public async Task<SimpleStatistics> GetFavoriteOrganizationsBySubscriptions(string userId)
+        {
+            var userSubscriptions = await _repositoryWrapper.Subscription
+                .FindByCondition(s => s.ApplicationUserId == userId)
+                .ToListAsync();
+
+            var events = new List<Event>();
+
+            foreach (var subscription in userSubscriptions)
+            {
+                events.Add(await _repositoryWrapper.Event
+                    .FindByCondition(ev => ev.Id == subscription.EventId)
+                    .SingleOrDefaultAsync());
+            }
+
+            var organizationsCountPerEvent = events
+                .GroupBy(s => s.OrganizationId)
+                .Select(g => new { orgId = g.Key, count = g.Count() })
+                .ToDictionary(k => k.orgId is null ? -1 : k.orgId, i => i.count);
+
+            var statistics = new SimpleStatistics
+            {
+                Title = "Доли организаций в подписках пользователя",
+                Data = new List<ChartDataPiece>()
+            };
+
+            foreach (var entry in organizationsCountPerEvent)
+            {
+                var name = "Без организации";
+
+                if (entry.Key != -1)
+                {
+                    var organization = await _repositoryWrapper.Organization
+                        .FindByCondition(org => org.Id == entry.Key.Value)
+                        .SingleOrDefaultAsync();
+                    name = organization.Name;
+                }
+
+                statistics.Data.Add(
+                    new ChartDataPiece
+                    {
+                        X = name,
+                        Y = entry.Value
+                    });
+            }
+
+            return statistics;
         }
 
         public async Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters)

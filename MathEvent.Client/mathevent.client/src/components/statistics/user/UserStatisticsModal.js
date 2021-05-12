@@ -1,38 +1,38 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchEventStatistics } from '../../../store/actions/event';
+import { fetchUserStatistics } from '../../../store/actions/user';
 import { ShowModal, modalSizes } from '../../_common/Modal';
 import BarChart from '../../_common/Chart/BarChart';
 import Loader from '../../_common/Loader';
 import PieChart from '../../_common/Chart/PieChart';
-import './EventsStatistics.scss';
+import './UsersStatistics.scss';
 
-const EventStatisticsModal = () => {
+const UserStatisticsModal = () => {
   const dispatch = useDispatch();
-  const { event } = useSelector((state) => state.modal.modalProps);
-  const { eventStatistics, isFetchingEventStatistics } = useSelector(
-    (state) => state.event
+  const { user } = useSelector((state) => state.modal.modalProps);
+  const { userStatistics, isFetchingUserStatistics } = useSelector(
+    (state) => state.user
   );
 
   useEffect(() => {
-    dispatch(fetchEventStatistics(event.id));
-  }, [dispatch, event]);
+    dispatch(fetchUserStatistics(user.sub));
+  }, [dispatch, user]);
 
   return (
     <ShowModal
-      title={`Статистика события "${event.name}"`}
+      title={`Статистика пользователя ${user.name}`}
       size={modalSizes.small}
     >
-      {isFetchingEventStatistics || eventStatistics.length < 1 ? (
-        <Loader className="event-statistics-panel__loader" size="medium" />
+      {isFetchingUserStatistics ? (
+        <Loader className="user-statistics-panel__loader" size="medium" />
       ) : (
-        <div className="event-statistics-panel">
-          {eventStatistics.map((chart, index) => {
+        <div className="user-statistics-panel">
+          {userStatistics.map((chart, index) => {
             switch (chart.type) {
               case 'pie':
                 return (
-                  <div key={index} className="event-statistics-panel__item">
+                  <div key={index} className="user-statistics-panel__item">
                     <PieChart
                       data={chart.data}
                       title={chart.title}
@@ -44,7 +44,7 @@ const EventStatisticsModal = () => {
                 );
               case 'bar':
                 return (
-                  <div key={index} className="event-statistics-panel__item">
+                  <div key={index} className="user-statistics-panel__item">
                     <BarChart
                       data={chart.data}
                       title={chart.title}
@@ -56,7 +56,7 @@ const EventStatisticsModal = () => {
                 );
               default:
                 return (
-                  <div key={index} className="event-statistics-panel__item">
+                  <div key={index} className="user-statistics-panel__item">
                     <PieChart
                       data={chart.data}
                       title={chart.title}
@@ -74,4 +74,4 @@ const EventStatisticsModal = () => {
   );
 };
 
-export default EventStatisticsModal;
+export default UserStatisticsModal;

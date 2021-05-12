@@ -1,5 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { navigateToLogin } from '../../utils/navigator';
+import { showModal } from './modal';
+import modalTypes from '../../constants/modal-types';
 import userService from '../../api/services/user-service';
 import statusCode from '../../utils/status-code-reader';
 
@@ -62,5 +64,27 @@ export const fetchStatistics = createAsyncThunk(
     }
 
     return { statistics: [] };
+  }
+);
+
+export const fetchUserStatistics = createAsyncThunk(
+  'fetchUserStatistics',
+  async (userId) => {
+    const response = await userService.fetchUserStatistics(userId);
+
+    if (statusCode(response).ok) {
+      const statistics = await response.json();
+
+      return { statistics };
+    }
+
+    return { statistics: [] };
+  }
+);
+
+export const showUserStatistics = createAsyncThunk(
+  'showUserStatistics',
+  async ({ user }, thunkAPI) => {
+    thunkAPI.dispatch(showModal(modalTypes.userStatistics, { user }));
   }
 );

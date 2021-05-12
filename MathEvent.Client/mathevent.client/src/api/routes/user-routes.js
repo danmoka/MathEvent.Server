@@ -7,6 +7,7 @@ const userRoutes = {
   registerUrl: () => getRoute(`users/`),
   fetchStatistics: (activeUsersTop) =>
     getRoute(`users/statistics/?activeUsersTop=${activeUsersTop}`),
+  fetchUserStatistics: (userId) => getRoute(`users/statistics/${userId}`),
 };
 
 export default userRoutes;
