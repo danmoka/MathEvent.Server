@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 import { fetchUser } from '../../../store/actions/user';
-import { useCurrentUser } from '../../../hooks';
+import { useCurrentUser, useTitle } from '../../../hooks';
 import Loader from '../../_common/Loader';
 import UserEditInfo from './UserEditInfo';
 import UserManagementList from './UserManagementList';
@@ -14,6 +14,8 @@ const UserEdit = () => {
   const { id } = useParams();
   const { userInfo, isAuthenticated } = useCurrentUser();
   const { isFetchingUser } = useSelector((state) => state.user);
+
+  useTitle('Кабинет');
 
   useEffect(() => {
     if (isAuthenticated && id === userInfo.sub) {
