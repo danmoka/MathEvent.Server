@@ -5,6 +5,7 @@ import { fetchUser } from '../../../store/actions/user';
 import { useCurrentUser } from '../../../hooks';
 import Loader from '../../_common/Loader';
 import UserEditInfo from './UserEditInfo';
+import UserManagementList from './UserManagementList';
 import UserSubscriptionList from './UserSubscriptionList';
 import './UserEdit.scss';
 
@@ -25,7 +26,10 @@ const UserEdit = () => {
     <Loader className="user-edit__loader" size="medium" />
   ) : (
     <div className="user-edit">
-      <UserSubscriptionList />
+      <div className="user-events-edit">
+        <UserSubscriptionList />
+        <UserManagementList />
+      </div>
       <UserEditInfo />
     </div>
   );

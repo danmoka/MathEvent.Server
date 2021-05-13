@@ -11,7 +11,7 @@ import { iconTypes } from '../../_common/Icon';
 import List from '../../_common/List';
 import './UserEdit.scss';
 
-const prepareEvents = (events, onUnsubscribe, onClick) =>
+const prepareEvents = (events, onStopManaging, onClick) =>
   events.map((event, index) => ({
     id: event.id,
     primaryText: event.name,
@@ -20,24 +20,24 @@ const prepareEvents = (events, onUnsubscribe, onClick) =>
     onClick: () => onClick(event),
     actions: [
       {
-        id: 'unsubscribe',
-        label: 'Отписаться',
-        icon: iconTypes.personAddDisabled,
-        onClick: () => onUnsubscribe(event),
+        id: 'stopManaging',
+        label: 'Прекратить управление',
+        icon: iconTypes.close,
+        onClick: () => onStopManaging(event),
       },
     ],
   }));
 
-const UserSubscriptionList = () => {
+const UserManagementList = () => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.user);
-  const [events, setEvents] = useState([]);
+  const [managedEvents, setManagedEvents] = useState([]);
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
     if (userInfo) {
       setUserId(userInfo.id);
-      setEvents(userInfo.events);
+      setManagedEvents(userInfo.managedEvents);
     }
   }, [userInfo]);
 
@@ -59,26 +59,26 @@ const UserSubscriptionList = () => {
     [dispatch, userId]
   );
 
-  const handleUnsibscribe = useCallback(
+  const handleStopManaging = useCallback(
     (event) => {
-      const eventIds = events
+      const eventIds = managedEvents
         .map((ev) => ev.id)
         .filter((id) => id !== event.id);
 
       handlePatchUser([
         {
           value: eventIds,
-          path: '/Events',
+          path: '/ManagedEvents',
           op: 'replace',
         },
       ]);
     },
-    [handlePatchUser, events]
+    [handlePatchUser, managedEvents]
   );
 
-  const preparedEvents = prepareEvents(
-    events,
-    handleUnsibscribe,
+  const preparedMananedEvents = prepareEvents(
+    managedEvents,
+    handleStopManaging,
     handleEventClick
   );
 
@@ -86,14 +86,14 @@ const UserSubscriptionList = () => {
     <div className="user-events-list">
       <Paper className="user-events-list__header">
         <Typography variant="h5" gutterBottom>
-          Подписки
+          Управление
         </Typography>
       </Paper>
       <Paper className="user-events-list__items">
-        <List className="user-events-list__ul" items={preparedEvents} />
+        <List className="user-events-list__ul" items={preparedMananedEvents} />
       </Paper>
     </div>
   );
 };
 
-export default UserSubscriptionList;
+export default UserManagementList;

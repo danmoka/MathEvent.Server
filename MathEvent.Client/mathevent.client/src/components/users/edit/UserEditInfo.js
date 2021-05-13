@@ -1,35 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import moment from 'moment';
 import 'moment/locale/ru';
 import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import { selectEvent, fetchEvent } from '../../../store/actions/event';
 import { fetchOrganizations } from '../../../store/actions/organization';
 import { patchUser } from '../../../store/actions/user';
-import { navigateToEvents } from '../../../utils/navigator';
-import { iconTypes } from '../../_common/Icon';
 import Dropdown from '../../_common/Dropdown';
-import List from '../../_common/List';
 import TextField from '../../_common/TextField';
+import UserFiles from './UserFiles';
 import './UserEdit.scss';
-
-const prepareEvents = (events, onStopManaging, onClick) =>
-  events.map((event, index) => ({
-    id: event.id,
-    primaryText: event.name,
-    secondaryText: moment(event.startDate).format('LL'),
-    index: index + 1,
-    onClick: () => onClick(event),
-    actions: [
-      {
-        id: 'stopManaging',
-        label: 'Прекратить управление',
-        icon: iconTypes.close,
-        onClick: () => onStopManaging(event),
-      },
-    ],
-  }));
 
 const prepareOrganizations = (organizations) => [
   { value: '', name: 'Без организации' },
@@ -54,7 +32,6 @@ const UserEditInfo = () => {
   const [organization, setOrganization] = useState(
     preparedOrganizations[0].value
   );
-  const [managedEvents, setManagedEvents] = useState([]);
 
   useEffect(() => {
     dispatch(fetchOrganizations());
@@ -68,19 +45,12 @@ const UserEditInfo = () => {
       setPatronymic(userInfo.patronymic ? userInfo.patronymic : '');
       setEmail(userInfo.email);
       setUserName(userInfo.userName);
-      setManagedEvents(userInfo.managedEvents);
 
       if (userInfo.organization) {
         setOrganization(userInfo.organization.id);
       }
     }
   }, [userInfo]);
-
-  const handleEventClick = useCallback((event) => {
-    dispatch(selectEvent(event));
-    dispatch(fetchEvent(event.id));
-    navigateToEvents();
-  }, []);
 
   const handlePatchUser = useCallback(
     (data) => {
@@ -178,29 +148,6 @@ const UserEditInfo = () => {
     [handlePatchUser, userInfo]
   );
 
-  const handleStopManaging = useCallback(
-    (event) => {
-      const eventIds = managedEvents
-        .map((ev) => ev.id)
-        .filter((id) => id !== event.id);
-
-      handlePatchUser([
-        {
-          value: eventIds,
-          path: '/ManagedEvents',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchUser, managedEvents]
-  );
-
-  const preparedMananedEvents = prepareEvents(
-    managedEvents,
-    handleStopManaging,
-    handleEventClick
-  );
-
   return (
     <div className="user-edit-info">
       <section className="user-edit-info__info">
@@ -244,20 +191,8 @@ const UserEditInfo = () => {
           />
         </Paper>
       </section>
-      <section className="user-edit-info__management">
-        <div className="user-managing-list">
-          <Paper className="user-managing-list__header">
-            <Typography variant="h5" gutterBottom>
-              Управление
-            </Typography>
-          </Paper>
-          <Paper className="user-managing-list__items">
-            <List
-              className="user-managing-list__ul"
-              items={preparedMananedEvents}
-            />
-          </Paper>
-        </div>
+      <section className="user-edit-info__files">
+        <UserFiles />
       </section>
     </div>
   );

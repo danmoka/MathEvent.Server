@@ -253,9 +253,9 @@ const AppMain = () => {
                     </MenuItem>
                     <MenuItem onClick={handleMenuSettings}>
                       <ListItemIcon>
-                        <Icon type={iconTypes.settings} />
+                        <Icon type={iconTypes.person} />
                       </ListItemIcon>
-                      Настройки аккаунта
+                      Кабинет
                     </MenuItem>
                     <MenuItem onClick={handleLogoutClick}>
                       <ListItemIcon>

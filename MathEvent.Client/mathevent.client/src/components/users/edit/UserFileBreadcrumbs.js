@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchFiles, fetchFileBreadcrumbs } from '../../../store/actions/file';
 import CommonBreadcrumbs from '../../_common/Breadcrumbs';
 import Loader from '../../_common/Loader';
+import './UserEdit.scss';
 
 const prepareCrumbs = (crumbs, onClick) =>
   crumbs.map((crumb, index) => ({
@@ -13,15 +14,15 @@ const prepareCrumbs = (crumbs, onClick) =>
     onClick: () => onClick(crumb),
   }));
 
-const EventFileBreadcrumbs = () => {
+const UserFileBreadcrumbs = () => {
   const dispatch = useDispatch();
-  const { eventInfo } = useSelector((state) => state.event);
+  const { userInfo } = useSelector((state) => state.user);
   let { crumbs } = useSelector((state) => state.file);
   const { isFetchingFileBreadcrumbs } = useSelector((state) => state.file);
   crumbs = [{ id: null, name: 'Корень' }, ...crumbs];
 
   const handleCrumbClick = useCallback((crumb) => {
-    dispatch(fetchFiles({ fileId: crumb.id, ownerId: eventInfo.ownerId }));
+    dispatch(fetchFiles({ fileId: crumb.id, ownerId: userInfo.ownerId }));
     dispatch(fetchFileBreadcrumbs(crumb.id));
   });
 
@@ -30,7 +31,7 @@ const EventFileBreadcrumbs = () => {
     dispatch(
       fetchFiles({
         fileId: lastCrumb ? lastCrumb.id : null,
-        ownerId: eventInfo.ownerId,
+        ownerId: userInfo.ownerId,
       })
     );
     dispatch(fetchFileBreadcrumbs(lastCrumb ? lastCrumb.id : null));
@@ -39,7 +40,7 @@ const EventFileBreadcrumbs = () => {
   const preparedCrumbs = prepareCrumbs(crumbs, handleCrumbClick);
 
   return isFetchingFileBreadcrumbs ? (
-    <Loader className="event-grid__loader" size="medium" />
+    <Loader className="user-files-breadcrumbs__loader" size="medium" />
   ) : (
     <CommonBreadcrumbs
       items={preparedCrumbs}
@@ -48,4 +49,4 @@ const EventFileBreadcrumbs = () => {
   );
 };
 
-export default EventFileBreadcrumbs;
+export default UserFileBreadcrumbs;
