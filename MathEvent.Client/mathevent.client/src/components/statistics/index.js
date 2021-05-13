@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Route } from 'react-router-dom';
-import { useTitle } from "../../hooks";
+import { useTitle } from '../../hooks';
 import {
   navigateToEventsStatistics,
   navigateToOrganizationsStatistics,
