@@ -1,4 +1,4 @@
-const defaultOnPendingFetchValue = true;
+const defaultOnPendingFetchValue = false;
 
 const onPendingDefault = (state) => {
   state.hasError = false;

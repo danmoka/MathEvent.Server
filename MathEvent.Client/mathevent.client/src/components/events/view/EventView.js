@@ -1,13 +1,34 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTitle } from '../../../hooks';
+import {
+  fetchEvents,
+  fetchEventBreadcrumbs,
+} from '../../../store/actions/event';
 import EventGrid from './EventGrid';
 import EventInfo from './EventInfo';
 import EventList from './EventList';
 import './EventView.scss';
 
 const EventView = () => {
-  const { isGridView } = useSelector((state) => state.event);
+  const dispatch = useDispatch();
+  const { eventInfo, isGridView } = useSelector((state) => state.event);
+
+  useEffect(() => {
+    if (eventInfo) {
+      if (eventInfo.hierarchy) {
+        dispatch(fetchEventBreadcrumbs(eventInfo.id));
+        dispatch(fetchEvents(eventInfo.id));
+      } else {
+        const { parentId } = eventInfo;
+        dispatch(fetchEvents(parentId));
+        dispatch(fetchEventBreadcrumbs(parentId));
+      }
+    } else {
+      dispatch(fetchEvents(null));
+      dispatch(fetchEventBreadcrumbs(null));
+    }
+  }, [dispatch, eventInfo]);
 
   useTitle('События');
 

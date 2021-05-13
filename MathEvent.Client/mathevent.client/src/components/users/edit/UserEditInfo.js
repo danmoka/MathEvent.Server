@@ -4,12 +4,7 @@ import moment from 'moment';
 import 'moment/locale/ru';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import {
-  selectEvent,
-  fetchEvent,
-  fetchEvents,
-  fetchEventBreadcrumbs,
-} from '../../../store/actions/event';
+import { selectEvent, fetchEvent } from '../../../store/actions/event';
 import { fetchOrganizations } from '../../../store/actions/organization';
 import { patchUser } from '../../../store/actions/user';
 import { navigateToEvents } from '../../../utils/navigator';
@@ -84,15 +79,6 @@ const UserEditInfo = () => {
   const handleEventClick = useCallback((event) => {
     dispatch(selectEvent(event));
     dispatch(fetchEvent(event.id));
-
-    if (event.hierarchy) {
-      dispatch(fetchEventBreadcrumbs(event.id));
-      dispatch(fetchEvents(event.id));
-    } else {
-      const parentId = event ? event.parentId : null;
-      dispatch(fetchEvents(parentId));
-      dispatch(fetchEventBreadcrumbs(parentId));
-    }
     navigateToEvents();
   }, []);
 
