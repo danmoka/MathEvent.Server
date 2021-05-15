@@ -515,7 +515,7 @@ namespace MathEvent.Services.Services
         {
             var statistics = new SimpleStatistics
             {
-                Title = $"Топ самых популярных событий по подписчикам",
+                Title = $"Популярность событий по подписчикам",
                 Data = new List<ChartDataPiece>()
             };
 
@@ -523,6 +523,7 @@ namespace MathEvent.Services.Services
                 .FindAll()
                 .GroupBy(s => s.EventId)
                 .Select(g => new { eventId = g.Key, count = g.Count() })
+                .OrderBy(g => g.count)
                 .Take(number)
                 .ToDictionaryAsync(k => k.eventId, i => i.count);
 

@@ -28,7 +28,6 @@ namespace MathEvent.Entities.Entities
         public int? ParentId { get; set; }
         #endregion
 
-        [ForeignKey("ApplicationUser")]
         public string AuthorId { get; set; }
 
         [ForeignKey("FileOwner")]

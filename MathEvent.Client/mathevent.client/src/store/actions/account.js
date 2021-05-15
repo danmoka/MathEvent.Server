@@ -78,6 +78,9 @@ export const fetchUserInfo = createAsyncThunk('fetchUserInfo', async () => {
     return { userInfo, isAuthenticated: true, hasError: false };
   }
 
+  clearAccessToken();
+  clearRefreshToken();
+
   return { userInfo: {}, isAuthenticated: false, hasError: false };
 });
 

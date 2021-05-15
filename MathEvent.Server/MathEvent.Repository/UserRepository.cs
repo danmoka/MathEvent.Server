@@ -13,7 +13,9 @@ namespace MathEvent.Repository
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserRepository(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager) : base(repositoryContext)
+        public UserRepository(
+            RepositoryContext repositoryContext,
+            UserManager<ApplicationUser> userManager) : base(repositoryContext)
         {
             _userManager = userManager;
         }

@@ -331,6 +331,7 @@ namespace MathEvent.Services.Services
                 .FindAll()
                 .GroupBy(s => s.ApplicationUserId)
                 .Select(g => new { userId = g.Key, count = g.Count() })
+                .OrderBy(g => g.count)
                 .Take(number)
                 .ToDictionaryAsync(k => k.userId, i => i.count);
 
