@@ -23,6 +23,7 @@ const icons = {
   [iconTypes.logout]: materialIcons.ExitToApp,
   [iconTypes.menu]: materialIcons.Menu,
   [iconTypes.more]: materialIcons.MoreVert,
+  [iconTypes.people]: materialIcons.People,
   [iconTypes.person]: materialIcons.Person,
   [iconTypes.personAdd]: materialIcons.PersonAdd,
   [iconTypes.personAddDisabled]: materialIcons.PersonAddDisabled,

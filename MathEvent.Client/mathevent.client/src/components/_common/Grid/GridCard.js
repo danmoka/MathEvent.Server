@@ -14,7 +14,7 @@ import Image from '../Image';
 import './Grid.scss';
 import '../List/List.scss';
 
-const width = 245;
+const width = 300;
 const primaryTextLength = 20;
 const additionalInfoLength = 25;
 

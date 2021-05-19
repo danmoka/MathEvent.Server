@@ -20,6 +20,7 @@ const iconTypes = {
   logout: 'logout',
   menu: 'menu',
   more: 'more',
+  people: 'people',
   person: 'person',
   personAdd: 'personAdd',
   personAddDisabled: 'personAddDisabled',

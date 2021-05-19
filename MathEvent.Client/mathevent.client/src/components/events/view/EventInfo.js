@@ -124,17 +124,19 @@ const EventInfo = () => {
     <div className="event-info">
       <div className="event-info__info">
         <Paper className="event-info__info--main">
-          <Image
-            className="event-info__image"
-            src={
-              avatarPath
-                ? getImageSrc(avatarPath)
-                : isDarkTheme
-                ? images.eventDefaultDark
-                : images.eventDefault
-            }
-            alt={name}
-          />
+          <div className="event-info__image--box">
+            <Image
+              className="event-info__image"
+              src={
+                avatarPath
+                  ? getImageSrc(avatarPath)
+                  : isDarkTheme
+                  ? images.eventDefaultDark
+                  : images.eventDefault
+              }
+              alt={name}
+            />
+          </div>
           <div className="event-info__info--stats">
             <Typography variant="h6">{name}</Typography>
             <IconButton type={iconTypes.stats} onClick={handleShowStatistics} />

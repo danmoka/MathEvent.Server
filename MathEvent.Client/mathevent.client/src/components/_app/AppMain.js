@@ -311,6 +311,28 @@ const AppMain = () => {
             </ListItem>
             <ListItem
               button
+              key="Организации"
+              selected={false}
+              onClick={() => {}}
+            >
+              <ListItemIcon>
+                <Icon type={iconTypes.business} />
+              </ListItemIcon>
+              <ListItemText primary="Организации" />
+            </ListItem>
+            <ListItem
+              button
+              key="Пользователи"
+              selected={false}
+              onClick={() => {}}
+            >
+              <ListItemIcon>
+                <Icon type={iconTypes.people} />
+              </ListItemIcon>
+              <ListItemText primary="Пользователи" />
+            </ListItem>
+            <ListItem
+              button
               key="Статистика"
               selected={isSelected(routes.statistics.main)}
               onClick={navigateToEventsStatistics}

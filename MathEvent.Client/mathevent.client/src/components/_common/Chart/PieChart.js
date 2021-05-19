@@ -12,8 +12,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Typography from '@material-ui/core/Typography';
 import { cropText } from '../../../utils/text';
 import schemeCollection from '../../../constants/chart-color-scheme';
+import './Chart.scss';
 
-const labelLength = 30;
+const labelLength = 20;
 
 const Label = ({ ...restProps }) => {
   const { text, croppedText } = cropText(labelLength, restProps.text || '');
@@ -21,7 +22,7 @@ const Label = ({ ...restProps }) => {
   return (
     <Tooltip title={text} placement="bottom">
       <Typography
-        className="file__name"
+        className="chart__label"
         noWrap
         variant="caption"
         color="textSecondary"

@@ -207,17 +207,19 @@ const EventEditInfo = () => {
         />
       </section>
       <section className="event-edit-info__section--image">
-        <Image
-          className="event-edit-info__image"
-          src={
-            avatarPath
-              ? getImageSrc(avatarPath)
-              : isDarkTheme
-              ? images.eventDefaultDark
-              : images.eventDefault
-          }
-          alt={name}
-        />
+        <div className="event-edit-info__image--box">
+          <Image
+            className="event-edit-info__image"
+            src={
+              avatarPath
+                ? getImageSrc(avatarPath)
+                : isDarkTheme
+                ? images.eventDefaultDark
+                : images.eventDefault
+            }
+            alt={name}
+          />
+        </div>
         <Button
           className="event-edit-form__control"
           startIcon={iconTypes.upload}

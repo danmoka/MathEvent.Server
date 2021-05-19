@@ -115,9 +115,11 @@ const EventFiles = () => {
       </Paper>
       <EventFileBreadcrumbs />
       {isFetchingFiles ? (
-        <Loader size="medium" />
+        <Loader className="event-files__loader" size="medium" />
       ) : (
-        <Files items={preparedFiles} />
+        <div className="event-files__items">
+          <Files items={preparedFiles} />
+        </div>
       )}
     </div>
   );
