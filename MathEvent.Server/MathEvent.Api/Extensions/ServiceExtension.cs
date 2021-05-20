@@ -44,7 +44,7 @@ namespace MathEvent.Api.Extensions
             // accepts any access token issued by identity server
             services.AddAuthentication().AddJwtBearer(options =>
             {
-                options.Authority = "https://localhost:5001";
+                options.Authority = configuration.GetValue<string>("Authority");
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = false
@@ -88,7 +88,7 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<IOwnerService, OwnerService>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IOrganizationService, OrganizationService>();
-            services.AddSingleton(new DataPathService(env.ContentRootPath, configuration.GetValue<long>("FileSizeLimit")));
+            services.AddSingleton(new DataPathService(env.WebRootPath, configuration.GetValue<long>("FileSizeLimit")));
         }
 
         /// <summary>

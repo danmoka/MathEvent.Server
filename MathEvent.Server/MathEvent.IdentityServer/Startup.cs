@@ -21,7 +21,7 @@ namespace MathEvent.IdentityServer
         {
             services.ConfigureConnection(Configuration);
             services.ConfigureIndentity();
-            services.ConfigureIdentityServer();
+            services.ConfigureIdentityServer(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -33,7 +33,7 @@ namespace MathEvent.IdentityServer
 
             app.UseCors(builder =>
             {
-                builder.WithOrigins("http://localhost:8080");
+                builder.WithOrigins(Configuration.GetSection("Origins").Get<string[]>());
                 builder.AllowCredentials();
                 builder.AllowAnyHeader();
                 builder.AllowAnyMethod();

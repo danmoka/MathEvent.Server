@@ -31,7 +31,7 @@ namespace MathEvent.IdentityServer.Extensions
         /// Настройка IdentityServer4
         /// </summary>
         /// <param name="services">Зависимости</param>
-        public static void ConfigureIdentityServer(this IServiceCollection services)
+        public static void ConfigureIdentityServer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddIdentityServer(options =>
             {
@@ -53,7 +53,7 @@ namespace MathEvent.IdentityServer.Extensions
 
                 return new DefaultCorsPolicyService(logger)
                 {
-                    AllowedOrigins = { "http://localhost:8080", "https://localhost:8080" }
+                    AllowedOrigins = configuration.GetSection("Origins").Get<string[]>()
                 };
             });
         }

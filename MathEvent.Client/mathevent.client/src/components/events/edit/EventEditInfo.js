@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useDebouncedCallback } from 'use-debounce';
 import Paper from '@material-ui/core/Paper';
 import { fetchOrganizations } from '../../../store/actions/organization';
 import {
@@ -77,21 +78,18 @@ const EventEditInfo = () => {
     [dispatch, eventId]
   );
 
-  const handleNameValueChange = useCallback(
-    (newName) => {
-      setName(newName);
-      handlePatchEvent([
-        {
-          value: newName,
-          path: '/Name',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchEvent, event]
-  );
+  const handleNameValueChange = useDebouncedCallback((newName) => {
+    setName(newName);
+    handlePatchEvent([
+      {
+        value: newName,
+        path: '/Name',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
-  const handleDescriptionValueChange = useCallback(
+  const handleDescriptionValueChange = useDebouncedCallback(
     (newDescription) => {
       setDesctiption(newDescription);
       handlePatchEvent([
@@ -102,36 +100,30 @@ const EventEditInfo = () => {
         },
       ]);
     },
-    [handlePatchEvent, event]
+    1000
   );
 
-  const handleDateValueChange = useCallback(
-    (newStartDate) => {
-      setStartDate(newStartDate);
-      handlePatchEvent([
-        {
-          value: newStartDate,
-          path: '/StartDate',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchEvent, event]
-  );
+  const handleDateValueChange = useDebouncedCallback((newStartDate) => {
+    setStartDate(newStartDate);
+    handlePatchEvent([
+      {
+        value: newStartDate,
+        path: '/StartDate',
+        op: 'replace',
+      },
+    ]);
+  }, 2000);
 
-  const handleLocationValueChange = useCallback(
-    (newLocation) => {
-      setLocation(newLocation);
-      handlePatchEvent([
-        {
-          value: newLocation,
-          path: '/Location',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchEvent, event]
-  );
+  const handleLocationValueChange = useDebouncedCallback((newLocation) => {
+    setLocation(newLocation);
+    handlePatchEvent([
+      {
+        value: newLocation,
+        path: '/Location',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
   const handleOrganizationChange = useCallback(
     (newOrganization) => {

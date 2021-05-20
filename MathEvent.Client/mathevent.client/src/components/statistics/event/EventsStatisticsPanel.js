@@ -18,7 +18,7 @@ const EventsStatisticsPanel = () => {
   }, [dispatch, eventSubsStatisticsTop]);
 
   return isFetchingEventsStatistics ? (
-    <Loader className="events-statistics-panel__loader" size="medium" />
+    <Loader className="event-statistics-panel__loader" size="medium" />
   ) : (
     <div className="events-statistics-panel">
       {statistics.map((chart, index) => {

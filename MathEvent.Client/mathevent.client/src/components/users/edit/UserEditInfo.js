@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useDebouncedCallback } from 'use-debounce';
 import 'moment/locale/ru';
 import Paper from '@material-ui/core/Paper';
 import { fetchOrganizations } from '../../../store/actions/organization';
@@ -64,75 +65,60 @@ const UserEditInfo = () => {
     [dispatch, userId]
   );
 
-  const handleNameValueChange = useCallback(
-    (newName) => {
-      setName(newName);
-      handlePatchUser([
-        {
-          value: newName,
-          path: '/Name',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchUser, userInfo]
-  ); // userInfo мб не надо?
+  const handleNameValueChange = useDebouncedCallback((newName) => {
+    setName(newName);
+    handlePatchUser([
+      {
+        value: newName,
+        path: '/Name',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
-  const handleSurnameValueChange = useCallback(
-    (newSurname) => {
-      setSurname(newSurname);
-      handlePatchUser([
-        {
-          value: newSurname,
-          path: '/Surname',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchUser, userInfo]
-  ); // userInfo мб не надо?
+  const handleSurnameValueChange = useDebouncedCallback((newSurname) => {
+    setSurname(newSurname);
+    handlePatchUser([
+      {
+        value: newSurname,
+        path: '/Surname',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
-  const handlePatronymicValueChange = useCallback(
-    (newPatronymic) => {
-      setPatronymic(newPatronymic);
-      handlePatchUser([
-        {
-          value: newPatronymic,
-          path: '/Patronymic',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchUser, userInfo]
-  );
+  const handlePatronymicValueChange = useDebouncedCallback((newPatronymic) => {
+    setPatronymic(newPatronymic);
+    handlePatchUser([
+      {
+        value: newPatronymic,
+        path: '/Patronymic',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
-  const handleEmailValueChange = useCallback(
-    (newEmail) => {
-      setEmail(newEmail);
-      handlePatchUser([
-        {
-          value: newEmail,
-          path: '/Email',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchUser, userInfo]
-  );
+  const handleEmailValueChange = useDebouncedCallback((newEmail) => {
+    setEmail(newEmail);
+    handlePatchUser([
+      {
+        value: newEmail,
+        path: '/Email',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
-  const handleUserNameValueChange = useCallback(
-    (newUserName) => {
-      setUserName(newUserName);
-      handlePatchUser([
-        {
-          value: newUserName,
-          path: '/UserName',
-          op: 'replace',
-        },
-      ]);
-    },
-    [handlePatchUser, userInfo]
-  );
+  const handleUserNameValueChange = useDebouncedCallback((newUserName) => {
+    setUserName(newUserName);
+    handlePatchUser([
+      {
+        value: newUserName,
+        path: '/UserName',
+        op: 'replace',
+      },
+    ]);
+  }, 1000);
 
   const handleOrganizationChange = useCallback(
     (newOrganization) => {

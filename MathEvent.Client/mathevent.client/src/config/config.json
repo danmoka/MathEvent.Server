@@ -1,7 +1,6 @@
 {
-    "baseUrl": "https://localhost:5003",
-    "siteUrl": "http://localhost:8080",
-    "accountUrl": "https://localhost:5001",
+    "baseUrl": "https://matheventapi20210520141313.azurewebsites.net",
+    "accountUrl": "https://matheventidentityserver20210520135557.azurewebsites.net",
     "clientId": "react_spa",
     "clientSecret": "secret",
     "passwordGrantType": "password",

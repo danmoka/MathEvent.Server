@@ -4,7 +4,12 @@ import moment from 'moment';
 import 'moment/locale/ru';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { fetchEvent, selectEvent } from '../../../store/actions/event';
+import {
+  fetchEvent,
+  fetchEvents,
+  fetchEventBreadcrumbs,
+  selectEvent,
+} from '../../../store/actions/event';
 import { patchUser } from '../../../store/actions/user';
 import { navigateToEvents } from '../../../utils/navigator';
 import { iconTypes } from '../../_common/Icon';
@@ -44,6 +49,16 @@ const UserSubscriptionList = () => {
   const handleEventClick = useCallback((event) => {
     dispatch(selectEvent(event));
     dispatch(fetchEvent(event.id));
+
+    if (event.hierarchy) {
+      dispatch(fetchEventBreadcrumbs(event.id));
+      dispatch(fetchEvents(event.id));
+    } else {
+      const { parentId } = event;
+      dispatch(fetchEvents(parentId));
+      dispatch(fetchEventBreadcrumbs(parentId));
+    }
+
     navigateToEvents();
   }, []);
 

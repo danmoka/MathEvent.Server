@@ -44,7 +44,7 @@ namespace MathEvent.Api
 
             app.UseCors(builder =>
             {
-                builder.WithOrigins("http://localhost:8080");
+                builder.WithOrigins(Configuration.GetSection("Origins").Get<string[]>());
                 builder.AllowCredentials();
                 builder.AllowAnyHeader();
                 builder.AllowAnyMethod();
