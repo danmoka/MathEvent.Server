@@ -17,8 +17,9 @@
     "use-debounce": "^6.0.1"
   },
   "scripts": {
+    "build": "webpack --mode production",
     "dev": "webpack-dev-server --mode development --open --hot",
-    "build": "webpack --mode production"
+    "start": "npm run build && node server.js"
   },
   "eslintConfig": {
     "extends": [
