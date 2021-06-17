@@ -1,0 +1,15 @@
+.MuiSelect-select:focus {
+    background-color: transparent !important;
+  }
+  
+  .MuiFormHelperText-root {
+    position: absolute;
+    top: 36px;
+  }
+  
+  .MuiListItemText-primary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 90%;
+  }

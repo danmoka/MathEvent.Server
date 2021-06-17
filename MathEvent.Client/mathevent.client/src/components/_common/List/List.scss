@@ -1,0 +1,17 @@
+.list {
+  pointer-events: auto !important;
+}
+
+.list-item {
+  &__secondary {
+    visibility: hidden;
+
+    &--hovered {
+      visibility: visible;
+    }
+  }
+
+  &__secondary-menu {
+    padding: 5px 0;
+  }
+}

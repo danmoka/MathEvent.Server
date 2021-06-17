@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MathEvent.Entities\MathEvent.Entities.csproj" />
+    <ProjectReference Include="..\MathEvent.Repository\MathEvent.Repository.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,8 @@
+{
+    "baseUrl": "https://matheventapi20210520141313.azurewebsites.net",
+    "accountUrl": "https://matheventidentityserver20210520135557.azurewebsites.net",
+    "clientId": "react_spa",
+    "clientSecret": "secret",
+    "passwordGrantType": "password",
+    "refreshGrantType": "refresh_token"
+}

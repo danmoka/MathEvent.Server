@@ -1,0 +1,16 @@
+.dropzone {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+}
+
+.aside {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 15px;
+}
