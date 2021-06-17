@@ -1,38 +1,18 @@
-# MathEventWebApp
-------------------------
+# MathEvent.Server
+
+---
+
 # DESCRIPTION
-	About: web application for supporting public events
+
+    About: the api part of the MathEvent web application
+
 #
-
-## AUTHENTICATION
-### USERS
-####        /connect/token [POST]
-    POST:
-        Body (x-www-form-urlencoded) (without refresh token):
-            client_id: str,
-            client_secret: str,
-            grant_type: password credentials,
-            username: str,
-            password: str,
-            scope: str ("offline_access" if you want to get an refresh token),
-            client_authentication: send client credentials in body
-        Body (x-www-form-urlencoded) (with refresh token):
-            client_id: str,
-            client_secret: str,
-            grant_type: refresh_token,
-            refresh_token: str
-####        /connect/revocation [POST]
-    POST:
-        Body (x-www-form-urlencoded):
-            token: str (access token (reference tokens only) or refresh token)
-            client_id: str
-            client_secret: str
-####        /connect/userinfo [GET]
-    GET: return the user id (Authorization = Bearer Token)
-
 ## API ENDPOINTS
+
 ### EVENTS
-####        /api/Events/ [GET,POST]
+
+#### /api/Events/ [GET,POST]
+
     GET: return the list of events
     POST: create a new event
         Body: {
@@ -41,8 +21,10 @@
             "Hierarchy": true if the event is a series of events, otherwise null,
             "ParentId": null if the event is not part of a series of events,
             "Description": str
-        } 
-####         /api/Events/<int:pk>/ [GET, PUT, PATCH, DELETE]
+        }
+
+#### /api/Events/<int:pk>/ [GET, PUT, PATCH, DELETE]
+
     GET: return the event by id
     PUT: update the event
         Body: {
@@ -65,7 +47,9 @@
     DELETE: delete the event by id
 
 ### USERS
-####        /api/Users/ [GET,POST]
+
+#### /api/Users/ [GET,POST]
+
     GET: return the list of users
     POST: create a new user
         Body: {
@@ -74,8 +58,10 @@
             "Email": str,
             "Password": str,
             "PasswordConfirm": str
-        } 
-####         /api/Users/<int:pk>/ [GET, PUT, PATCH, DELETE]
+        }
+
+#### /api/Users/<int:pk>/ [GET, PUT, PATCH, DELETE]
+
     GET: return the user by id
     PUT: update the user
         Body: {
