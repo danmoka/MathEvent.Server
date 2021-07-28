@@ -4,17 +4,14 @@ using System.Collections.Generic;
 
 namespace MathEvent.Services.Results
 {
-    /// <summary>
-    /// Результат выполнения с сущностью пользователя
-    /// </summary>
-    public class UserMessageResult<T> : MessageResult<T> where T : class
+    internal static class ResultUtils
     {
         /// <summary>
         /// Преобразует перечисление IdentityError в перечисление IdentityMessage
         /// </summary>
         /// <param name="errors">Перечисление ошибок подсистемы Identity</param>
-        /// <returns></returns>
-        public static IEnumerable<IdentityMessage> GetMessagesFromErrors(IEnumerable<IdentityError> errors)
+        /// <returns>Перечисление ошибок подсистемы Identity в виде сообщений</returns>
+        internal static IEnumerable<IdentityMessage> MapIdentityErrorsToMessages(IEnumerable<IdentityError> errors)
         {
             foreach (var error in errors)
             {
