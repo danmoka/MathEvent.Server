@@ -81,7 +81,7 @@ namespace MathEvent.Services.Services
 
             if (user is null)
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -99,10 +99,10 @@ namespace MathEvent.Services.Services
 
             if (!createResult.Succeeded)
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
-                    Messages = ResultUtils.MapIdentityErrorsToMessages(createResult.Errors)
+                    Messages = UserMessageResult<UserWithEventsReadModel>.GetMessagesFromErrors(createResult.Errors)
                 };
             }
 
@@ -110,7 +110,7 @@ namespace MathEvent.Services.Services
 
             if (await _ownerService.CreateUserOwner(user.Id, Owner.Type.File) is null)
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>()
@@ -126,7 +126,7 @@ namespace MathEvent.Services.Services
             UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
             userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-            return new MessageResult<UserWithEventsReadModel>
+            return new UserMessageResult<UserWithEventsReadModel>
             {
                 Succeeded = true,
                 Entity = userReadModel
@@ -140,7 +140,7 @@ namespace MathEvent.Services.Services
 
             if (user is null)
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -170,7 +170,7 @@ namespace MathEvent.Services.Services
             {
                 await _repositoryWrapper.SaveAsync();
 
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = true,
                     Entity = userReadModel
@@ -178,10 +178,10 @@ namespace MathEvent.Services.Services
             }
             else
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
-                    Messages = ResultUtils.MapIdentityErrorsToMessages(updateResult.Errors)
+                    Messages = UserMessageResult<UserWithEventsReadModel>.GetMessagesFromErrors(updateResult.Errors)
                 };
             }
         }
@@ -192,7 +192,7 @@ namespace MathEvent.Services.Services
 
             if (user is null)
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
                     Messages = new List<SimpleMessage>
@@ -213,14 +213,14 @@ namespace MathEvent.Services.Services
             {
                 await _repositoryWrapper.SaveAsync();
 
-                return new MessageResult<UserWithEventsReadModel> { Succeeded = true };
+                return new UserMessageResult<UserWithEventsReadModel> { Succeeded = true };
             }
             else
             {
-                return new MessageResult<UserWithEventsReadModel>
+                return new UserMessageResult<UserWithEventsReadModel>
                 {
                     Succeeded = false,
-                    Messages = ResultUtils.MapIdentityErrorsToMessages(deleteResult.Errors)
+                    Messages = UserMessageResult<UserWithEventsReadModel>.GetMessagesFromErrors(deleteResult.Errors)
                 };
             }
         }

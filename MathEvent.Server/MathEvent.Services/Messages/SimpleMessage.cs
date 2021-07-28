@@ -8,7 +8,6 @@ namespace MathEvent.Services.Messages
     public class SimpleMessage : IMessage
     {
         public string Code { get; set; }
-
         public string Message { get; set; }
     }
 }
