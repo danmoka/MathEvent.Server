@@ -33,7 +33,8 @@ namespace MathEvent.Converters.Events.Profiles
                 .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<UserDTOToIdResolver>())
                 .ForMember(dest => dest.Managers, opt => opt.MapFrom<ManagerDTOToIdResolver>())
                 .ForMember(dest => dest.OrganizationId, opt => opt.MapFrom<OrganizationDTOToIdResolver>());// обновление
-            CreateMap<EventWithUsersDTO, EventWithUsersReadModel>(); // чтение
+            CreateMap<EventWithUsersDTO, EventWithUsersReadModel>()
+                .ForMember(dest => dest.OwnerId, opt => opt.MapFrom<FileOwnerIdResolver>()); // чтение
 
             // DTO -> Entity
             CreateMap<EventWithUsersDTO, Event>(); // обновление
@@ -257,6 +258,52 @@ namespace MathEvent.Converters.Events.Profiles
                 return _mapper.Map<OrganizationDTO>(_repositoryWrapper.Organization
                          .FindByCondition(org => org.Id == source.OrganizationId)
                          .SingleOrDefault());
+            }
+        }
+
+        /// <summary>
+        /// Класс, описывающий получение Id сущности владельца файла
+        /// </summary>
+        public class FileOwnerIdResolver : IValueResolver<EventWithUsersDTO, EventWithUsersReadModel, int?>
+        {
+            private readonly IRepositoryWrapper _repositoryWrapper;
+
+            public FileOwnerIdResolver(IRepositoryWrapper repositoryWrapper)
+            {
+                _repositoryWrapper = repositoryWrapper;
+            }
+
+            public int? Resolve(EventWithUsersDTO source, EventWithUsersReadModel destination, int? destMember, ResolutionContext context)
+            {
+                var owner = _repositoryWrapper.Owner
+                    .FindByCondition(ow => ow.EventId == source.Id && ow.OwnedType == Owner.Type.File)
+                    .SingleOrDefault();
+
+                if (owner is null)
+                {
+                    owner = CreateEventOwner(source.Id, Owner.Type.File);
+                }
+
+                return owner.Id;
+            }
+
+            /// <summary>
+            /// Создает владельца-событие
+            /// </summary>
+            /// <param name="id">Идентификатор события</param>
+            /// <param name="type">Тип обладаемой сущности</param>
+            /// <returns>Владелец</returns>
+            private Owner CreateEventOwner(int id, Owner.Type type)
+            {
+                var owner = _repositoryWrapper.Owner.CreateAsync(
+                    new Owner
+                    {
+                        EventId = id,
+                        OwnedType = type
+                    }).Result;
+                _repositoryWrapper.SaveAsync();
+
+                return owner;
             }
         }
     }
