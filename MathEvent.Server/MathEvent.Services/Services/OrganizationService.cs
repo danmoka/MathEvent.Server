@@ -162,7 +162,7 @@ namespace MathEvent.Services.Services
         public async Task<Organization> GetOrganizationEntityAsync(int id)
         {
             return await _repositoryWrapper.Organization
-                .FindByCondition(ev => ev.Id == id)
+                .FindByCondition(org => org.Id == id)
                 .SingleOrDefaultAsync();
         }
 

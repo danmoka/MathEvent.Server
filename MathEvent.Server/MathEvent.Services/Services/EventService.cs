@@ -26,8 +26,6 @@ namespace MathEvent.Services.Services
 
         private readonly IMapper _mapper;
 
-        private readonly IOrganizationService _organizationService;
-
         private readonly DataPathService _dataPathService;
 
         private const uint _breadcrumbRecursionDepth = 8;
@@ -37,13 +35,10 @@ namespace MathEvent.Services.Services
         public EventService(
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            IUserService userService,
-            IOrganizationService organizationService,
             DataPathService dataPathService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _organizationService = organizationService;
             _dataPathService = dataPathService;
         }
 
@@ -438,7 +433,9 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organization = await _organizationService.GetOrganizationEntityAsync(entry.Key);
+                    var organization = await _repositoryWrapper.Organization
+                        .FindByCondition(org => org.Id == entry.Key)
+                        .SingleOrDefaultAsync();
                     name = organization.Name;
                 }
 
