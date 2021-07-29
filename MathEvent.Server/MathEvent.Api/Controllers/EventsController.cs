@@ -20,13 +20,13 @@ namespace MathEvent.Api.Controllers
     {
         private readonly IMapper _mapper;
 
-        private readonly IEventService _eventService;
+        private readonly EventService _eventService;
 
         private readonly IFileService _fileService;
 
         private readonly IUserService _userService;
 
-        public EventsController(IMapper mapper, IEventService eventService, IFileService fileService, IUserService userService)
+        public EventsController(IMapper mapper, EventService eventService, IFileService fileService, IUserService userService)
         {
             _mapper = mapper;
             _eventService = eventService;
@@ -39,14 +39,19 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
-            var eventReadModels = await _eventService.ListAsync(filters);
+            var eventsResult = await _eventService.ListAsync(filters);
 
-            if (eventReadModels is not null)
+            if (eventsResult.Succeeded)
             {
-                return Ok(eventReadModels);
+                var eventReadModels = eventsResult.Entity;
+
+                if (eventReadModels is not null)
+                {
+                    return Ok(eventReadModels);
+                }
             }
 
-            return NotFound();
+            return NotFound(eventsResult.Messages);
         }
 
         // GET api/Events/{id}
@@ -59,14 +64,19 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            var eventReadModel = await _eventService.RetrieveAsync(id);
+            var eventResult = await _eventService.RetrieveAsync(id);
 
-            if (eventReadModel is not null)
+            if (eventResult.Succeeded)
             {
-                return Ok(eventReadModel);
+                var eventReadModel = eventResult.Entity;
+
+                if (eventReadModel is not null)
+                {
+                    return Ok(eventReadModel);
+                }
             }
 
-            return NotFound();
+            return NotFound(eventResult.Messages);
         }
 
         // POST api/Events
@@ -106,9 +116,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _eventService.GetEventEntityAsync(id) is null)
+            var eventResult = await _eventService.GetEventEntityAsync(id);
+
+            if (!eventResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(eventResult.Messages);
             }
 
             if (!TryValidateModel(eventUpdateModel))
@@ -149,7 +161,14 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            var eventEntity = await _eventService.GetEventEntityAsync(id);
+            var eventResult = await _eventService.GetEventEntityAsync(id);
+
+            if (!eventResult.Succeeded)
+            {
+                return NotFound(eventResult.Messages);
+            }
+
+            var eventEntity = eventResult.Entity;
 
             if (eventEntity is null)
             {
@@ -193,9 +212,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _eventService.GetEventEntityAsync(id) is null)
+            var eventResult = await _eventService.GetEventEntityAsync(id);
+
+            if (!eventResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(eventResult.Messages);
             }
 
             var deleteResult = await _eventService.DeleteAsync(id);
@@ -232,7 +253,17 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
         {
-            return Ok(await _eventService.GetSimpleStatistics(filters));
+            var eventsStatisticsResult = await _eventService.GetSimpleStatistics(filters);
+
+            if (eventsStatisticsResult.Succeeded)
+            {
+                if (eventsStatisticsResult.Entity is not null)
+                {
+                    return Ok(eventsStatisticsResult.Entity);
+                }
+            }
+
+            return BadRequest(eventsStatisticsResult.Messages);
         }
 
         // GET api/Events/Statistics/{id}
@@ -240,7 +271,17 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> EventStatisticsAsync(int id)
         {
-            return Ok(await _eventService.GetEventStatistics(id));
+            var eventStatisticsResult = await _eventService.GetEventStatistics(id);
+
+            if (eventStatisticsResult.Succeeded)
+            {
+                if (eventStatisticsResult.Entity is not null)
+                {
+                    return Ok(eventStatisticsResult.Entity);
+                }
+            }
+
+            return BadRequest(eventStatisticsResult.Messages);
         }
 
         // POST api/Events/Avatar/?id=value1
@@ -259,9 +300,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _eventService.GetEventEntityAsync(eventId) is null)
+            var eventResult = await _eventService.GetEventEntityAsync(eventId);
+
+            if (!eventResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(eventResult.Messages);
             }
 
             var checkResult = _fileService.IsCorrectImage(file);

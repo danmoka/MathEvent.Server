@@ -108,7 +108,7 @@ namespace MathEvent.Services.Services
 
             await _repositoryWrapper.SaveAsync();
 
-            if (await _ownerService.CreateUserOwner(user.Id, Owner.Type.File) is null)
+            if (await _ownerService.CreateUserOwnerAsync(user.Id, Owner.Type.File) is null)
             {
                 return new MessageResult<UserWithEventsReadModel>
                 {

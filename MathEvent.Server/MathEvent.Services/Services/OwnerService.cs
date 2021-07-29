@@ -23,7 +23,7 @@ namespace MathEvent.Services.Services
         /// <param name="id">Идентификатор события</param>
         /// <param name="type">Тип обладаемой сущности</param>
         /// <returns>Владелец</returns>
-        public async Task<Owner> CreateEventOwner(int id, Owner.Type type)
+        public async Task<Owner> CreateEventOwnerAsync(int id, Owner.Type type)
         {
             var owner = await _repositoryWrapper.Owner.CreateAsync(
                 new Owner
@@ -42,7 +42,7 @@ namespace MathEvent.Services.Services
         /// <param name="id">Идентификатор пользователя</param>
         /// <param name="type">Тип обладаемой сущности</param>
         /// <returns>Владелец</returns>
-        public async Task<Owner> CreateUserOwner(string id, Owner.Type type)
+        public async Task<Owner> CreateUserOwnerAsync(string id, Owner.Type type)
         {
             var owner = await _repositoryWrapper.Owner.CreateAsync(
                 new Owner
@@ -63,7 +63,7 @@ namespace MathEvent.Services.Services
 
             if (owner is null)
             {
-                owner = await CreateEventOwner(id, type);
+                owner = await CreateEventOwnerAsync(id, type);
             }
 
             return owner;
@@ -77,7 +77,7 @@ namespace MathEvent.Services.Services
 
             if (owner is null)
             {
-                owner = await CreateUserOwner(id, type);
+                owner = await CreateUserOwnerAsync(id, type);
             }
 
             return owner;
@@ -86,9 +86,9 @@ namespace MathEvent.Services.Services
 
     public interface IOwnerService
     {
-        Task<Owner> CreateEventOwner(int id, Owner.Type type);
+        Task<Owner> CreateEventOwnerAsync(int id, Owner.Type type);
 
-        Task<Owner> CreateUserOwner(string id, Owner.Type type);
+        Task<Owner> CreateUserOwnerAsync(string id, Owner.Type type);
 
         Task<Owner> GetEventOwnerAsync(int id, Owner.Type type);
 
