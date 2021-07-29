@@ -26,8 +26,6 @@ namespace MathEvent.Services.Services
 
         private readonly IMapper _mapper;
 
-        private readonly IUserService _userService;
-
         private readonly IOrganizationService _organizationService;
 
         private readonly DataPathService _dataPathService;
@@ -45,7 +43,6 @@ namespace MathEvent.Services.Services
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _userService = userService;
             _organizationService = organizationService;
             _dataPathService = dataPathService;
         }
@@ -480,7 +477,10 @@ namespace MathEvent.Services.Services
 
                 foreach (var subscription in subscriptions)
                 {
-                    subscribers.Add(await _userService.GetUserEntityAsync(subscription.ApplicationUserId));
+                    // мб вообще статистику в отдельный сервис вынести потом, а не просто избавиться здесь от UserService
+                    subscribers.Add(await _repositoryWrapper.User
+                        .FindByCondition(user => user.Id == subscription.ApplicationUserId)
+                        .SingleOrDefaultAsync());
                 }
 
                 foreach (var user in subscribers)
