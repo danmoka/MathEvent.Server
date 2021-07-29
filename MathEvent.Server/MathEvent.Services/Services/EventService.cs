@@ -26,8 +26,6 @@ namespace MathEvent.Services.Services
 
         private readonly IMapper _mapper;
 
-        private readonly IOwnerService _ownerService;
-
         private readonly IUserService _userService;
 
         private readonly IOrganizationService _organizationService;
@@ -41,14 +39,12 @@ namespace MathEvent.Services.Services
         public EventService(
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            IOwnerService ownerService,
             IUserService userService,
             IOrganizationService organizationService,
             DataPathService dataPathService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _ownerService = ownerService;
             _userService = userService;
             _organizationService = organizationService;
             _dataPathService = dataPathService;
@@ -96,7 +92,7 @@ namespace MathEvent.Services.Services
             var eventEntity = eventResult.Entity;
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
-            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+            eventReadModel.OwnerId = (await GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
 
             return ResultFactory.GetSuccessfulResult(eventReadModel);
         }
@@ -130,7 +126,7 @@ namespace MathEvent.Services.Services
 
             await _repositoryWrapper.SaveAsync();
 
-            if (await _ownerService.CreateEventOwnerAsync(eventEntityDb.Id, Owner.Type.File) is null)
+            if (await CreateEventOwnerAsync(eventEntityDb.Id, Owner.Type.File) is null)
             {
                 return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
                 {
@@ -140,7 +136,7 @@ namespace MathEvent.Services.Services
 
             // TODO: где нить еще овнер нужен?
             EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
-            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+            eventReadModel.OwnerId = (await GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
 
             return ResultFactory.GetSuccessfulResult(eventReadModel);
         }
@@ -186,7 +182,7 @@ namespace MathEvent.Services.Services
             await _repositoryWrapper.SaveAsync();
 
             EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
-            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+            eventReadModel.OwnerId = (await GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
 
             return ResultFactory.GetSuccessfulResult(eventReadModel);
         }
@@ -275,7 +271,7 @@ namespace MathEvent.Services.Services
 
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
-            eventReadModel.OwnerId = (await _ownerService.GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
+            eventReadModel.OwnerId = (await GetEventOwnerAsync(eventReadModel.Id, Owner.Type.File)).Id;
 
             return ResultFactory.GetSuccessfulResult(eventReadModel);
         }
@@ -638,6 +634,39 @@ namespace MathEvent.Services.Services
             }
 
             return eventQuery;
+        }
+
+        /// <summary>
+        /// Создает владельца-событие
+        /// </summary>
+        /// <param name="id">Идентификатор события</param>
+        /// <param name="type">Тип обладаемой сущности</param>
+        /// <returns>Владелец</returns>
+        private async Task<Owner> CreateEventOwnerAsync(int id, Owner.Type type)
+        {
+            var owner = await _repositoryWrapper.Owner.CreateAsync(
+                new Owner
+                {
+                    EventId = id,
+                    OwnedType = type
+                });
+            await _repositoryWrapper.SaveAsync();
+
+            return owner;
+        }
+
+        private async Task<Owner> GetEventOwnerAsync(int id, Owner.Type type)
+        {
+            var owner = _repositoryWrapper.Owner
+                    .FindByCondition(ow => ow.EventId == id && ow.OwnedType == type)
+                    .SingleOrDefault();
+
+            if (owner is null)
+            {
+                owner = await CreateEventOwnerAsync(id, type);
+            }
+
+            return owner;
         }
     }
 }

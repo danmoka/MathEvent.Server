@@ -26,8 +26,6 @@ namespace MathEvent.Services.Services
 
         private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly IOwnerService _ownerService;
-
         // Циклическая зависимость. Мб стоит также убрать во стальных сервисах, например, то, что используется для статистики
         //private readonly IEventService _eventService;
 
@@ -36,13 +34,11 @@ namespace MathEvent.Services.Services
         public UserService(
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            UserManager<ApplicationUser> userManager,
-            IOwnerService ownerService)
+            UserManager<ApplicationUser> userManager)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _userManager = userManager;
-            _ownerService = ownerService;
         }
 
         public async Task<IEnumerable<UserReadModel>> ListAsync(IDictionary<string, string> filters)
@@ -67,7 +63,7 @@ namespace MathEvent.Services.Services
             {
                 var userDTO = _mapper.Map<UserWithEventsDTO>(user);
                 var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
-                userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+                userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
                 return userReadModel;
             }
@@ -108,7 +104,7 @@ namespace MathEvent.Services.Services
 
             await _repositoryWrapper.SaveAsync();
 
-            if (await _ownerService.CreateUserOwnerAsync(user.Id, Owner.Type.File) is null)
+            if (await CreateUserOwnerAsync(user.Id, Owner.Type.File) is null)
             {
                 return new MessageResult<UserWithEventsReadModel>
                 {
@@ -124,7 +120,7 @@ namespace MathEvent.Services.Services
             }
 
             UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
-            userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
             return new MessageResult<UserWithEventsReadModel>
             {
@@ -164,7 +160,7 @@ namespace MathEvent.Services.Services
             await _repositoryWrapper.SaveAsync();
 
             UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
-            userReadModel.OwnerId = (await _ownerService.GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
             if (updateResult.Succeeded)
             {
@@ -392,6 +388,39 @@ namespace MathEvent.Services.Services
             }
 
             return filesQuery;
+        }
+
+        /// <summary>
+        /// Создает владельца-пользователя
+        /// </summary>
+        /// <param name="id">Идентификатор пользователя</param>
+        /// <param name="type">Тип обладаемой сущности</param>
+        /// <returns>Владелец</returns>
+        private async Task<Owner> CreateUserOwnerAsync(string id, Owner.Type type)
+        {
+            var owner = await _repositoryWrapper.Owner.CreateAsync(
+                new Owner
+                {
+                    ApplicationUserId = id,
+                    OwnedType = type
+                });
+            await _repositoryWrapper.SaveAsync();
+
+            return owner;
+        }
+
+        private async Task<Owner> GetUserOwnerAsync(string id, Owner.Type type)
+        {
+            var owner = _repositoryWrapper.Owner
+                    .FindByCondition(ow => ow.ApplicationUserId == id && ow.OwnedType == type)
+                    .SingleOrDefault();
+
+            if (owner is null)
+            {
+                owner = await CreateUserOwnerAsync(id, type);
+            }
+
+            return owner;
         }
     }
 }
