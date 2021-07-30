@@ -22,11 +22,11 @@ namespace MathEvent.Api.Controllers
 
         private readonly EventService _eventService;
 
-        private readonly IFileService _fileService;
+        private readonly FileService _fileService;
 
         private readonly IUserService _userService;
 
-        public EventsController(IMapper mapper, EventService eventService, IFileService fileService, IUserService userService)
+        public EventsController(IMapper mapper, EventService eventService, FileService fileService, IUserService userService)
         {
             _mapper = mapper;
             _eventService = eventService;

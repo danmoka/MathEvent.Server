@@ -13,11 +13,11 @@ namespace MathEvent.Api.Controllers
     [ApiController]
     public class FilesController : ControllerBase
     {
-        private readonly IFileService _fileService;
+        private readonly FileService _fileService;
 
         private readonly IUserService _userService;
 
-        public FilesController(IFileService fileService, IUserService userService)
+        public FilesController(FileService fileService, IUserService userService)
         {
             _fileService = fileService;
             _userService = userService;
@@ -27,14 +27,19 @@ namespace MathEvent.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FileReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
-            var fileReadModels = await _fileService.ListAsync(filters);
+            var filesResult = await _fileService.ListAsync(filters);
 
-            if (fileReadModels is not null)
+            if (filesResult.Succeeded)
             {
-                return Ok(fileReadModels);
+                var fileReadModels = filesResult.Entity;
+
+                if (fileReadModels is not null)
+                {
+                    return Ok(fileReadModels);
+                }
             }
 
-            return NotFound();
+            return NotFound(filesResult.Messages);
         }
 
         // GET api/Files/{id}
@@ -46,14 +51,19 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            var fileReadModel = await _fileService.RetrieveAsync(id);
+            var fileResult = await _fileService.RetrieveAsync(id);
 
-            if (fileReadModel is not null)
+            if (fileResult.Succeeded)
             {
-                return Ok(fileReadModel);
+                var fileReadModel = fileResult.Entity;
+
+                if (fileReadModel is not null)
+                {
+                    return Ok(fileReadModel);
+                }
             }
 
-            return NotFound();
+            return NotFound(fileResult.Messages);
         }
 
         // POST api/Files
@@ -95,9 +105,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _fileService.GetFileEntityAsync(id) is null)
+            var fileResult = await _fileService.GetFileEntityAsync(id);
+
+            if (!fileResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(fileResult.Messages);
             }
 
             if (!TryValidateModel(fileUpdateModel))
@@ -133,9 +145,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _fileService.GetFileEntityAsync(id) is null)
+            var fileResult = await _fileService.GetFileEntityAsync(id);
+
+            if (!fileResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(fileResult.Messages);
             }
 
             var deleteResult = await _fileService.DeleteAsync(id);
@@ -211,7 +225,14 @@ namespace MathEvent.Api.Controllers
         [HttpGet("Download/{id}")]
         public async Task<ActionResult> Download(int id)
         {
-            var file = await _fileService.GetFileEntityAsync(id);
+            var fileResult = await _fileService.GetFileEntityAsync(id);
+
+            if (!fileResult.Succeeded)
+            {
+                return NotFound(fileResult.Messages);
+            }
+
+            var file = fileResult.Entity;
 
             if (file is null)
             {
@@ -223,11 +244,18 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            var fileStream = await _fileService.Download(id);
+            var downloadResult = await _fileService.Download(id);
+
+            if (!downloadResult.Succeeded)
+            {
+                return StatusCode(500, downloadResult.Messages);
+            }
+
+            var fileStream = downloadResult.Entity;
 
             if (fileStream is null)
             {
-                return BadRequest();
+                return StatusCode(500);
             }
 
             return File(fileStream, "application/octet-stream", $"\"{file.Name}{file.Extension}\"");
