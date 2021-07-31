@@ -17,9 +17,9 @@ namespace MathEvent.Api.Controllers
     {
         private readonly IMapper _mapper;
 
-        private readonly IOrganizationService _organizationService;
+        private readonly OrganizationService _organizationService;
 
-        public OrganizationsController(IMapper mapper, IOrganizationService organizationService)
+        public OrganizationsController(IMapper mapper, OrganizationService organizationService)
         {
             _mapper = mapper;
             _organizationService = organizationService;
@@ -30,14 +30,19 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<OrganizationReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
-            var organizationReadModels = await _organizationService.ListAsync(filters);
+            var organizationResult = await _organizationService.ListAsync(filters);
 
-            if (organizationReadModels is not null)
+            if (organizationResult.Succeeded)
             {
-                return Ok(organizationReadModels);
+                var organizationReadModels = organizationResult.Entity;
+
+                if (organizationReadModels is not null)
+                {
+                    return Ok(organizationReadModels);
+                }
             }
 
-            return NotFound();
+            return NotFound(organizationResult.Messages);
         }
 
         // GET api/Organizations/{id}
@@ -50,14 +55,19 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("id < 0");
             }
 
-            var organizationReadModel = await _organizationService.RetrieveAsync(id);
+            var organizationResult = await _organizationService.RetrieveAsync(id);
 
-            if (organizationReadModel is not null)
+            if (organizationResult.Succeeded)
             {
-                return Ok(organizationReadModel);
+                var organizationReadModel = organizationResult.Entity;
+
+                if (organizationReadModel is not null)
+                {
+                    return Ok(organizationReadModel);
+                }
             }
 
-            return NotFound();
+            return NotFound(organizationResult.Messages);
         }
 
         // POST api/Organizations
@@ -97,9 +107,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("id < 0");
             }
 
-            if (await _organizationService.GetOrganizationEntityAsync(id) is null)
+            var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
+
+            if (!organizationResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(organizationResult.Messages);
             }
 
             if (!TryValidateModel(organizationUpdateModel))
@@ -133,7 +145,14 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("Patch document is null");
             }
 
-            var organizationEntity = await _organizationService.GetOrganizationEntityAsync(id);
+            var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
+
+            if (!organizationResult.Succeeded)
+            {
+                return NotFound(organizationResult.Messages);
+            }
+
+            var organizationEntity = organizationResult.Entity;
 
             if (organizationEntity is null)
             {
@@ -170,9 +189,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("id < 0");
             }
 
-            if (await _organizationService.GetOrganizationEntityAsync(id) is null)
+            var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
+
+            if (!organizationResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(organizationResult.Messages);
             }
 
             var deleteResult = await _organizationService.DeleteAsync(id);
@@ -192,7 +213,14 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
         {
-            return Ok(await _organizationService.GetSimpleStatistics(filters));
+            var organizationResult = await _organizationService.GetSimpleStatistics(filters);
+
+            if (organizationResult.Succeeded)
+            {
+                return Ok(organizationResult.Entity);
+            }
+
+            return NotFound(organizationResult.Messages);
         }
     }
 }

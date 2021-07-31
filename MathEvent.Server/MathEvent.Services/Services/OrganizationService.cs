@@ -4,7 +4,6 @@ using MathEvent.Converters.Organizations.DTOs;
 using MathEvent.Converters.Organizations.Models;
 using MathEvent.Converters.Others;
 using MathEvent.Entities.Entities;
-using MathEvent.Services.Messages;
 using MathEvent.Services.Results;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -14,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MathEvent.Services.Services
 {
-    public class OrganizationService : IOrganizationService
+    public class OrganizationService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
@@ -26,7 +25,13 @@ namespace MathEvent.Services.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<OrganizationReadModel>> ListAsync(IDictionary<string, string> filters)
+        /// <summary>
+        /// Возвращает результат с набором организаций
+        /// </summary>
+        /// <param name="filters">Набор пар ключ-значение</param>
+        /// <returns>Результат с набором организаций</returns>
+        /// <remarks>Фильтры не используются</remarks>
+        public async Task<IResult<IMessage, IEnumerable<OrganizationReadModel>>> ListAsync(IDictionary<string, string> filters)
         {
             var organizations = await Filter(_repositoryWrapper.Organization.FindAll(), filters).ToListAsync();
 
@@ -34,148 +39,203 @@ namespace MathEvent.Services.Services
             {
                 var organizaionsDTO = _mapper.Map<IEnumerable<OrganizationDTO>>(organizations);
 
-                return _mapper.Map<IEnumerable<OrganizationReadModel>>(organizaionsDTO);
+                return ResultFactory.GetSuccessfulResult(_mapper.Map<IEnumerable<OrganizationReadModel>>(organizaionsDTO));
             }
 
-            return null;
-        }
-
-        public async Task<OrganizationReadModel> RetrieveAsync(int id)
-        {
-            var organizationEntity = await GetOrganizationEntityAsync(id);
-
-            if (organizationEntity is not null)
+            return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<OrganizationReadModel>>(new List<IMessage>()
             {
-                var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
-
-                return _mapper.Map<OrganizationReadModel>(organizationDTO);
-            }
-
-            return null;
+                MessageFactory.GetSimpleMessage("402", "The list of organizations is empty")
+            });
         }
 
-        public async Task<AResult<IMessage, Organization>> CreateAsync(OrganizaionCreateModel createModel)
+        /// <summary>
+        /// Возвращает результат с организацией с указанным id
+        /// </summary>
+        /// <param name="id">id организации</param>
+        /// <returns>Результат с организацией с указанным id</returns>
+        public async Task<IResult<IMessage, OrganizationReadModel>> RetrieveAsync(int id)
+        {
+            var organizationResult = await GetOrganizationEntityAsync(id);
+
+            if (!organizationResult.Succeeded)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<OrganizationReadModel>(organizationResult.Messages);
+            }
+
+            var organizationEntity = organizationResult.Entity;
+
+            if (organizationEntity is null)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<OrganizationReadModel>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("404", $"Organization with id = {id} not found")
+                });
+            }
+
+            var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
+
+            return ResultFactory.GetSuccessfulResult(_mapper.Map<OrganizationReadModel>(organizationDTO));
+        }
+
+        /// <summary>
+        /// Создает организацию
+        /// </summary>
+        /// <param name="createModel">Модель создания организации</param>
+        /// <returns>Результат создания организации</returns>
+        public async Task<IResult<IMessage, Organization>> CreateAsync(OrganizaionCreateModel createModel)
         {
             var organizationEntity = _mapper.Map<Organization>(_mapper.Map<OrganizationDTO>(createModel));
 
             if (organizationEntity is null)
             {
-                return new MessageResult<Organization>
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
                 {
-                    Succeeded = false,
-                    Messages = new List<SimpleMessage>()
-                    {
-                        new SimpleMessage
-                        {
-                            Message = $"Errors when mapping model {createModel.Name}"
-                        }
-                    }
-                };
+                    MessageFactory.GetSimpleMessage(null, $"Errors when mapping model {createModel.Name}")
+                });
             }
 
             var organizationEntityDb = await _repositoryWrapper.Organization.CreateAsync(organizationEntity);
 
             if (organizationEntityDb is null)
             {
-                return new MessageResult<Organization>
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
                 {
-                    Succeeded = false,
-                    Messages = new List<SimpleMessage>()
-                    {
-                        new SimpleMessage
-                        {
-                            Message = $"Errors when creating entity {organizationEntity.Name}"
-                        }
-                    }
-                };
+                    MessageFactory.GetSimpleMessage(null, $"Errors when creating entity {organizationEntity.Name}")
+                });
             }
 
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<Organization>
-            {
-                Succeeded = true,
-                Entity = organizationEntityDb
-            };
+            return ResultFactory.GetSuccessfulResult(organizationEntityDb);
         }
 
-        public async Task<AResult<IMessage, Organization>> UpdateAsync(int id, OrganizationUpdateModel updateModel)
+        /// <summary>
+        /// Обновляет организацию
+        /// </summary>
+        /// <param name="id">id организации</param>
+        /// <param name="updateModel">Модель обновления организации</param>
+        /// <returns>Результат обновления организации</returns>
+        public async Task<IResult<IMessage, Organization>> UpdateAsync(int id, OrganizationUpdateModel updateModel)
         {
-            var organizationEntity = await GetOrganizationEntityAsync(id);
+            var organizationResult = await GetOrganizationEntityAsync(id);
+
+            if (!organizationResult.Succeeded)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(organizationResult.Messages);
+            }
+
+            var organizationEntity = organizationResult.Entity;
 
             if (organizationEntity is null)
             {
-                return new MessageResult<Organization>
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
                 {
-                    Succeeded = false,
-                    Messages = new List<SimpleMessage>
-                    {
-                        new SimpleMessage
-                        {
-                            Code = "404",
-                            Message = $"Organization with the ID {id} not found"
-                        }
-                    }
-                };
+                    MessageFactory.GetSimpleMessage("404", $"Organization with the ID {id} not found")
+                });
             }
 
             var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
-            // TODO: добавить проверку после маппинга?
             _mapper.Map(updateModel, organizationDTO);
             _mapper.Map(organizationDTO, organizationEntity);
+
             _repositoryWrapper.Organization.Update(organizationEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<Organization>
-            {
-                Succeeded = true,
-                Entity = organizationEntity
-            };
+            return ResultFactory.GetSuccessfulResult(organizationEntity);
         }
 
-        public async Task<AResult<IMessage, Organization>> DeleteAsync(int id)
+        /// <summary>
+        /// Удаляет организацию
+        /// </summary>
+        /// <param name="id">id организации</param>
+        /// <returns>Результат удаления организации</returns>
+        public async Task<IResult<IMessage, Organization>> DeleteAsync(int id)
         {
-            var organizationEntity = await GetOrganizationEntityAsync(id);
+            var organizationResult = await GetOrganizationEntityAsync(id);
+
+            if (!organizationResult.Succeeded)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(organizationResult.Messages);
+            }
+
+            var organizationEntity = organizationResult.Entity;
 
             if (organizationEntity is null)
             {
-                return new MessageResult<Organization>
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
                 {
-                    Succeeded = false,
-                    Messages = new List<SimpleMessage>
-                    {
-                        new SimpleMessage
-                        {
-                            Code = "404",
-                            Message = $"Organization with the ID {id} not found"
-                        }
-                    }
-                };
+                    MessageFactory.GetSimpleMessage("404", $"Organization with the ID {id} not found")
+                });
+
             }
 
             _repositoryWrapper.Organization.Delete(organizationEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return new MessageResult<Organization> { Succeeded = true };
+            return ResultFactory.GetSuccessfulResult((Organization)null);
         }
 
-        public async Task<Organization> GetOrganizationEntityAsync(int id)
+        /// <summary>
+        /// Возвращает результат с организацией с указанным id
+        /// </summary>
+        /// <param name="id">id организации</param>
+        /// <returns>Результат с организацией с указанным id</returns>
+        public async Task<IResult<IMessage, Organization>> GetOrganizationEntityAsync(int id)
         {
-            return await _repositoryWrapper.Organization
+            var organization = await _repositoryWrapper.Organization
                 .FindByCondition(org => org.Id == id)
                 .SingleOrDefaultAsync();
+
+            if (organization is null)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("404", $"Organization with id = {id} not found")
+                });
+            }
+
+            return ResultFactory.GetSuccessfulResult(organization);
         }
 
-        public async Task<IEnumerable<SimpleStatistics>> GetSimpleStatistics(IDictionary<string, string> filters)
+        /// <summary>
+        /// Возвращает результат с набором статистик по организациям
+        /// </summary>
+        /// <param name="filters">Набор параметров в виде пар ключ-значение</param>
+        /// <returns>Результат с набором статистик по организациям</returns>
+        /// <remarks>Фильтры не используются</remarks>
+        public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetSimpleStatistics(IDictionary<string, string> filters)
         {
-            ICollection<SimpleStatistics> simpleStatistics = new List<SimpleStatistics>
-            {
-                await GetMostPopularOrganizationStatistics(),
-                await GetMostProductiveOrganizationsStatistics(),
-                await GetCountOfUsersInOrganizationStatistics()
-            };
+            var simpleStatistics = new List<SimpleStatistics>();
+            var mostPopularOrganizationStatistics = await GetMostPopularOrganizationStatistics();
 
-            return simpleStatistics;
+            if (mostPopularOrganizationStatistics is not null)
+            {
+                simpleStatistics.Add(mostPopularOrganizationStatistics);
+            }
+
+            var mostProductiveOrganizationsStatistics = await GetMostProductiveOrganizationsStatistics();
+
+            if (mostProductiveOrganizationsStatistics is not null)
+            {
+                simpleStatistics.Add(mostProductiveOrganizationsStatistics);
+            }
+
+            var countOfUsersInOrganizationStatistics = await GetCountOfUsersInOrganizationStatistics();
+
+            if (countOfUsersInOrganizationStatistics is not null)
+            {
+                simpleStatistics.Add(countOfUsersInOrganizationStatistics);
+            }
+
+            if (simpleStatistics.Count < 1)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<SimpleStatistics>>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("400", "Errors when getting a statistics for organizations")
+                });
+            }
+
+            return ResultFactory.GetSuccessfulResult(simpleStatistics.AsEnumerable());
         }
 
         private async Task<SimpleStatistics> GetMostProductiveOrganizationsStatistics()
@@ -199,8 +259,17 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organization = await GetOrganizationEntityAsync(entry.Key.Value);
-                    name = organization.Name;
+                    var organizationResult = await GetOrganizationEntityAsync(entry.Key.Value);
+
+                    if (organizationResult.Succeeded)
+                    {
+                        var organization = organizationResult.Entity;
+
+                        if (organization is not null)
+                        {
+                            name = organization.Name;
+                        }
+                    }
                 }
 
                 statistics.Data.Add(
@@ -262,8 +331,17 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organization = await GetOrganizationEntityAsync(entry.Key);
-                    name = organization.Name;
+                    var organizationResult = await GetOrganizationEntityAsync(entry.Key);
+
+                    if (organizationResult.Succeeded)
+                    {
+                        var organization = organizationResult.Entity;
+
+                        if (organization is not null)
+                        {
+                            name = organization.Name;
+                        }
+                    }
                 }
 
                 statistics.Data.Add(
@@ -298,8 +376,17 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organization = await GetOrganizationEntityAsync(entry.Key.Value);
-                    name = organization.Name;
+                    var organizationResult = await GetOrganizationEntityAsync(entry.Key.Value);
+
+                    if (organizationResult.Succeeded)
+                    {
+                        var organization = organizationResult.Entity;
+
+                        if (organization is not null)
+                        {
+                            name = organization.Name;
+                        }
+                    }
                 }
 
                 statistics.Data.Add(

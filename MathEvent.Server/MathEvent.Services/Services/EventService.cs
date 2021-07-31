@@ -171,9 +171,7 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.Event.Update(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
-            EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
-
-            return ResultFactory.GetSuccessfulResult(eventReadModel);
+            return ResultFactory.GetSuccessfulResult(_mapper.Map<EventWithUsersReadModel>(eventDTO));
         }
 
         /// <summary>
@@ -364,7 +362,7 @@ namespace MathEvent.Services.Services
         /// <remarks>Параметр "eventSubsStatisticsTop" задает топ событий, который требуется получить</remarks>
         public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetSimpleStatistics(IDictionary<string, string> filters)
         {
-            int eventSubsStatisticsTop = _defaultEventSubsStatisticsTop;
+            var eventSubsStatisticsTop = _defaultEventSubsStatisticsTop;
 
             if (filters is not null)
             {

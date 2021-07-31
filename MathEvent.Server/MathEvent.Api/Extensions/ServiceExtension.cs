@@ -86,7 +86,7 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<EventService>();
             services.AddScoped<FileService>();
-            services.AddScoped<IOrganizationService, OrganizationService>();
+            services.AddScoped<OrganizationService>();
             services.AddSingleton(new DataPathService(env.WebRootPath, configuration.GetValue<long>("FileSizeLimit")));
         }
 
