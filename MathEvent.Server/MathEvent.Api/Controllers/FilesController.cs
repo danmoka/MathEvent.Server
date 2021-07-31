@@ -15,9 +15,9 @@ namespace MathEvent.Api.Controllers
     {
         private readonly FileService _fileService;
 
-        private readonly IUserService _userService;
+        private readonly UserService _userService;
 
-        public FilesController(FileService fileService, IUserService userService)
+        public FilesController(FileService fileService, UserService userService)
         {
             _fileService = fileService;
             _userService = userService;
@@ -75,7 +75,15 @@ namespace MathEvent.Api.Controllers
                 return ValidationProblem(ModelState);
             }
 
-            var user = await _userService.GetCurrentUserAsync(User);
+            var userResult = await _userService.GetCurrentUserAsync(User);
+
+            if (!userResult.Succeeded || userResult.Entity is null)
+            {
+                return NotFound(userResult.Messages);
+            }
+
+            var user = userResult.Entity;
+
             fileCreateModel.AuthorId = user.Id;
             var createResult = await _fileService.CreateAsync(fileCreateModel);
 
@@ -192,7 +200,14 @@ namespace MathEvent.Api.Controllers
                 }
             }
 
-            var user = await _userService.GetCurrentUserAsync(User);
+            var userResult = await _userService.GetCurrentUserAsync(User);
+
+            if (!userResult.Succeeded || userResult.Entity is null)
+            {
+                return NotFound(userResult.Messages);
+            }
+
+            var user = userResult.Entity;
             var fileIds = new List<int>();
 
             foreach (var formFile in files)

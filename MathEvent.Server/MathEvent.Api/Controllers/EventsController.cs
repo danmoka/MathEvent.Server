@@ -24,9 +24,9 @@ namespace MathEvent.Api.Controllers
 
         private readonly FileService _fileService;
 
-        private readonly IUserService _userService;
+        private readonly UserService _userService;
 
-        public EventsController(IMapper mapper, EventService eventService, FileService fileService, IUserService userService)
+        public EventsController(IMapper mapper, EventService eventService, FileService fileService, UserService userService)
         {
             _mapper = mapper;
             _eventService = eventService;
@@ -314,7 +314,19 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(checkResult.Messages);
             }
 
-            var user = await _userService.GetCurrentUserAsync(User);
+            var userResult = await _userService.GetCurrentUserAsync(User);
+
+            if (!userResult.Succeeded)
+            {
+                return NotFound(userResult.Messages);
+            }
+
+            var user = userResult.Entity;
+
+            if (user is null)
+            {
+                return NotFound();
+            }
 
             var fileCreateModel = new FileCreateModel
             {

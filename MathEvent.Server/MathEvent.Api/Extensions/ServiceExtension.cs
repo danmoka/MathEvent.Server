@@ -83,7 +83,7 @@ namespace MathEvent.Api.Extensions
 
         public static void ConfigureEntityServices(this IServiceCollection services, IWebHostEnvironment env, IConfiguration configuration)
         {
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<UserService>();
             services.AddScoped<EventService>();
             services.AddScoped<FileService>();
             services.AddScoped<OrganizationService>();

@@ -17,9 +17,9 @@ namespace MathEvent.Api.Controllers
     {
         private readonly IMapper _mapper;
 
-        private readonly IUserService _userService;
+        private readonly UserService _userService;
 
-        public UsersController(IMapper mapper, IUserService userService)
+        public UsersController(IMapper mapper, UserService userService)
         {
             _mapper = mapper;
             _userService = userService;
@@ -30,14 +30,19 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<UserReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
         {
-            var userReadModels = await _userService.ListAsync(filters);
+            var userResult = await _userService.ListAsync(filters);
 
-            if (userReadModels is not null)
+            if (userResult.Succeeded)
             {
-                return Ok(userReadModels);
+                var userReadModels = userResult.Entity;
+
+                if (userReadModels is not null)
+                {
+                    return Ok(userReadModels);
+                }
             }
 
-            return NotFound();
+            return NotFound(userResult.Messages);
         }
 
         // GET api/Users/{id}
@@ -50,14 +55,19 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            var userReadModel = await _userService.RetrieveAsync(id);
+            var userResult = await _userService.RetrieveAsync(id);
 
-            if (userReadModel is not null)
+            if (userResult.Succeeded)
             {
-                return Ok(userReadModel);
+                var userReadModel = userResult.Entity;
+
+                if (userReadModel is not null)
+                {
+                    return Ok(userReadModel);
+                }
             }
 
-            return NotFound();
+            return NotFound(userResult.Messages);
         }
 
         // POST api/Users
@@ -98,9 +108,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _userService.GetUserEntityAsync(id) is null)
+            var userResult = await _userService.GetUserEntityAsync(id);
+
+            if (!userResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(userResult.Messages);
             }
 
             if (!TryValidateModel(userUpdateModel))
@@ -141,7 +153,14 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            var userEntity = await _userService.GetUserEntityAsync(id);
+            var userResult = await _userService.GetUserEntityAsync(id);
+
+            if (!userResult.Succeeded)
+            {
+                return NotFound(userResult.Messages);
+            }
+
+            var userEntity = userResult.Entity;
 
             if (userEntity is null)
             {
@@ -185,9 +204,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
-            if (await _userService.GetUserEntityAsync(id) is null)
+            var userResult = await _userService.GetUserEntityAsync(id);
+
+            if (!userResult.Succeeded)
             {
-                return NotFound();
+                return NotFound(userResult.Messages);
             }
 
             var deleteResult = await _userService.DeleteAsync(id);
@@ -207,14 +228,28 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
         {
-            return Ok(await _userService.GetSimpleStatistics(filters));
+            var userResult = await _userService.GetSimpleStatistics(filters);
+
+            if (userResult.Succeeded)
+            {
+                return Ok(userResult.Entity);
+            }
+
+            return NotFound(userResult.Messages);
         }
 
         // GET api/Users/Statistics/{id}
         [HttpGet("Statistics/{id}")]
         public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync(string id)
         {
-            return Ok(await _userService.GetUserStatistics(id));
+            var userResult = await _userService.GetUserStatistics(id);
+
+            if (userResult.Succeeded)
+            {
+                return Ok(userResult.Entity);
+            }
+
+            return NotFound(userResult.Messages);
         }
     }
 }
