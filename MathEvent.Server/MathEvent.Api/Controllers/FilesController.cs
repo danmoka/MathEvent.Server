@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace MathEvent.Api.Controllers
 {
@@ -273,7 +275,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(500);
             }
 
-            return File(fileStream, "application/octet-stream", $"\"{file.Name}{file.Extension}\"");
+            return File(fileStream, "application/octet-stream", $"\"{HttpUtility.UrlEncode(file.Name, Encoding.UTF8)}{file.Extension}\"");
         }
 
         // GET api/Files/Breadcrumbs/{id}
