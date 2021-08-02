@@ -13,5 +13,10 @@ namespace MathEvent.Services.Messages
         public string Code { get => IdentityError.Code; }
 
         public string Message { get => IdentityError.Description; }
+
+        public override string ToString()
+        {
+            return Code is null ? Message : $"{Code}, {Message}";
+        }
     }
 }

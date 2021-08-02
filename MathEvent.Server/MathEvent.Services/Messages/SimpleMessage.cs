@@ -10,5 +10,10 @@ namespace MathEvent.Services.Messages
         public string Code { get; set; }
 
         public string Message { get; set; }
+
+        public override string ToString()
+        {
+            return Code is null ? Message : $"{Code}, {Message}";
+        }
     }
 }

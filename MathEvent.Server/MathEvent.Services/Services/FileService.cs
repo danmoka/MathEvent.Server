@@ -357,6 +357,33 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
+        /// Ищет дочерние файлы
+        /// </summary>
+        /// <param name="id">id файла</param>
+        /// <returns>Результат поиска. Если файл не имеет дочерних файлов, то возвращается результат неуспеха</returns>
+        public async Task<IResult<IMessage, IEnumerable<File>>> GetChildFiles(int id)
+        {
+            var childFiles = await _repositoryWrapper.File
+                .FindByCondition(f => f.ParentId == id)
+                .ToListAsync();
+
+            if (childFiles.Count < 1)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<File>>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage(null, $"File with id = {id} has no child files")
+                });
+            }
+
+            return ResultFactory.GetSuccessfulMessageResult(
+                new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage(null, $"File with id = {id} has child files")
+                },
+                childFiles.AsEnumerable());
+        }
+
+        /// <summary>
         /// Вовзращает набор-цепочку родительских файлов в виде хлебных крошек до файла с указанным id
         /// </summary>
         /// <param name="id">id файла, для которого требуется найти хлебные крошки</param>
@@ -429,10 +456,6 @@ namespace MathEvent.Services.Services
                     if (int.TryParse(ownerParam, out int ownerId))
                     {
                         filesQuery = filesQuery.Where(f => f.OwnerId == ownerId);
-                    }
-                    else
-                    {
-                        filesQuery = filesQuery.Where(f => f.OwnerId == null);
                     }
                 }
             }

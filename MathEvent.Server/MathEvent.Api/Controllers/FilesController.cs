@@ -145,6 +145,13 @@ namespace MathEvent.Api.Controllers
                 return BadRequest();
             }
 
+            var childFilesResult = await _fileService.GetChildFiles(id);
+
+            if (childFilesResult.Succeeded)
+            {
+                return BadRequest(childFilesResult.Messages);
+            }
+
             var fileResult = await _fileService.GetFileEntityAsync(id);
 
             if (!fileResult.Succeeded)

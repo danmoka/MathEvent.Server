@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace MathEvent.Api.Controllers
@@ -207,6 +208,13 @@ namespace MathEvent.Api.Controllers
             if (!eventResult.Succeeded)
             {
                 return NotFound(eventResult.Messages);
+            }
+
+            var childEventsResult = await _eventService.GetChildEvents(id);
+
+            if (childEventsResult.Succeeded)
+            {
+                return BadRequest(childEventsResult.Messages);
             }
 
             var deleteResult = await _eventService.DeleteAsync(id);

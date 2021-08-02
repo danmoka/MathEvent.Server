@@ -286,6 +286,33 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
+        /// Ищет дочерние события
+        /// </summary>
+        /// <param name="id">id события</param>
+        /// <returns>Результат поиска. Если событие не имеет дочерних событий, то возвращается результат неуспеха</returns>
+        public async Task<IResult<IMessage, IEnumerable<Event>>> GetChildEvents(int id)
+        {
+            var childEvents = await _repositoryWrapper.Event
+                .FindByCondition(ev => ev.ParentId == id)
+                .ToListAsync();
+
+            if (childEvents.Count < 1)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<Event>>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage(null, $"Event with id = {id} has no child events")
+                });
+            }
+
+            return ResultFactory.GetSuccessfulMessageResult(
+                new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage(null, $"Event with id = {id} has child events")
+                },
+                childEvents.AsEnumerable());
+        }
+
+        /// <summary>
         /// Вовзращает набор-цепочку родительских событий в виде хлебных крошек до события с указанным id
         /// </summary>
         /// <param name="id">id события, для которого требуется найти хлебные крошки</param>
