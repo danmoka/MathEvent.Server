@@ -12,19 +12,20 @@ namespace MathEvent.Entities.Entities
         [Key]
         public int Id { get; set; }
 
-        public string AvatarPath { get; set; }
-
         [Required]
-        [MaxLength(250)]
+        [StringLength(250, MinimumLength = 1)]
         public string Name { get; set; }
 
         [Required]
+        [StringLength(500, MinimumLength = 1)]
+        public string Description { get; set; }
+
         public DateTime StartDate { get; set; }
 
+        [StringLength(100, MinimumLength = 1)]
         public string Location { get; set; }
 
-        [MaxLength(500)]
-        public string Description { get; set; }
+        public string AvatarPath { get; set; }
 
         [ForeignKey("Organization")]
         public int? OrganizationId { get; set; }

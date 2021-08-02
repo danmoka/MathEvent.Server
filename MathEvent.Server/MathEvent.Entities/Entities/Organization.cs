@@ -6,14 +6,16 @@ namespace MathEvent.Entities.Entities
     /// <summary>
     /// Сущность организации
     /// </summary>
-    [Table("Organizations")]
     public class Organization
     {
         [Key]
         public int Id { get; set; }
 
-        public string ITN { get; set; } // TODO: ограничение с помощью регулярки
-
+        [Required]
+        [StringLength(150, MinimumLength = 1)]
         public string Name { get; set; }
+
+        [StringLength(12, MinimumLength = 10)]
+        public string ITN { get; set; }
     }
 }

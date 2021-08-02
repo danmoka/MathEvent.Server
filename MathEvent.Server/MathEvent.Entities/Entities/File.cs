@@ -7,19 +7,30 @@ namespace MathEvent.Entities.Entities
     /// <summary>
     /// Сущность файла
     /// </summary>
-    [Table("Files")]
     public class File
     {
         [Key]
         public int Id { get; set; }
 
-        [MaxLength(250)]
+        [Required]
+        [StringLength(250, MinimumLength = 1)]
         public string Name { get; set; }
 
-        [MaxLength(5)]
+        // Папки имеют NULL рарсширение
+        [StringLength(5, MinimumLength = 1)]
         public string Extension { get; set; }
 
+        [Required]
         public DateTime Date { get; set; }
+
+        // Папки имеют NULL путь
+        public string Path { get; set; }
+
+        [ForeignKey("ApplicationUser")]
+        public string AuthorId { get; set; }
+
+        [ForeignKey("FileOwner")]
+        public int? OwnerId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }
@@ -27,12 +38,5 @@ namespace MathEvent.Entities.Entities
         [ForeignKey("File")]
         public int? ParentId { get; set; }
         #endregion
-
-        public string AuthorId { get; set; }
-
-        [ForeignKey("FileOwner")]
-        public int? OwnerId { get; set; }
-
-        public string Path { get; set; }
     }
 }
