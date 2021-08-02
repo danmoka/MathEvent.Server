@@ -83,11 +83,6 @@ namespace MathEvent.Api.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateAsync([FromBody] EventCreateModel eventCreateModel)
         {
-            if (!TryValidateModel(eventCreateModel))
-            {
-                return ValidationProblem(ModelState);
-            }
-
             var createResult = await _eventService.CreateAsync(eventCreateModel);
 
             if (createResult.Succeeded)
@@ -121,11 +116,6 @@ namespace MathEvent.Api.Controllers
             if (!eventResult.Succeeded)
             {
                 return NotFound(eventResult.Messages);
-            }
-
-            if (!TryValidateModel(eventUpdateModel))
-            {
-                return ValidationProblem(ModelState);
             }
 
             var updateResult = await _eventService.UpdateAsync(id, eventUpdateModel);
