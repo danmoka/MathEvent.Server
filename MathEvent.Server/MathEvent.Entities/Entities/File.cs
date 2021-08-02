@@ -26,11 +26,13 @@ namespace MathEvent.Entities.Entities
         // Папки имеют NULL путь
         public string Path { get; set; }
 
+        [Required]
         [ForeignKey("ApplicationUser")]
         public string AuthorId { get; set; }
 
+        [Required]
         [ForeignKey("FileOwner")]
-        public int? OwnerId { get; set; }
+        public int OwnerId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }

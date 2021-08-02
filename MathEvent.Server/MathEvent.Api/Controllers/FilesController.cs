@@ -72,11 +72,6 @@ namespace MathEvent.Api.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateAsync([FromBody] FileCreateModel fileCreateModel)
         {
-            if (!TryValidateModel(fileCreateModel))
-            {
-                return ValidationProblem(ModelState);
-            }
-
             var userResult = await _userService.GetCurrentUserAsync(User);
 
             if (!userResult.Succeeded || userResult.Entity is null)
@@ -120,11 +115,6 @@ namespace MathEvent.Api.Controllers
             if (!fileResult.Succeeded)
             {
                 return NotFound(fileResult.Messages);
-            }
-
-            if (!TryValidateModel(fileUpdateModel))
-            {
-                return ValidationProblem(ModelState);
             }
 
             var updateResult = await _fileService.UpdateAsync(id, fileUpdateModel);
@@ -222,6 +212,11 @@ namespace MathEvent.Api.Controllers
                     AuthorId = user.Id,
                     OwnerId = owner
                 };
+
+                if (!TryValidateModel(fileCreateModel))
+                {
+                    return ValidationProblem(ModelState);
+                }
 
                 var createResult = await _fileService.Upload(formFile, fileCreateModel);
 
