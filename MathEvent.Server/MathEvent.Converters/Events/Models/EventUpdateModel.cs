@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace MathEvent.Converters.Events.Models
 {
     /// <summary>
-    /// Класс для передачи данных для обновления Event
+    /// Класс для передачи данных для обновления события
     /// </summary>
     public class EventUpdateModel : IValidatableObject
     {

@@ -74,11 +74,6 @@ namespace MathEvent.Api.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateAsync([FromBody] OrganizaionCreateModel organizaionCreateModel)
         {
-            if (!TryValidateModel(organizaionCreateModel))
-            {
-                return ValidationProblem(ModelState);
-            }
-
             var createResult = await _organizationService.CreateAsync(organizaionCreateModel);
 
             if (createResult.Succeeded)
@@ -112,11 +107,6 @@ namespace MathEvent.Api.Controllers
             if (!organizationResult.Succeeded)
             {
                 return NotFound(organizationResult.Messages);
-            }
-
-            if (!TryValidateModel(organizationUpdateModel))
-            {
-                return ValidationProblem(ModelState);
             }
 
             var updateResult = await _organizationService.UpdateAsync(id, organizationUpdateModel);
