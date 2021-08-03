@@ -32,14 +32,9 @@ namespace MathEvent.Api.Controllers
         {
             var userResult = await _userService.ListAsync(filters);
 
-            if (userResult.Succeeded)
+            if (userResult.Succeeded && userResult.Entity is not null)
             {
-                var userReadModels = userResult.Entity;
-
-                if (userReadModels is not null)
-                {
-                    return Ok(userReadModels);
-                }
+                return Ok(userResult.Entity);
             }
 
             return NotFound(userResult.Messages);
@@ -52,19 +47,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id is null)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var userResult = await _userService.RetrieveAsync(id);
 
-            if (userResult.Succeeded)
+            if (userResult.Succeeded && userResult.Entity is not null)
             {
-                var userReadModel = userResult.Entity;
-
-                if (userReadModel is not null)
-                {
-                    return Ok(userReadModel);
-                }
+                return Ok(userResult.Entity);
             }
 
             return NotFound(userResult.Messages);
@@ -90,7 +80,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(createResult.Messages);
+                return StatusCode(500, createResult.Messages);
             }
         }
 
@@ -100,7 +90,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id is null)
             {
-                return BadRequest();
+                return BadRequest("id is null");
             }
 
             var userResult = await _userService.GetUserEntityAsync(id);
@@ -125,7 +115,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -135,28 +125,22 @@ namespace MathEvent.Api.Controllers
         {
             if (id is null)
             {
-                return BadRequest();
+                return BadRequest("id is null");
             }
 
             if (patchDocument is null)
             {
-                return BadRequest();
+                return BadRequest("Patch document is null");
             }
 
             var userResult = await _userService.GetUserEntityAsync(id);
 
-            if (!userResult.Succeeded)
+            if (!userResult.Succeeded || userResult.Entity is null)
             {
                 return NotFound(userResult.Messages);
             }
 
             var userEntity = userResult.Entity;
-
-            if (userEntity is null)
-            {
-                return NotFound();
-            }
-
             var userDTO = _mapper.Map<UserWithEventsDTO>(userEntity);
             var userToPatch = _mapper.Map<UserUpdateModel>(userDTO);
             patchDocument.ApplyTo(userToPatch, ModelState);
@@ -181,7 +165,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -191,7 +175,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id is null)
             {
-                return BadRequest();
+                return BadRequest("id is null");
             }
 
             var userResult = await _userService.GetUserEntityAsync(id);
@@ -209,7 +193,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(deleteResult.Messages);
+                return StatusCode(500, deleteResult.Messages);
             }
         }
 
@@ -220,26 +204,26 @@ namespace MathEvent.Api.Controllers
         {
             var userResult = await _userService.GetSimpleStatistics(filters);
 
-            if (userResult.Succeeded)
+            if (userResult.Succeeded && userResult.Entity is not null)
             {
                 return Ok(userResult.Entity);
             }
 
-            return NotFound(userResult.Messages);
+            return StatusCode(500, userResult.Messages);
         }
 
         // GET api/Users/Statistics/{id}
         [HttpGet("Statistics/{id}")]
-        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync(string id)
+        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> UserStatisticsAsync(string id)
         {
             var userResult = await _userService.GetUserStatistics(id);
 
-            if (userResult.Succeeded)
+            if (userResult.Succeeded && userResult.Entity is not null)
             {
                 return Ok(userResult.Entity);
             }
 
-            return NotFound(userResult.Messages);
+            return StatusCode(500, userResult.Messages);
         }
     }
 }

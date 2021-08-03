@@ -50,19 +50,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var fileResult = await _fileService.RetrieveAsync(id);
 
-            if (fileResult.Succeeded)
+            if (fileResult.Succeeded && fileResult.Entity is not null)
             {
-                var fileReadModel = fileResult.Entity;
-
-                if (fileReadModel is not null)
-                {
-                    return Ok(fileReadModel);
-                }
+                return Ok(fileResult.Entity);
             }
 
             return NotFound(fileResult.Messages);
@@ -97,7 +92,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(createResult.Messages);
+                return StatusCode(500, createResult.Messages);
             }
         }
 
@@ -107,7 +102,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var fileResult = await _fileService.GetFileEntityAsync(id);
@@ -132,7 +127,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -142,7 +137,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var childFilesResult = await _fileService.GetChildFiles(id);
@@ -167,7 +162,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(deleteResult.Messages);
+                return StatusCode(500, deleteResult.Messages);
             }
         }
 
@@ -227,9 +222,9 @@ namespace MathEvent.Api.Controllers
 
                 var createResult = await _fileService.Upload(formFile, fileCreateModel);
 
-                if (!createResult.Succeeded)
+                if (!createResult.Succeeded || createResult.Entity is null)
                 {
-                    return BadRequest(createResult.Messages);
+                    return StatusCode(500, createResult.Messages);
                 }
                 else
                 {
@@ -244,46 +239,44 @@ namespace MathEvent.Api.Controllers
         [HttpGet("Download/{id}")]
         public async Task<ActionResult> Download(int id)
         {
+            if (id < 0)
+            {
+                return BadRequest($"id = {id} less then 0");
+            }
+
             var fileResult = await _fileService.GetFileEntityAsync(id);
 
-            if (!fileResult.Succeeded)
+            if (!fileResult.Succeeded || fileResult.Entity is null)
             {
                 return NotFound(fileResult.Messages);
             }
 
             var file = fileResult.Entity;
 
-            if (file is null)
-            {
-                return NotFound();
-            }
-
             if (file.Hierarchy is not null)
             {
-                return BadRequest();
+                return BadRequest("Hierarchy is not null");
             }
 
             var downloadResult = await _fileService.Download(id);
 
-            if (!downloadResult.Succeeded)
+            if (!downloadResult.Succeeded || downloadResult.Entity is null)
             {
                 return StatusCode(500, downloadResult.Messages);
             }
 
-            var fileStream = downloadResult.Entity;
-
-            if (fileStream is null)
-            {
-                return StatusCode(500);
-            }
-
-            return File(fileStream, "application/octet-stream", $"\"{HttpUtility.UrlEncode(file.Name, Encoding.UTF8)}{file.Extension}\"");
+            return File(downloadResult.Entity, "application/octet-stream", $"\"{HttpUtility.UrlEncode(file.Name, Encoding.UTF8)}{file.Extension}\"");
         }
 
         // GET api/Files/Breadcrumbs/{id}
         [HttpGet("Breadcrumbs/{id}")]
         public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
         {
+            if (id < 0)
+            {
+                return BadRequest($"id = {id} less then 0");
+            }
+
             var result = await _fileService.GetBreadcrumbs(id);
 
             if (result.Succeeded)
@@ -292,7 +285,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(result.Messages);
+                return StatusCode(500, result.Messages);
             }
         }
     }

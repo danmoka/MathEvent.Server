@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MathEvent.Api.Controllers
@@ -62,19 +61,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var eventResult = await _eventService.RetrieveAsync(id);
 
-            if (eventResult.Succeeded)
+            if (eventResult.Succeeded && eventResult.Entity is not null)
             {
-                var eventReadModel = eventResult.Entity;
-
-                if (eventReadModel is not null)
-                {
-                    return Ok(eventReadModel);
-                }
+                return Ok(eventResult.Entity);
             }
 
             return NotFound(eventResult.Messages);
@@ -82,7 +76,7 @@ namespace MathEvent.Api.Controllers
 
         // POST api/Events
         [HttpPost]
-        public async Task<ActionResult> CreateAsync([FromBody] EventCreateModel eventCreateModel)
+        public async Task<ActionResult<EventWithUsersReadModel>> CreateAsync([FromBody] EventCreateModel eventCreateModel)
         {
             var createResult = await _eventService.CreateAsync(eventCreateModel);
 
@@ -99,7 +93,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(createResult.Messages);
+                return StatusCode(500, createResult.Messages);
             }
         }
 
@@ -109,7 +103,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
@@ -134,7 +128,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -144,12 +138,12 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             if (patchDocument is null)
             {
-                return BadRequest();
+                return BadRequest("Patch document is null");
             }
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
@@ -163,7 +157,7 @@ namespace MathEvent.Api.Controllers
 
             if (eventEntity is null)
             {
-                return NotFound();
+                return StatusCode(500, "Entity is null");
             }
 
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
@@ -190,7 +184,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -200,7 +194,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
@@ -225,7 +219,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(deleteResult.Messages);
+                return StatusCode(500, deleteResult.Messages);
             }
         }
 
@@ -234,6 +228,11 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
         {
+            if (id < 0)
+            {
+                return BadRequest($"id = {id} less then 0");
+            }
+
             var result = await _eventService.GetBreadcrumbs(id);
 
             if (result.Succeeded)
@@ -242,7 +241,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(result.Messages);
+                return StatusCode(500, result.Messages);
             }
         }
 
@@ -253,15 +252,12 @@ namespace MathEvent.Api.Controllers
         {
             var eventsStatisticsResult = await _eventService.GetSimpleStatistics(filters);
 
-            if (eventsStatisticsResult.Succeeded)
+            if (eventsStatisticsResult.Succeeded && eventsStatisticsResult.Entity is not null)
             {
-                if (eventsStatisticsResult.Entity is not null)
-                {
-                    return Ok(eventsStatisticsResult.Entity);
-                }
+                return Ok(eventsStatisticsResult.Entity);
             }
 
-            return BadRequest(eventsStatisticsResult.Messages);
+            return StatusCode(500, eventsStatisticsResult.Messages);
         }
 
         // GET api/Events/Statistics/{id}
@@ -271,15 +267,12 @@ namespace MathEvent.Api.Controllers
         {
             var eventStatisticsResult = await _eventService.GetEventStatistics(id);
 
-            if (eventStatisticsResult.Succeeded)
+            if (eventStatisticsResult.Succeeded && eventStatisticsResult.Entity is not null)
             {
-                if (eventStatisticsResult.Entity is not null)
-                {
-                    return Ok(eventStatisticsResult.Entity);
-                }
+                return Ok(eventStatisticsResult.Entity);
             }
 
-            return BadRequest(eventStatisticsResult.Messages);
+            return StatusCode(500, eventStatisticsResult.Messages);
         }
 
         // POST api/Events/Avatar/?id=value1
@@ -295,7 +288,7 @@ namespace MathEvent.Api.Controllers
 
             if (eventId < 0)
             {
-                return BadRequest();
+                return BadRequest($"id = {id} less then 0");
             }
 
             var eventResult = await _eventService.GetEventEntityAsync(eventId);
@@ -323,7 +316,7 @@ namespace MathEvent.Api.Controllers
 
             if (user is null)
             {
-                return NotFound();
+                return StatusCode(500, "Entity is null");
             }
 
             var fileCreateModel = new FileCreateModel
@@ -350,7 +343,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(uploadResult.Messages);
+                return StatusCode(500, uploadResult.Messages);
             }
         }
     }

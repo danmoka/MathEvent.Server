@@ -125,7 +125,7 @@ namespace MathEvent.Services.Services
             //    });
             //}
 
-            EventWithUsersReadModel eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
+            var eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
 
             return ResultFactory.GetSuccessfulResult(eventReadModel);
         }

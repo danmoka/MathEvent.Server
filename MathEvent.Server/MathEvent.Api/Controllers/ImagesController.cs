@@ -8,7 +8,6 @@ namespace MathEvent.Api.Controllers
     [ApiController]
     public class ImagesController : ControllerBase
     {
-        //private readonly IWebHostEnvironment _env;
         private readonly DataPathService _dataPathService;
 
         public ImagesController(DataPathService dataPathService)

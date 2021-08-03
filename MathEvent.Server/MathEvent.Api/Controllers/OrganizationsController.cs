@@ -32,14 +32,9 @@ namespace MathEvent.Api.Controllers
         {
             var organizationResult = await _organizationService.ListAsync(filters);
 
-            if (organizationResult.Succeeded)
+            if (organizationResult.Succeeded && organizationResult.Entity is not null)
             {
-                var organizationReadModels = organizationResult.Entity;
-
-                if (organizationReadModels is not null)
-                {
-                    return Ok(organizationReadModels);
-                }
+                return Ok(organizationResult.Entity);
             }
 
             return NotFound(organizationResult.Messages);
@@ -52,19 +47,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest("id < 0");
+                return BadRequest($"id = {id} less then 0");
             }
 
             var organizationResult = await _organizationService.RetrieveAsync(id);
 
-            if (organizationResult.Succeeded)
+            if (organizationResult.Succeeded && organizationResult.Entity is not null)
             {
-                var organizationReadModel = organizationResult.Entity;
-
-                if (organizationReadModel is not null)
-                {
-                    return Ok(organizationReadModel);
-                }
+                return Ok(organizationResult.Entity);
             }
 
             return NotFound(organizationResult.Messages);
@@ -89,7 +79,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(createResult.Messages);
+                return StatusCode(500, createResult.Messages);
             }
         }
 
@@ -99,7 +89,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest("id < 0");
+                return BadRequest($"id = {id} less then 0");
             }
 
             var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
@@ -113,11 +103,18 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var updatedOrganization = updateResult.Entity;
+
+                if (updatedOrganization is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedOrganization);
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -127,7 +124,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest("id < 0");
+                return BadRequest($"id = {id} less then 0");
             }
 
             if (patchDocument is null)
@@ -137,18 +134,12 @@ namespace MathEvent.Api.Controllers
 
             var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
 
-            if (!organizationResult.Succeeded)
+            if (!organizationResult.Succeeded || organizationResult.Entity is null)
             {
                 return NotFound(organizationResult.Messages);
             }
 
             var organizationEntity = organizationResult.Entity;
-
-            if (organizationEntity is null)
-            {
-                return NotFound();
-            }
-
             var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
             var organizationToPatch = _mapper.Map<OrganizationUpdateModel>(organizationDTO);
             patchDocument.ApplyTo(organizationToPatch, ModelState);
@@ -162,11 +153,18 @@ namespace MathEvent.Api.Controllers
 
             if (updateResult.Succeeded)
             {
-                return Ok(id);
+                var updatedOrganization = updateResult.Entity;
+
+                if (updatedOrganization is null)
+                {
+                    return Ok(id);
+                }
+
+                return Ok(updatedOrganization);
             }
             else
             {
-                return BadRequest(updateResult.Messages);
+                return StatusCode(500, updateResult.Messages);
             }
         }
 
@@ -176,7 +174,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest("id < 0");
+                return BadRequest($"id = {id} less then 0");
             }
 
             var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
@@ -194,7 +192,7 @@ namespace MathEvent.Api.Controllers
             }
             else
             {
-                return BadRequest(deleteResult.Messages);
+                return StatusCode(500, deleteResult.Messages);
             }
         }
 
@@ -205,12 +203,12 @@ namespace MathEvent.Api.Controllers
         {
             var organizationResult = await _organizationService.GetSimpleStatistics(filters);
 
-            if (organizationResult.Succeeded)
+            if (organizationResult.Succeeded && organizationResult.Entity is not null)
             {
                 return Ok(organizationResult.Entity);
             }
 
-            return NotFound(organizationResult.Messages);
+            return StatusCode(500, organizationResult.Messages);
         }
     }
 }
