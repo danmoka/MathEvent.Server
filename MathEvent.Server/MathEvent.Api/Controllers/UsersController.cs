@@ -75,11 +75,6 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> CreateAsync([FromBody] UserCreateModel userCreateModel)
         {
-            if (!TryValidateModel(userCreateModel))
-            {
-                return ValidationProblem(ModelState);
-            }
-
             var createResult = await _userService.CreateAsync(userCreateModel);
 
             if (createResult.Succeeded)
@@ -113,11 +108,6 @@ namespace MathEvent.Api.Controllers
             if (!userResult.Succeeded)
             {
                 return NotFound(userResult.Messages);
-            }
-
-            if (!TryValidateModel(userUpdateModel))
-            {
-                return ValidationProblem(ModelState);
             }
 
             var updateResult = await _userService.UpdateAsync(id, userUpdateModel);

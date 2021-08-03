@@ -21,7 +21,7 @@ namespace MathEvent.Converters.Events.Models
         [DataType(DataType.DateTime)]
         public DateTime StartDate { get; set; }
 
-        [StringLength(100, MinimumLength = 1, ErrorMessage = "Длина адреса события должна быть от 1 до 100 символов")]
+        [MaxLength(100, ErrorMessage = "Длина адреса события должна быть до 100 символов")]
         public string Location { get; set; }
 
         public int? OrganizationId { get; set; }

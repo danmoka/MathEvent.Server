@@ -10,16 +10,18 @@ namespace MathEvent.Converters.Events.Models
     /// </summary>
     public class EventUpdateModel : IValidatableObject
     {
+        [Required]
         [StringLength(250, MinimumLength = 1, ErrorMessage = "Длина названия события должна быть от 1 до 250 символов")]
         public string Name { get; set; }
 
+        [Required]
         [StringLength(500, MinimumLength = 1, ErrorMessage = "Длина описания события должна быть от 1 до 500 символов")]
         public string Description { get; set; }
 
         [DataType(DataType.DateTime)]
         public DateTime StartDate { get; set; }
 
-        [StringLength(100, MinimumLength = 1, ErrorMessage = "Длина адреса события должна быть от 1 до 100 символов")]
+        [MaxLength(100, ErrorMessage = "Длина адреса события должна быть до 100 символов")]
         public string Location { get; set; }
 
         public int? OrganizationId { get; set; }
