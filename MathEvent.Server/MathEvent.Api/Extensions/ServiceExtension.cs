@@ -5,6 +5,7 @@ using MathEvent.Converters.Identities.Profiles;
 using MathEvent.Entities;
 using MathEvent.Repository;
 using MathEvent.Services.Services;
+using MathEvent.Services.Services.DataPath;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -87,7 +88,7 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<EventService>();
             services.AddScoped<FileService>();
             services.AddScoped<OrganizationService>();
-            services.AddSingleton(new DataPathService(env.WebRootPath, configuration.GetValue<long>("FileSizeLimit")));
+            services.AddSingleton(new DataPathService(env.WebRootPath, configuration.GetValue<long>("FileSizeLimit"), new FileExtensionManager()));
         }
 
         /// <summary>

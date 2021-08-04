@@ -5,30 +5,29 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace MathEvent.Services.Services
+namespace MathEvent.Services.Services.DataPath
 {
     /// <summary>
     /// Класс для работы с файлами и путями
     /// </summary>
+    /// TODO: добавить ResultFactory
     public class DataPathService
     {
         private readonly string _basePath;
 
         private readonly string _folder = "media";
 
-        private readonly string[] _permittedExtensions = { ".pdf", ".docx", ".doc", ".ppt", ".pptx", ".png", ".jpg", ".jpeg", ".bmp" };
-
-        private readonly string[] _permittedImageExtensions = { ".png", ".jpg", ".jpeg", ".bmp" };
-
         private readonly long _fileSizeLimit;
 
-        public DataPathService(string basePath, long fileSizeLimit)
+        private readonly FileExtensionManager _fileExtensionManager;
+
+        public DataPathService(string basePath, long fileSizeLimit, FileExtensionManager fileExtensionManager)
         {
             _basePath = basePath;
             _fileSizeLimit = fileSizeLimit;
+            _fileExtensionManager = fileExtensionManager;
         }
 
         /// <summary>
@@ -75,7 +74,8 @@ namespace MathEvent.Services.Services
                 Directory.CreateDirectory(fullPath);
             }
 
-            var fileName = $"{Path.GetRandomFileName()}{file.FileName}";
+            // рандомная часть названия + оригинальная с обрезанием пути (который может указать пользователь)
+            var fileName = $"{Path.GetRandomFileName()}{Path.GetFileName(file.FileName)}";
             var fullFilePath = Path.Combine(fullPath, fileName);
             using var stream = new FileStream(fullFilePath, FileMode.Create);
 
@@ -149,14 +149,8 @@ namespace MathEvent.Services.Services
         /// <returns>true, если расширение разрешено, false иначе</returns>
         public bool IsPermittedExtension(IFormFile file)
         {
-            var extension = Path.GetExtension(file.FileName);
-
-            if (!string.IsNullOrEmpty(extension) && _permittedExtensions.Contains(extension))
-            {
-                return true;
-            }
-
-            return false;
+            return _fileExtensionManager.IsCorrectFileExtensionAndSignature(file)
+                || _fileExtensionManager.IsCorrectImgExtensionAndSignature(file);
         }
 
         /// <summary>
@@ -166,14 +160,7 @@ namespace MathEvent.Services.Services
         /// <returns>true, если расширение разрешено, false иначе</returns>
         public bool IsPermittedImageExtension(IFormFile file)
         {
-            var extension = Path.GetExtension(file.FileName);
-
-            if (!string.IsNullOrEmpty(extension) && _permittedImageExtensions.Contains(extension))
-            {
-                return true;
-            }
-
-            return false;
+            return _fileExtensionManager.IsCorrectImgExtensionAndSignature(file);
         }
 
         /// <summary>
@@ -183,12 +170,7 @@ namespace MathEvent.Services.Services
         /// <returns>true, если размер корректен, false иначе</returns>
         public bool IsCorrectSize(IFormFile file)
         {
-            if (file.Length < _fileSizeLimit)
-            {
-                return true;
-            }
-
-            return false;
+            return file.Length < _fileSizeLimit;
         }
     }
 }

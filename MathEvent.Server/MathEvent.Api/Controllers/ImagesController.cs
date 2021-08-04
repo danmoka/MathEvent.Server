@@ -1,4 +1,4 @@
-﻿using MathEvent.Services.Services;
+﻿using MathEvent.Services.Services.DataPath;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
