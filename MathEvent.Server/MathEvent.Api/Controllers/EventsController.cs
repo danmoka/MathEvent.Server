@@ -3,6 +3,7 @@ using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
 using MathEvent.Converters.Files.Models;
 using MathEvent.Converters.Others;
+using MathEvent.Handlers;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,12 +27,20 @@ namespace MathEvent.Api.Controllers
 
         private readonly UserService _userService;
 
-        public EventsController(IMapper mapper, EventService eventService, FileService fileService, UserService userService)
+        private readonly IAuthorizationService _authorizationService;
+
+        public EventsController(
+            IMapper mapper,
+            EventService eventService,
+            FileService fileService,
+            UserService userService,
+            IAuthorizationService authorizationService)
         {
             _mapper = mapper;
             _eventService = eventService;
             _fileService = fileService;
             _userService = userService;
+            _authorizationService = authorizationService;
         }
 
         // GET api/Events/?key1=value1&key2=value2
@@ -108,9 +117,17 @@ namespace MathEvent.Api.Controllers
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (!eventResult.Succeeded || eventResult.Entity is null)
             {
                 return NotFound(eventResult.Messages);
+            }
+
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, eventResult.Entity, Operations.Update);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
             }
 
             var updateResult = await _eventService.UpdateAsync(id, eventUpdateModel);
@@ -148,19 +165,20 @@ namespace MathEvent.Api.Controllers
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (!eventResult.Succeeded || eventResult.Entity is null)
             {
                 return NotFound(eventResult.Messages);
             }
 
-            var eventEntity = eventResult.Entity;
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, eventResult.Entity, Operations.Update);
 
-            if (eventEntity is null)
+            if (!authorizationResult.Succeeded)
             {
-                return StatusCode(500, "Entity is null");
+                return StatusCode(403);
             }
 
-            var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(eventResult.Entity);
             var eventToPatch = _mapper.Map<EventUpdateModel>(eventDTO);
             patchDocument.ApplyTo(eventToPatch, ModelState);
 
@@ -199,9 +217,17 @@ namespace MathEvent.Api.Controllers
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (!eventResult.Succeeded || eventResult.Entity is null)
             {
                 return NotFound(eventResult.Messages);
+            }
+
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, eventResult.Entity, Operations.Delete);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
             }
 
             var childEventsResult = await _eventService.GetChildEvents(id);
@@ -293,9 +319,17 @@ namespace MathEvent.Api.Controllers
 
             var eventResult = await _eventService.GetEventEntityAsync(eventId);
 
-            if (!eventResult.Succeeded)
+            if (!eventResult.Succeeded || eventResult.Entity is null)
             {
                 return NotFound(eventResult.Messages);
+            }
+
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, eventResult.Entity, Operations.Update);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
             }
 
             var checkResult = _fileService.IsCorrectImage(file);

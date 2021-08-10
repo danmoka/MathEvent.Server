@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
+    <ProjectReference Include="..\MathEvent.Handlers\MathEvent.Handlers.csproj" />
     <ProjectReference Include="..\MathEvent.Services\MathEvent.Services.csproj" />
   </ItemGroup>
 
