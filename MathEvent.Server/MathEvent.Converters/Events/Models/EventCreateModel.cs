@@ -26,11 +26,13 @@ namespace MathEvent.Converters.Events.Models
 
         public string AuthorId { get; set; }
 
+        // валидация, что такая организация существует
         public int? OrganizationId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }
 
+        // валидация, что такой файл существует
         public int? ParentId { get; set; }
         #endregion
 

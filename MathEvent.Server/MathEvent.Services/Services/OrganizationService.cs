@@ -82,8 +82,16 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="createModel">Модель создания организации</param>
         /// <returns>Результат создания организации</returns>
-        public async Task<IResult<IMessage, Organization>> CreateAsync(OrganizaionCreateModel createModel)
+        public async Task<IResult<IMessage, Organization>> CreateAsync(OrganizationCreateModel createModel)
         {
+            if (createModel.ManagerId is null)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("400", "Manager id is null")
+                });
+            }
+
             var organizationEntity = _mapper.Map<Organization>(_mapper.Map<OrganizationDTO>(createModel));
 
             if (organizationEntity is null)
@@ -117,6 +125,14 @@ namespace MathEvent.Services.Services
         /// <returns>Результат обновления организации</returns>
         public async Task<IResult<IMessage, Organization>> UpdateAsync(int id, OrganizationUpdateModel updateModel)
         {
+            if (updateModel.ManagerId is null)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("400", "Manager id is null")
+                });
+            }
+
             var organizationResult = await GetOrganizationEntityAsync(id);
 
             if (!organizationResult.Succeeded)

@@ -24,19 +24,25 @@ namespace MathEvent.Converters.Events.Models
         [MaxLength(100, ErrorMessage = "Длина адреса события должна быть до 100 символов")]
         public string Location { get; set; }
 
+        // валидация, что такая организация существует
         public int? OrganizationId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }
 
+        // валидация, что такой файл существует
         public int? ParentId { get; set; }
         #endregion
 
         /// <summary>
         /// Для обновления коллекции пользователей по их id
         /// </summary>
+        // валидация, что такие пользователи существуют
+        [Required]
         public ICollection<string> ApplicationUsers { get; set; }
 
+        // валидация, что такие пользователи существуют
+        [Required]
         public ICollection<string> Managers { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

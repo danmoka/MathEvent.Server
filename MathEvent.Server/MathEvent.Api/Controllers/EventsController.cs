@@ -202,6 +202,7 @@ namespace MathEvent.Api.Controllers
 
             if (eventToPatch.Managers.Count < 1)
             {
+                // такие проверки мб уйдут после изменения валидации для таких полей
                 return BadRequest("The list of event managers is empty");
             }
 

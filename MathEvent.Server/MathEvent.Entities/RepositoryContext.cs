@@ -109,6 +109,11 @@ namespace MathEvent.Entities
             builder.Entity<Organization>()
                 .HasIndex(org => org.ITN)
                 .IsUnique();
+            builder.Entity<Organization>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(org => org.ManagerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

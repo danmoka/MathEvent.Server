@@ -1,4 +1,6 @@
-﻿namespace MathEvent.Converters.Organizations.Models
+﻿using MathEvent.Converters.Identities.Models;
+
+namespace MathEvent.Converters.Organizations.Models
 {
     public class OrganizationReadModel
     {
@@ -7,5 +9,7 @@
         public string ITN { get; set; }
 
         public string Name { get; set; }
+
+        public UserSimpleReadModel Manager { get; set; }
     }
 }

@@ -19,10 +19,16 @@ namespace MathEvent.Api.Controllers
 
         private readonly OrganizationService _organizationService;
 
-        public OrganizationsController(IMapper mapper, OrganizationService organizationService)
+        private readonly UserService _userService;
+
+        public OrganizationsController(
+            IMapper mapper,
+            OrganizationService organizationService,
+            UserService userService)
         {
             _mapper = mapper;
             _organizationService = organizationService;
+            _userService = userService;
         }
 
         // GET api/Organizations/?key1=value1&key2=value2
@@ -62,8 +68,16 @@ namespace MathEvent.Api.Controllers
 
         // POST api/Organizations
         [HttpPost]
-        public async Task<ActionResult> CreateAsync([FromBody] OrganizaionCreateModel organizaionCreateModel)
+        public async Task<ActionResult> CreateAsync([FromBody] OrganizationCreateModel organizaionCreateModel)
         {
+            var userResult = await _userService.GetCurrentUserAsync(User);
+
+            if (!userResult.Succeeded || userResult.Entity is null)
+            {
+                return StatusCode(401);
+            }
+
+            organizaionCreateModel.ManagerId = userResult.Entity.Id;
             var createResult = await _organizationService.CreateAsync(organizaionCreateModel);
 
             if (createResult.Succeeded)
@@ -90,6 +104,11 @@ namespace MathEvent.Api.Controllers
             if (id < 0)
             {
                 return BadRequest($"id = {id} less then 0");
+            }
+
+            if (organizationUpdateModel.ManagerId is null)
+            {
+                return BadRequest("Manager id is null");
             }
 
             var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
@@ -147,6 +166,11 @@ namespace MathEvent.Api.Controllers
             if (!TryValidateModel(organizationToPatch))
             {
                 return ValidationProblem(ModelState);
+            }
+
+            if (organizationToPatch.ManagerId is null)
+            {
+                return BadRequest("Manager id is null");
             }
 
             var updateResult = await _organizationService.UpdateAsync(id, organizationToPatch);

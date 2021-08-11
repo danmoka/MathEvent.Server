@@ -13,5 +13,9 @@ namespace MathEvent.Converters.Organizations.Models
         [Required]
         [StringLength(150, MinimumLength = 1)]
         public string Name { get; set; }
+
+        // валидация, что такой пользователь существует
+        [Required]
+        public string ManagerId { get; set; }
     }
 }

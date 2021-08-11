@@ -17,5 +17,9 @@ namespace MathEvent.Entities.Entities
 
         [StringLength(12, MinimumLength = 10)]
         public string ITN { get; set; }
+
+        [Required]
+        [ForeignKey("ApplicationUser")]
+        public string ManagerId { get; set; }
     }
 }
