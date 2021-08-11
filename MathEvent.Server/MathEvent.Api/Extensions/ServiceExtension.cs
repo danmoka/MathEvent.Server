@@ -3,10 +3,13 @@ using MathEvent.Contracts;
 using MathEvent.Converters.Events.Profiles;
 using MathEvent.Converters.Identities.Profiles;
 using MathEvent.Entities;
+using MathEvent.Handlers.Events;
+using MathEvent.Handlers.Files;
 using MathEvent.Repository;
 using MathEvent.Services.Services;
 using MathEvent.Services.Services.DataPath;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -89,6 +92,16 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<FileService>();
             services.AddScoped<OrganizationService>();
             services.AddSingleton(new DataPathService(env.WebRootPath, configuration.GetValue<long>("FileSizeLimit"), new FileExtensionManager()));
+        }
+
+        /// <summary>
+        /// Настройка обработчиков авторизации
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        public static void ConfigureAuthorizationHandlers(this IServiceCollection services)
+        {
+            services.AddScoped<IAuthorizationHandler, EventAuthorizationCrudHandler>();
+            services.AddScoped<IAuthorizationHandler, FilesAuthorizationCrudHandler>();
         }
 
         /// <summary>

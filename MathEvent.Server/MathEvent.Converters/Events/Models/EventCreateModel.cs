@@ -24,6 +24,8 @@ namespace MathEvent.Converters.Events.Models
         [MaxLength(100, ErrorMessage = "Длина адреса события должна быть до 100 символов")]
         public string Location { get; set; }
 
+        public string AuthorId { get; set; }
+
         public int? OrganizationId { get; set; }
 
         #region hierarchy

@@ -95,6 +95,14 @@ namespace MathEvent.Services.Services
         /// <returns>Результат создания события</returns>
         public async Task<IResult<IMessage, EventWithUsersReadModel>> CreateAsync(EventCreateModel createModel)
         {
+            if (createModel.AuthorId is null)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("400", "Author id is null")
+                });
+            }
+
             var eventEntity = _mapper.Map<Event>(_mapper.Map<EventDTO>(createModel));
 
             if (eventEntity is null)
@@ -117,14 +125,9 @@ namespace MathEvent.Services.Services
 
             await _repositoryWrapper.SaveAsync();
 
-            // owner создается в профиле, если он еще не создан
-            //if (await CreateEventOwnerAsync(eventEntityDb.Id, Owner.Type.File) is null)
-            //{
-            //    return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-            //    {
-            //        MessageFactory.GetSimpleMessage(null, $"Errors when creating an owner for event with id = {eventEntityDb.Id}")
-            //    });
-            //}
+            await CreateNewManagers(new string[] { createModel.AuthorId }, eventEntityDb.Id);
+
+            await _repositoryWrapper.SaveAsync();
 
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
 
@@ -139,6 +142,14 @@ namespace MathEvent.Services.Services
         /// <returns>Результат обновления события</returns>
         public async Task<IResult<IMessage, EventWithUsersReadModel>> UpdateAsync(int id, EventUpdateModel updateModel)
         {
+            if (updateModel.Managers.Count < 1)
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
+                    {
+                        MessageFactory.GetSimpleMessage("400", "The list of event managers is empty")
+                    });
+            }
+
             var eventResult = await GetEventEntityAsync(id);
 
             if (!eventResult.Succeeded)

@@ -87,6 +87,14 @@ namespace MathEvent.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<EventWithUsersReadModel>> CreateAsync([FromBody] EventCreateModel eventCreateModel)
         {
+            var userResult = await _userService.GetCurrentUserAsync(User);
+
+            if (!userResult.Succeeded || userResult.Entity is null)
+            {
+                return StatusCode(401);
+            }
+
+            eventCreateModel.AuthorId = userResult.Entity.Id;
             var createResult = await _eventService.CreateAsync(eventCreateModel);
 
             if (createResult.Succeeded)
@@ -113,6 +121,11 @@ namespace MathEvent.Api.Controllers
             if (id < 0)
             {
                 return BadRequest($"id = {id} less then 0");
+            }
+
+            if (eventUpdateModel.Managers.Count < 1)
+            {
+                return BadRequest("The list of event managers is empty");
             }
 
             var eventResult = await _eventService.GetEventEntityAsync(id);
@@ -185,6 +198,11 @@ namespace MathEvent.Api.Controllers
             if (!TryValidateModel(eventToPatch))
             {
                 return ValidationProblem(ModelState);
+            }
+
+            if (eventToPatch.Managers.Count < 1)
+            {
+                return BadRequest("The list of event managers is empty");
             }
 
             var updateResult = await _eventService.UpdateAsync(id, eventToPatch);

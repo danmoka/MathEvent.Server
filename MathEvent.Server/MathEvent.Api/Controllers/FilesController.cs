@@ -1,6 +1,8 @@
 ﻿using MathEvent.Converters.Files.Models;
 using MathEvent.Converters.Others;
+using MathEvent.Handlers;
 using MathEvent.Services.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,10 +21,16 @@ namespace MathEvent.Api.Controllers
 
         private readonly UserService _userService;
 
-        public FilesController(FileService fileService, UserService userService)
+        private readonly IAuthorizationService _authorizationService;
+
+        public FilesController(
+            FileService fileService,
+            UserService userService,
+            IAuthorizationService authorizationService)
         {
             _fileService = fileService;
             _userService = userService;
+            _authorizationService = authorizationService;
         }
 
         // GET api/Files/?key1=value1&key2=value2
@@ -67,6 +75,14 @@ namespace MathEvent.Api.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateAsync([FromBody] FileCreateModel fileCreateModel)
         {
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, fileCreateModel.OwnerId, Operations.Create);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
+            }
+
             var userResult = await _userService.GetCurrentUserAsync(User);
 
             if (!userResult.Succeeded || userResult.Entity is null)
@@ -112,6 +128,14 @@ namespace MathEvent.Api.Controllers
                 return NotFound(fileResult.Messages);
             }
 
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, fileResult.Entity.OwnerId, Operations.Update);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
+            }
+
             var updateResult = await _fileService.UpdateAsync(id, fileUpdateModel);
 
             if (updateResult.Succeeded)
@@ -154,6 +178,14 @@ namespace MathEvent.Api.Controllers
                 return NotFound(fileResult.Messages);
             }
 
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, fileResult.Entity.OwnerId, Operations.Delete);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
+            }
+
             var deleteResult = await _fileService.DeleteAsync(id);
 
             if (deleteResult.Succeeded)
@@ -181,6 +213,14 @@ namespace MathEvent.Api.Controllers
             if (int.TryParse(ownerId, out int ownerParam))
             {
                 owner = ownerParam;
+            }
+
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, owner, Operations.Create);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
             }
 
 
