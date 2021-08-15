@@ -1,11 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MathEvent.Contracts;
+using MathEvent.Converters.Organizations.Models.Validation;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace MathEvent.Converters.Identities.Models
 {
     /// <summary>
     /// Класс для передачи данных для создания пользователя
     /// </summary>
-    public class UserCreateModel
+    public class UserCreateModel : IValidatableObject
     {
         [Required(ErrorMessage = "Имя пользователя должно быть задано")]
         [StringLength(50, MinimumLength = 1, ErrorMessage = "Длина имени пользователя должна быть от 1 до 50 символов")]
@@ -32,5 +35,12 @@ namespace MathEvent.Converters.Identities.Models
         public string PasswordConfirm { get; set; }
 
         public int? OrganizationId { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            IRepositoryWrapper repositoryWrapper = (IRepositoryWrapper)validationContext.GetService(typeof(IRepositoryWrapper));
+
+            yield return OrganizationValidationUtils.ValidateOrganizationId(OrganizationId, repositoryWrapper).Result;
+        }
     }
 }

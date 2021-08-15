@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MathEvent.Contracts;
+using MathEvent.Converters.Identities.Models;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace MathEvent.Converters.Organizations.Models
 {
@@ -14,8 +17,14 @@ namespace MathEvent.Converters.Organizations.Models
         [StringLength(150, MinimumLength = 1)]
         public string Name { get; set; }
 
-        // валидация, что такой пользователь существует
         [Required]
         public string ManagerId { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            IRepositoryWrapper repositoryWrapper = (IRepositoryWrapper)validationContext.GetService(typeof(IRepositoryWrapper));
+
+            yield return UserValidationUtils.ValidateUserId(ManagerId, repositoryWrapper).Result;
+        }
     }
 }

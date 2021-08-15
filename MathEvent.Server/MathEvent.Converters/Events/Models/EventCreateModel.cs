@@ -1,4 +1,7 @@
-﻿using MathEvent.Converters.Events.Models.Validation;
+﻿using MathEvent.Contracts;
+using MathEvent.Converters.Events.Models.Validation;
+using MathEvent.Converters.Files.Models.Validation;
+using MathEvent.Converters.Organizations.Models.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -26,19 +29,21 @@ namespace MathEvent.Converters.Events.Models
 
         public string AuthorId { get; set; }
 
-        // валидация, что такая организация существует
         public int? OrganizationId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }
 
-        // валидация, что такой файл существует
         public int? ParentId { get; set; }
         #endregion
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            yield return ValidationUtils.ValidateDateTime(StartDate);
+            IRepositoryWrapper repositoryWrapper = (IRepositoryWrapper)validationContext.GetService(typeof(IRepositoryWrapper));
+
+            yield return EventValidationUtils.ValidateStartDateTime(StartDate);
+            yield return OrganizationValidationUtils.ValidateOrganizationId(OrganizationId, repositoryWrapper).Result;
+            yield return FileValidationUtils.ValidateParentFileId(ParentId, repositoryWrapper).Result;
         }
     }
 }

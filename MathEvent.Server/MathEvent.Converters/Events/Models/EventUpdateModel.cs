@@ -1,4 +1,7 @@
-﻿using MathEvent.Converters.Events.Models.Validation;
+﻿using MathEvent.Contracts;
+using MathEvent.Converters.Events.Models.Validation;
+using MathEvent.Converters.Identities.Models;
+using MathEvent.Converters.Organizations.Models.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -24,30 +27,32 @@ namespace MathEvent.Converters.Events.Models
         [MaxLength(100, ErrorMessage = "Длина адреса события должна быть до 100 символов")]
         public string Location { get; set; }
 
-        // валидация, что такая организация существует
         public int? OrganizationId { get; set; }
 
         #region hierarchy
         public bool? Hierarchy { get; set; }
 
-        // валидация, что такой файл существует
         public int? ParentId { get; set; }
         #endregion
 
         /// <summary>
         /// Для обновления коллекции пользователей по их id
         /// </summary>
-        // валидация, что такие пользователи существуют
         [Required]
         public ICollection<string> ApplicationUsers { get; set; }
 
-        // валидация, что такие пользователи существуют
         [Required]
         public ICollection<string> Managers { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            yield return ValidationUtils.ValidateDateTime(StartDate);
+            IRepositoryWrapper repositoryWrapper = (IRepositoryWrapper)validationContext.GetService(typeof(IRepositoryWrapper));
+
+            yield return EventValidationUtils.ValidateStartDateTime(StartDate);
+            yield return OrganizationValidationUtils.ValidateOrganizationId(OrganizationId, repositoryWrapper).Result;
+            yield return EventValidationUtils.ValidateParentEventId(ParentId, repositoryWrapper).Result;
+            yield return UserValidationUtils.ValidateUserIds(ApplicationUsers, repositoryWrapper).Result;
+            yield return UserValidationUtils.ValidateUserIds(Managers, repositoryWrapper).Result;
         }
     }
 }
