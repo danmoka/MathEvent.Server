@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
+using MathEvent.AuthorizationHandlers.Events;
+using MathEvent.AuthorizationHandlers.Files;
+using MathEvent.AuthorizationHandlers.Organizations;
 using MathEvent.Contracts;
 using MathEvent.Converters.Events.Profiles;
 using MathEvent.Converters.Identities.Profiles;
 using MathEvent.Entities;
-using MathEvent.Handlers.Events;
-using MathEvent.Handlers.Files;
 using MathEvent.Repository;
 using MathEvent.Services.Services;
 using MathEvent.Services.Services.DataPath;
@@ -102,6 +103,7 @@ namespace MathEvent.Api.Extensions
         {
             services.AddScoped<IAuthorizationHandler, EventAuthorizationCrudHandler>();
             services.AddScoped<IAuthorizationHandler, FilesAuthorizationCrudHandler>();
+            services.AddScoped<IAuthorizationHandler, OrganizationsAuthorizationCrudHandler>();
         }
 
         /// <summary>

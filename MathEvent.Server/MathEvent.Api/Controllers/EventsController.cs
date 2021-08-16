@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
+using MathEvent.AuthorizationHandlers;
 using MathEvent.Converters.Events.DTOs;
 using MathEvent.Converters.Events.Models;
 using MathEvent.Converters.Files.Models;
 using MathEvent.Converters.Others;
-using MathEvent.Handlers;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

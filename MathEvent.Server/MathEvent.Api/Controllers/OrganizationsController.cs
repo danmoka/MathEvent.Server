@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MathEvent.AuthorizationHandlers;
 using MathEvent.Converters.Organizations.DTOs;
 using MathEvent.Converters.Organizations.Models;
 using MathEvent.Converters.Others;
@@ -21,14 +22,18 @@ namespace MathEvent.Api.Controllers
 
         private readonly UserService _userService;
 
+        private readonly IAuthorizationService _authorizationService;
+
         public OrganizationsController(
             IMapper mapper,
             OrganizationService organizationService,
-            UserService userService)
+            UserService userService,
+            IAuthorizationService authorizationService)
         {
             _mapper = mapper;
             _organizationService = organizationService;
             _userService = userService;
+            _authorizationService = authorizationService;
         }
 
         // GET api/Organizations/?key1=value1&key2=value2
@@ -118,6 +123,14 @@ namespace MathEvent.Api.Controllers
                 return NotFound(organizationResult.Messages);
             }
 
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, organizationResult.Entity, Operations.Update);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
+            }
+
             var updateResult = await _organizationService.UpdateAsync(id, organizationUpdateModel);
 
             if (updateResult.Succeeded)
@@ -156,6 +169,14 @@ namespace MathEvent.Api.Controllers
             if (!organizationResult.Succeeded || organizationResult.Entity is null)
             {
                 return NotFound(organizationResult.Messages);
+            }
+
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, organizationResult.Entity, Operations.Update);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
             }
 
             var organizationEntity = organizationResult.Entity;
@@ -206,6 +227,14 @@ namespace MathEvent.Api.Controllers
             if (!organizationResult.Succeeded)
             {
                 return NotFound(organizationResult.Messages);
+            }
+
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, organizationResult.Entity, Operations.Delete);
+
+            if (!authorizationResult.Succeeded)
+            {
+                return StatusCode(403);
             }
 
             var deleteResult = await _organizationService.DeleteAsync(id);

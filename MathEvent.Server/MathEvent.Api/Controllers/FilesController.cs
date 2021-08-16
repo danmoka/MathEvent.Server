@@ -1,6 +1,6 @@
-﻿using MathEvent.Converters.Files.Models;
+﻿using MathEvent.AuthorizationHandlers;
+using MathEvent.Converters.Files.Models;
 using MathEvent.Converters.Others;
-using MathEvent.Handlers;
 using MathEvent.Services.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

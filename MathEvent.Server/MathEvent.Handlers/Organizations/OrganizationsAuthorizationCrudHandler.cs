@@ -1,48 +1,33 @@
-﻿using MathEvent.Contracts;
-using MathEvent.Entities.Entities;
+﻿using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace MathEvent.AuthorizationHandlers.Events
+namespace MathEvent.AuthorizationHandlers.Organizations
 {
-    /// <summary>
-    /// Обработчик запроса на авторизацию для CRUD операций событий
-    /// </summary>
-    public class EventAuthorizationCrudHandler :
-        AuthorizationHandler<OperationAuthorizationRequirement, Event>
+    public class OrganizationsAuthorizationCrudHandler :
+        AuthorizationHandler<OperationAuthorizationRequirement, Organization>
     {
-        private readonly IRepositoryWrapper _repositoryWrapper;
-
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public EventAuthorizationCrudHandler(
-            IRepositoryWrapper repositoryWrapper,
+        public OrganizationsAuthorizationCrudHandler(
             UserManager<ApplicationUser> userManager)
         {
-            _repositoryWrapper = repositoryWrapper;
             _userManager = userManager;
         }
 
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement,
-            Event resource)
+            Organization resource)
         {
             var user = await _userManager.GetUserAsync(context.User);
-            var userManagedEventIds = await _repositoryWrapper
-                .Management
-                .FindByCondition(m => m.ApplicationUserId == user.Id)
-                .Select(m => m.EventId)
-                .ToListAsync();
 
             if (requirement.Name == Operations.Update.Name
                 || requirement.Name == Operations.Delete.Name)
             {
-                if (userManagedEventIds.Contains(resource.Id))
+                if (resource.ManagerId == user.Id)
                 {
                     context.Succeed(requirement);
                 }

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MathEvent.Handlers.Files
+namespace MathEvent.AuthorizationHandlers.Files
 {
     /// <summary>
     /// Обработчик запроса на авторизацию для CRUD операций файлов

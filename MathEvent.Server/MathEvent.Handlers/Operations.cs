@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization.Infrastructure;
 
-namespace MathEvent.Handlers
+namespace MathEvent.AuthorizationHandlers
 {
     /// <summary>
     /// Описывает возможные CRUD операции
