@@ -20,6 +20,7 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public IActionResult GetImage([FromQuery] string src)
         {
+            // TODO: безопасный ли этот метод?
             var image = _dataPathService.GetFileStream(src);
 
             return Ok(image);

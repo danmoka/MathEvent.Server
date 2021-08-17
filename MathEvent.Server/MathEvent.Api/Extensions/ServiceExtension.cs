@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MathEvent.AuthorizationHandlers.Events;
 using MathEvent.AuthorizationHandlers.Files;
+using MathEvent.AuthorizationHandlers.Identities;
 using MathEvent.AuthorizationHandlers.Organizations;
 using MathEvent.Contracts;
 using MathEvent.Converters.Events.Profiles;
@@ -104,6 +105,7 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<IAuthorizationHandler, EventAuthorizationCrudHandler>();
             services.AddScoped<IAuthorizationHandler, FilesAuthorizationCrudHandler>();
             services.AddScoped<IAuthorizationHandler, OrganizationsAuthorizationCrudHandler>();
+            services.AddScoped<IAuthorizationHandler, UsersAuthorizationCrudHandler>();
         }
 
         /// <summary>
