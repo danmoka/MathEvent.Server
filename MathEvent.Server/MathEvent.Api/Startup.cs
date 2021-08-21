@@ -25,8 +25,9 @@ namespace MathEvent.Api
             services.ConfigureConnection(Configuration);
             services.ConfigureIndentity();
             services.ConfigureAuthentication(Configuration);
-            services.ConfigureAuthorization(Configuration);
+            services.ConfigureAuthorization();
             services.ConfigureRepositoryWrapper();
+            services.ConfigureEmail(Configuration);
             services.ConfigureEntityServices(Environment, Configuration);
             services.ConfigureAuthorizationHandlers();
             services.ConfigureMapper();

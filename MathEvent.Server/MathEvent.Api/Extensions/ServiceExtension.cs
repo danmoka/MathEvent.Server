@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MathEvent.Api.Configuration;
 using MathEvent.AuthorizationHandlers.Events;
 using MathEvent.AuthorizationHandlers.Files;
 using MathEvent.AuthorizationHandlers.Identities;
@@ -62,8 +63,7 @@ namespace MathEvent.Api.Extensions
         /// Настройка авторизации
         /// </summary>
         /// <param name="services">Зависимости</param>
-        /// <param name="configuration">Поставщик конфигурации</param>
-        public static void ConfigureAuthorization(this IServiceCollection services, IConfiguration configuration)
+        public static void ConfigureAuthorization(this IServiceCollection services)
         {
             // TODO: использовать configuration для начитки строковых значений
             // adds an authorization policy to make sure the token is for scope 'matheventapi'
@@ -94,6 +94,7 @@ namespace MathEvent.Api.Extensions
             services.AddScoped<FileService>();
             services.AddScoped<OrganizationService>();
             services.AddSingleton(new DataPathService(env.WebRootPath, configuration.GetValue<long>("FileSizeLimit"), new FileExtensionManager()));
+            services.AddScoped<IEmailSender, EmailService>();
         }
 
         /// <summary>
@@ -127,6 +128,19 @@ namespace MathEvent.Api.Extensions
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
+        }
+
+        /// <summary>
+        /// Настройка отправки email сообщений
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        /// <param name="configuration">Поставщик конфигурации</param>
+        public static void ConfigureEmail(this IServiceCollection services, IConfiguration configuration)
+        {
+            var emailConfig = configuration
+                .GetSection("EmailConfiguration")
+                .Get<EmailConfiguration>();
+            services.AddSingleton<IEmailConfiguration>(emailConfig);
         }
     }
 }
