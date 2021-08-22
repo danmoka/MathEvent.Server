@@ -25,16 +25,20 @@ namespace MathEvent.Services.Services
 
         private readonly UserManager<ApplicationUser> _userManager;
 
+        private readonly IEmailSender _emailSender;
+
         private const int _defaultActiveUsersStatisticsTop = 10;
 
         public UserService(
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IEmailSender emailSender)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         /// <summary>
@@ -238,7 +242,7 @@ namespace MathEvent.Services.Services
 
             return ResultFactory.GetUnsuccessfulMessageResult<ApplicationUser>(new List<IMessage>()
             {
-                MessageFactory.GetSimpleMessage("404", $"User with id = {id} not found")
+                MessageFactory.GetSimpleMessage("404", $"User with id = {id} is not found")
             });
         }
 
@@ -258,8 +262,71 @@ namespace MathEvent.Services.Services
 
             return ResultFactory.GetUnsuccessfulMessageResult<ApplicationUser>(new List<IMessage>()
             {
-                MessageFactory.GetSimpleMessage("404", $"User not found")
+                MessageFactory.GetSimpleMessage("404", $"User is not found")
             });
+        }
+
+        /// <summary>
+        /// Отправляет токен смены пароля на электронную почту пользователя
+        /// </summary>
+        /// <param name="email">Адрес электронной почты пользователя</param>
+        /// <returns>Результат генерации и отправки токена</returns>
+        public async Task<IResult<IMessage, string>> ForgotPasswordAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<string>(new List<IMessage>()
+                {
+                    MessageFactory.GetSimpleMessage("400", "The user's email address is empty")
+                });
+            }
+
+            var user = await _repositoryWrapper
+                .User
+                .FindByCondition(u => u.Email == email)
+                .SingleOrDefaultAsync();
+
+            if (user is null)
+            {
+                return ResultFactory.GetSuccessfulResult("Ok");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var message = new Message(
+                new string[] { user.Email },
+                "Смена пароля",
+                $"Подтверждающий код: {token}");
+            _emailSender.SendEmail(message);
+
+            return ResultFactory.GetSuccessfulResult("Ok");
+        }
+
+        /// <summary>
+        /// Меняет пароль пользователя
+        /// </summary>
+        /// <param name="resetModel">Модель смены пароля</param>
+        /// <returns>Результат смены пароля</returns>
+        public async Task<IResult<IMessage, string>> ResetPasswordAsync(ForgotPasswordResetModel resetModel)
+        {
+            var user = await _userManager.FindByEmailAsync(resetModel.Email);
+
+            if (user is null)
+            {
+                return ResultFactory.GetSuccessfulResult("Ok");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, resetModel.Token, resetModel.Password);
+
+            if (result.Succeeded)
+            {
+                return ResultFactory.GetSuccessfulResult("Password changed");
+            }
+            else
+            {
+                return ResultFactory.GetUnsuccessfulMessageResult<string>(
+                    new List<IMessage>(result.Errors
+                    .Select(er => MessageFactory.GetIdentityMessage(er))));
+            }
         }
 
         /// <summary>

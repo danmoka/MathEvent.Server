@@ -228,6 +228,40 @@ namespace MathEvent.Api.Controllers
             }
         }
 
+        // POST api/Users/ForgotPassword
+        [HttpPost("ForgotPassword/")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordModel forgotPasswordModel)
+        {
+            var forgotPasswordResult = await _userService.ForgotPasswordAsync(forgotPasswordModel.Email);
+
+            if (forgotPasswordResult.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return StatusCode(500, forgotPasswordResult.Messages);
+            }
+        }
+
+        // POST api/Users/ResetPassword
+        [HttpPost("ResetPassword/")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPasswordAsync(ForgotPasswordResetModel resetModel)
+        {
+            var resetPasswordResult = await _userService.ResetPasswordAsync(resetModel);
+
+            if (resetPasswordResult.Succeeded)
+            {
+                return Ok();
+            }
+            else
+            {
+                return StatusCode(500, resetPasswordResult.Messages);
+            }
+        }
+
         // GET api/Users/Statistics/?key1=value1&key2=value2
         [HttpGet("Statistics/")]
         [AllowAnonymous]
