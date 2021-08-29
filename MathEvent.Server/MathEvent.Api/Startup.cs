@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ScheduledJobs.Extensions;
 
 namespace MathEvent.Api
 {
@@ -32,6 +33,7 @@ namespace MathEvent.Api
             services.ConfigureAuthorizationHandlers();
             services.ConfigureMapper();
             services.ConfigureJson();
+            services.ConfigureQuartz();
             services.AddSwaggerGen();
         }
 

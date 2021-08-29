@@ -22,6 +22,7 @@
     <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
     <ProjectReference Include="..\MathEvent.Handlers\MathEvent.AuthorizationHandlers.csproj" />
     <ProjectReference Include="..\MathEvent.Services\MathEvent.Services.csproj" />
+    <ProjectReference Include="..\ScheduledJobs\ScheduledJobs.csproj" />
   </ItemGroup>
 
   <ItemGroup>

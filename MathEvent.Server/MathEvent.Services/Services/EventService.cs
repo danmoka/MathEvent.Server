@@ -302,7 +302,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id события</param>
         /// <returns>Результат поиска. Если событие не имеет дочерних событий, то возвращается результат неуспеха</returns>
-        public async Task<IResult<IMessage, IEnumerable<Event>>> GetChildEvents(int id)
+        public async Task<IResult<IMessage, IEnumerable<EventReadModel>>> GetChildEvents(int id)
         {
             var childEvents = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.ParentId == id)
@@ -310,18 +310,38 @@ namespace MathEvent.Services.Services
 
             if (childEvents.Count < 1)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<Event>>(new List<IMessage>()
+                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<EventReadModel>>(new List<IMessage>()
                 {
                     MessageFactory.GetSimpleMessage(null, $"Event with id = {id} has no child events")
                 });
             }
+
+            var eventsDTO = _mapper.Map<IEnumerable<EventDTO>>(childEvents);
+            var eventsReadModels = _mapper.Map<IEnumerable<EventReadModel>>(eventsDTO);
 
             return ResultFactory.GetSuccessfulMessageResult(
                 new List<IMessage>()
                 {
                     MessageFactory.GetSimpleMessage(null, $"Event with id = {id} has child events")
                 },
-                childEvents.AsEnumerable());
+                eventsReadModels);
+        }
+
+        /// <summary>
+        /// Возвращает события в указанном промежутке времени
+        /// </summary>
+        /// <param name="start">Начало интервала времени</param>
+        /// <param name="end">Конец интервала времени</param>
+        /// <returns>Результат поиска событий в интервале времени (по дате)</returns>
+        public async Task<IResult<IMessage, IEnumerable<EventWithUsersReadModel>>> GetEventsByDate(DateTime start, DateTime end)
+        {
+            var events = await _repositoryWrapper.Event
+                .FindByCondition(ev => ev.StartDate.Date >= start.Date && ev.StartDate.Date <= end.Date)
+                .ToListAsync();
+            var eventsDTO = _mapper.Map<IEnumerable<EventWithUsersDTO>>(events);
+            var eventsReadModels = _mapper.Map<IEnumerable<EventWithUsersReadModel>>(eventsDTO);
+
+            return ResultFactory.GetSuccessfulResult(eventsReadModels);
         }
 
         /// <summary>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Quartz.AspNetCore" Version="3.3.3" />
+    <PackageReference Include="Quartz.DependencyInjection.Microsoft" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MathEvent.Contracts\MathEvent.Contracts.csproj" />
+    <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
+    <ProjectReference Include="..\MathEvent.Services\MathEvent.Services.csproj" />
+  </ItemGroup>
+
+</Project>
