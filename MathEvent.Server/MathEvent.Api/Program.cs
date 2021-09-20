@@ -1,4 +1,4 @@
-using MathEvent.Entities;
+using MathEvent.Database;
 using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -18,7 +18,7 @@ namespace MathEvent.Api
             using (var scope = host.Services.CreateScope())
             {
                 var serviceProvider = scope.ServiceProvider;
-                var context = serviceProvider.GetRequiredService<RepositoryContext>();
+                var context = serviceProvider.GetRequiredService<ApplicationContext>();
                 var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 

@@ -1,5 +1,5 @@
 ﻿using MathEvent.Contracts;
-using MathEvent.Entities;
+using MathEvent.Database;
 using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
@@ -14,8 +14,8 @@ namespace MathEvent.Repository
         private readonly UserManager<ApplicationUser> _userManager;
 
         public UserRepository(
-            RepositoryContext repositoryContext,
-            UserManager<ApplicationUser> userManager) : base(repositoryContext)
+            ApplicationContext applicationContext,
+            UserManager<ApplicationUser> userManager) : base(applicationContext)
         {
             _userManager = userManager;
         }

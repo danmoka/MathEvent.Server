@@ -1,5 +1,5 @@
 ﻿using MathEvent.Contracts;
-using MathEvent.Entities;
+using MathEvent.Database;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
@@ -16,38 +16,38 @@ namespace MathEvent.Repository
         /// <summary>
         /// Контекст данных для работы с базой данных
         /// </summary>
-        protected RepositoryContext RepositoryContext { get; set; }
+        protected ApplicationContext ApplicationContext { get; set; }
 
-        public RepositoryBase(RepositoryContext repositoryContext)
+        public RepositoryBase(ApplicationContext applicationContext)
         {
-            RepositoryContext = repositoryContext;
+            ApplicationContext = applicationContext;
         }
 
         public IQueryable<T> FindAll()
         {
-            return RepositoryContext.Set<T>();
+            return ApplicationContext.Set<T>();
         }
 
         public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression)
         {
-            return RepositoryContext.Set<T>().Where(expression);
+            return ApplicationContext.Set<T>().Where(expression);
         }
 
         public async Task<T> CreateAsync(T entity)
         {
-            var addResult = await RepositoryContext.Set<T>().AddAsync(entity);
+            var addResult = await ApplicationContext.Set<T>().AddAsync(entity);
 
             return addResult.Entity;
         }
 
         public void Update(T entity)
         {
-            RepositoryContext.Set<T>().Update(entity);
+            ApplicationContext.Set<T>().Update(entity);
         }
 
         public void Delete(T entity)
         {
-            RepositoryContext.Set<T>().Remove(entity);
+            ApplicationContext.Set<T>().Remove(entity);
         }
     }
 }

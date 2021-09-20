@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Contracts\MathEvent.Contracts.csproj" />
+    <ProjectReference Include="..\MathEvent.Database\MathEvent.Database.csproj" />
     <ProjectReference Include="..\MathEvent.Entities\MathEvent.Entities.csproj" />
   </ItemGroup>
 

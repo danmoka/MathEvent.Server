@@ -1,12 +1,12 @@
 ﻿using MathEvent.Contracts;
-using MathEvent.Entities;
+using MathEvent.Database;
 using MathEvent.Entities.Entities;
 
 namespace MathEvent.Repository
 {
     public class OrganizationRepository : RepositoryBase<Organization>, IOrganizationRepository
     {
-        public OrganizationRepository(RepositoryContext repositoryContext) : base(repositoryContext)
+        public OrganizationRepository(ApplicationContext applicationContext) : base(applicationContext)
         {
         }
     }

@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 
-namespace MathEvent.Entities
+namespace MathEvent.Database
 {
     /// <summary>
     /// Контекст данных для работы с базой данных
     /// </summary>
-    public class RepositoryContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationContext : IdentityDbContext<ApplicationUser>
     {
-        public RepositoryContext(DbContextOptions<RepositoryContext> options) : base(options)
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
 
         }

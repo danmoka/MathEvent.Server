@@ -7,14 +7,12 @@ using MathEvent.AuthorizationHandlers.Organizations;
 using MathEvent.Contracts;
 using MathEvent.Converters.Events.Profiles;
 using MathEvent.Converters.Identities.Profiles;
-using MathEvent.Entities;
 using MathEvent.Repository;
 using MathEvent.Services.Services;
 using MathEvent.Services.Services.DataPath;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -27,19 +25,6 @@ namespace MathEvent.Api.Extensions
     /// </summary>
     public static class ServiceExtension
     {
-        /// <summary>
-        /// Настройка подключения к базе данных
-        /// </summary>
-        /// <param name="services">Зависимости</param>
-        /// <param name="configuration">Поставщик конфигурации</param>
-        public static void ConfigureConnection(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddDbContext<RepositoryContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString("DBConnection"));
-            });
-        }
-
         /// <summary>
         /// Настройка аутентификации
         /// </summary>

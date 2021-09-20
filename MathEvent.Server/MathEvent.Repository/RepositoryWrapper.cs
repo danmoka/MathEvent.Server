@@ -1,5 +1,5 @@
 ﻿using MathEvent.Contracts;
-using MathEvent.Entities;
+using MathEvent.Database;
 using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace MathEvent.Repository
         /// <summary>
         /// Контекст данных для работы с базой данных
         /// </summary>
-        private RepositoryContext _repositoryContext;
+        private ApplicationContext _applicationContext;
 
         /// <summary>
         /// Менеджер для работы с пользователями
@@ -56,9 +56,9 @@ namespace MathEvent.Repository
         /// </summary>
         private IOrganizationRepository _organization;
 
-        public RepositoryWrapper(RepositoryContext repositoryContext, UserManager<ApplicationUser> userManager)
+        public RepositoryWrapper(ApplicationContext applicationContext, UserManager<ApplicationUser> userManager)
         {
-            _repositoryContext = repositoryContext;
+            _applicationContext = applicationContext;
             _userManager = userManager;
         }
 
@@ -71,7 +71,7 @@ namespace MathEvent.Repository
             {
                 if (_event is null)
                 {
-                    _event = new EventRepository(_repositoryContext);
+                    _event = new EventRepository(_applicationContext);
                 }
 
                 return _event;
@@ -87,7 +87,7 @@ namespace MathEvent.Repository
             {
                 if (_user is null)
                 {
-                    _user = new UserRepository(_repositoryContext, _userManager);
+                    _user = new UserRepository(_applicationContext, _userManager);
                 }
 
                 return _user;
@@ -103,7 +103,7 @@ namespace MathEvent.Repository
             {
                 if (_subscirption is null)
                 {
-                    _subscirption = new SubscriptionRepository(_repositoryContext);
+                    _subscirption = new SubscriptionRepository(_applicationContext);
                 }
 
                 return _subscirption;
@@ -119,7 +119,7 @@ namespace MathEvent.Repository
             {
                 if (_management is null)
                 {
-                    _management = new ManagementRepository(_repositoryContext);
+                    _management = new ManagementRepository(_applicationContext);
                 }
 
                 return _management;
@@ -135,7 +135,7 @@ namespace MathEvent.Repository
             {
                 if (_file is null)
                 {
-                    _file = new FileRepository(_repositoryContext);
+                    _file = new FileRepository(_applicationContext);
                 }
 
                 return _file;
@@ -151,7 +151,7 @@ namespace MathEvent.Repository
             {
                 if (_owner is null)
                 {
-                    _owner = new OwnerRepository(_repositoryContext);
+                    _owner = new OwnerRepository(_applicationContext);
                 }
 
                 return _owner;
@@ -167,7 +167,7 @@ namespace MathEvent.Repository
             {
                 if (_organization is null)
                 {
-                    _organization = new OrganizationRepository(_repositoryContext);
+                    _organization = new OrganizationRepository(_applicationContext);
                 }
 
                 return _organization;
@@ -180,7 +180,7 @@ namespace MathEvent.Repository
         /// <returns></returns>
         public async Task SaveAsync()
         {
-            await _repositoryContext.SaveChangesAsync();
+            await _applicationContext.SaveChangesAsync();
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using MathEvent.Contracts;
-using MathEvent.Entities;
+using MathEvent.Database;
 using MathEvent.Entities.Entities;
 
 namespace MathEvent.Repository
@@ -9,7 +9,7 @@ namespace MathEvent.Repository
     /// </summary>
     public class OwnerRepository : RepositoryBase<Owner>, IOwnerRepository
     {
-        public OwnerRepository(RepositoryContext repositoryContext) : base(repositoryContext)
+        public OwnerRepository(ApplicationContext applicationContext) : base(applicationContext)
         {
 
         }

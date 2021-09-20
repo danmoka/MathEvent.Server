@@ -1,5 +1,5 @@
 using MathEvent.Api.Extensions;
-using MathEvent.Entities.Extensions;
+using MathEvent.Database.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
