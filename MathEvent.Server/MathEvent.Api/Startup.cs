@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ScheduledJobs.Extensions;
+using MathEvent.ScheduledJobs.Extensions;
 
 namespace MathEvent.Api
 {

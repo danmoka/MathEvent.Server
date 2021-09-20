@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Quartz;
-using ScheduledJobs.Jobs;
+using MathEvent.ScheduledJobs.Jobs;
 
-namespace ScheduledJobs.Extensions
+namespace MathEvent.ScheduledJobs.Extensions
 {
     public static class ServiceExtension
     {

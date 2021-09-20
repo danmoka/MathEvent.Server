@@ -5,7 +5,7 @@ using Quartz;
 using System;
 using System.Threading.Tasks;
 
-namespace ScheduledJobs.Jobs
+namespace MathEvent.ScheduledJobs.Jobs
 {
     /// <summary>
     /// Выполняет работу по оповещению пользователей о начале событий через неделю
