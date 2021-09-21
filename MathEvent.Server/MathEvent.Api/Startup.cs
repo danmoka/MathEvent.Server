@@ -1,11 +1,11 @@
 using MathEvent.Api.Extensions;
 using MathEvent.Database.Extensions;
+using MathEvent.ScheduledJobs.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MathEvent.ScheduledJobs.Extensions;
 
 namespace MathEvent.Api
 {
@@ -32,9 +32,9 @@ namespace MathEvent.Api
             services.ConfigureEntityServices(Environment, Configuration);
             services.ConfigureAuthorizationHandlers();
             services.ConfigureMapper();
-            services.ConfigureJson();
+            services.ConfigureControllers();
             services.ConfigureQuartz();
-            services.AddSwaggerGen();
+            services.ConfigureOpenApi();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

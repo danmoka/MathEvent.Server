@@ -7,16 +7,21 @@ using MathEvent.AuthorizationHandlers.Organizations;
 using MathEvent.Contracts;
 using MathEvent.Converters.Events.Profiles;
 using MathEvent.Converters.Identities.Profiles;
+using MathEvent.Database;
+using MathEvent.Entities.Entities;
 using MathEvent.Repository;
 using MathEvent.Services.Services;
 using MathEvent.Services.Services.DataPath;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
+using System.Security.Claims;
 
 namespace MathEvent.Api.Extensions
 {
@@ -104,10 +109,10 @@ namespace MathEvent.Api.Extensions
         }
 
         /// <summary>
-        /// Настройка json
+        /// Настройка контроллеров и json
         /// </summary>
         /// <param name="services">Зависимости</param>
-        public static void ConfigureJson(this IServiceCollection services)
+        public static void ConfigureControllers(this IServiceCollection services)
         {
             services.AddControllers().AddNewtonsoftJson(options =>
             {
@@ -126,6 +131,34 @@ namespace MathEvent.Api.Extensions
                 .GetSection("EmailConfiguration")
                 .Get<EmailConfiguration>();
             services.AddSingleton<IEmailConfiguration>(emailConfig);
+        }
+
+        /// <summary>
+        /// Настройка OpenApi
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        public static void ConfigureOpenApi(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "MathEvent.Api", Version = "v1" });
+            });
+        }
+
+        /// <summary>
+        /// Настройка пользователя
+        /// </summary>
+        /// <param name="services">Зависимости</param>
+        public static void ConfigureIndentity(this IServiceCollection services)
+        {
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>()
+                .AddDefaultTokenProviders();
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.ClaimsIdentity.UserIdClaimType = ClaimTypes.NameIdentifier;
+            });
         }
     }
 }
