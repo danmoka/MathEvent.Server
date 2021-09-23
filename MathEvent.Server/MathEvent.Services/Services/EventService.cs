@@ -690,6 +690,22 @@ namespace MathEvent.Services.Services
                         eventQuery = eventQuery.Where(f => f.OrganizationId == organizationId);
                     }
                 }
+
+                if (filters.TryGetValue("startDateFrom", out string startDateFromParam))
+                {
+                    if (DateTime.TryParse(startDateFromParam, out DateTime startDateFrom))
+                    {
+                        eventQuery = eventQuery.Where(f => f.StartDate >= startDateFrom);
+                    }
+                }
+
+                if (filters.TryGetValue("startDateTo", out string startDateToParam))
+                {
+                    if (DateTime.TryParse(startDateToParam, out DateTime startDateTo))
+                    {
+                        eventQuery = eventQuery.Where(f => f.StartDate <= startDateTo);
+                    }
+                }
             }
 
             return eventQuery;
