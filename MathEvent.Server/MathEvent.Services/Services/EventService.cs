@@ -682,6 +682,14 @@ namespace MathEvent.Services.Services
                         eventQuery = eventQuery.Where(f => f.ParentId == null);
                     }
                 }
+
+                if (filters.TryGetValue("organization", out string organizationParam))
+                {
+                    if (int.TryParse(organizationParam, out int organizationId))
+                    {
+                        eventQuery = eventQuery.Where(f => f.OrganizationId == organizationId);
+                    }
+                }
             }
 
             return eventQuery;
