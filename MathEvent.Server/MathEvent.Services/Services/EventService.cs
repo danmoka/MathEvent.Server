@@ -460,6 +460,35 @@ namespace MathEvent.Services.Services
             return ResultFactory.GetSuccessfulResult(simpleStatistics.AsEnumerable());
         }
 
+        /// <summary>
+        /// Возвращает количество событий по датам
+        /// </summary>
+        /// <param name="dates">Словарь с граничными датами периода поиска</param>
+        /// <returns>Результат с количеством событий по датам</returns>
+        public async Task<IResult<IMessage, IDictionary<DateTime, int>>> GetEventsCountByDateAsync(IDictionary<string, string> dates)
+        {
+            var startDateFrom = DateTime.Now.AddDays(-100).Date;
+            var startDateTo = DateTime.Now.AddDays(100).Date;
+
+            if (dates.TryGetValue("startDateFrom", out string startDateFromParam))
+            {
+                startDateFrom = DateTime.Parse(startDateFromParam);
+            }
+
+            if (dates.TryGetValue("startDateTo", out string startDateToParam))
+            {
+                startDateTo = DateTime.Parse(startDateToParam);
+            }
+
+            return ResultFactory.GetSuccessfulResult<IDictionary<DateTime, int>>(
+                await _repositoryWrapper
+                .Event.FindByCondition(ev => ev.StartDate.Date >= startDateFrom.Date && ev.StartDate.Date <= startDateTo.Date)
+                .GroupBy(ev => ev.StartDate.Date)
+                .Select(g => new { date = g.Key, count = g.Count() })
+                .ToDictionaryAsync(k => k.date, i => i.count)
+            );
+        }
+
         private async Task<SimpleStatistics> GetEventSubscribersByOrganizationStatistics(int eventId)
         {
             var eventResult = await GetEventEntityAsync(eventId);

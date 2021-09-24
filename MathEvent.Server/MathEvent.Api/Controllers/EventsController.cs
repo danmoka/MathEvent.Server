@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -398,6 +399,21 @@ namespace MathEvent.Api.Controllers
             {
                 return StatusCode(500, uploadResult.Messages);
             }
+        }
+
+        // GET api/Events/EventsCountByDate/?startDateFrom=value1&startDateTo=value2
+        [HttpGet("EventsCountByDate")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IDictionary<DateTime, int>>> GetEventsCountByDate([FromQuery] IDictionary<string, string> dates)
+        {
+            var eventsCountByDateResult = await _eventService.GetEventsCountByDateAsync(dates);
+
+            if (eventsCountByDateResult.Succeeded)
+            {
+                return Ok(eventsCountByDateResult.Entity);
+            }
+
+            return StatusCode(500, eventsCountByDateResult.Messages);
         }
     }
 }
