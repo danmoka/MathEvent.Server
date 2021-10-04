@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Organizations.DTOs;
-using MathEvent.Converters.Organizations.Models;
-using MathEvent.Converters.Others;
+using MathEvent.Contracts.Services;
+using MathEvent.DTOs.Organizations;
 using MathEvent.Entities.Entities;
-using MathEvent.Services.Results;
+using MathEvent.Models.Organizations;
+using MathEvent.Models.Others;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -13,108 +13,78 @@ using System.Threading.Tasks;
 
 namespace MathEvent.Services.Services
 {
-    public class OrganizationService
+    public class OrganizationService : IOrganizationService
     {
-        private readonly IRepositoryWrapper _repositoryWrapper;
-
         private readonly IMapper _mapper;
 
-        public OrganizationService(IRepositoryWrapper repositoryWrapper, IMapper mapper)
+        private readonly IRepositoryWrapper _repositoryWrapper;
+
+        public OrganizationService(IMapper mapper, IRepositoryWrapper repositoryWrapper)
         {
-            _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
+            _repositoryWrapper = repositoryWrapper;
         }
 
         /// <summary>
-        /// Возвращает результат с набором организаций
+        /// Возвращает набор организаций
         /// </summary>
         /// <param name="filters">Набор пар ключ-значение</param>
-        /// <returns>Результат с набором организаций</returns>
+        /// <returns>Набор организаций</returns>
         /// <remarks>Фильтры не используются</remarks>
-        public async Task<IResult<IMessage, IEnumerable<OrganizationReadModel>>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<OrganizationReadModel>> ListAsync(IDictionary<string, string> filters)
         {
             var organizations = await Filter(_repositoryWrapper.Organization.FindAll(), filters).ToListAsync();
+            var organizationDTOs = _mapper.Map<IEnumerable<OrganizationDTO>>(organizations);
+            var organizationReadModels = _mapper.Map<IEnumerable<OrganizationReadModel>>(organizationDTOs);
 
-            if (organizations is not null)
-            {
-                var organizaionsDTO = _mapper.Map<IEnumerable<OrganizationDTO>>(organizations);
-
-                return ResultFactory.GetSuccessfulResult(_mapper.Map<IEnumerable<OrganizationReadModel>>(organizaionsDTO));
-            }
-
-            return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<OrganizationReadModel>>(new List<IMessage>()
-            {
-                MessageFactory.GetSimpleMessage("402", "The list of organizations is empty")
-            });
+            return organizationReadModels;
         }
 
         /// <summary>
-        /// Возвращает результат с организацией с указанным id
+        /// Возвращает организацию с указанным id
         /// </summary>
         /// <param name="id">id организации</param>
-        /// <returns>Результат с организацией с указанным id</returns>
-        public async Task<IResult<IMessage, OrganizationReadModel>> RetrieveAsync(int id)
+        /// <returns>Организация с указанным id</returns>
+        public async Task<OrganizationReadModel> RetrieveAsync(int id)
         {
-            var organizationResult = await GetOrganizationEntityAsync(id);
+            var organization = await GetOrganizationEntityAsync(id);
 
-            if (!organizationResult.Succeeded)
+            if (organization is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<OrganizationReadModel>(organizationResult.Messages);
+                return null;
             }
 
-            var organizationEntity = organizationResult.Entity;
+            var organizationDTO = _mapper.Map<OrganizationDTO>(organization);
+            var organizationReadModel = _mapper.Map<OrganizationReadModel>(organizationDTO);
 
-            if (organizationEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<OrganizationReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"Organization with id = {id} not found")
-                });
-            }
-
-            var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
-
-            return ResultFactory.GetSuccessfulResult(_mapper.Map<OrganizationReadModel>(organizationDTO));
+            return organizationReadModel;
         }
 
         /// <summary>
         /// Создает организацию
         /// </summary>
         /// <param name="createModel">Модель создания организации</param>
-        /// <returns>Результат создания организации</returns>
-        public async Task<IResult<IMessage, Organization>> CreateAsync(OrganizationCreateModel createModel)
+        /// <returns>Созданная организация</returns>
+        public async Task<OrganizationReadModel> CreateAsync(OrganizationCreateModel createModel)
         {
-            if (createModel.ManagerId is null)
+            if (string.IsNullOrEmpty(createModel.ManagerId))
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "Manager id is null")
-                });
+                throw new Exception("Manager id is empty");
             }
 
             var organizationEntity = _mapper.Map<Organization>(_mapper.Map<OrganizationDTO>(createModel));
-
-            if (organizationEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when mapping model {createModel.Name}")
-                });
-            }
-
             var organizationEntityDb = await _repositoryWrapper.Organization.CreateAsync(organizationEntity);
 
             if (organizationEntityDb is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when creating entity {organizationEntity.Name}")
-                });
+                throw new Exception("Errors while creating organization");
             }
 
             await _repositoryWrapper.SaveAsync();
 
-            return ResultFactory.GetSuccessfulResult(organizationEntityDb);
+            var organizationReadModel = _mapper.Map<OrganizationReadModel>(_mapper.Map<OrganizationDTO>(organizationEntityDb));
+
+            return organizationReadModel;
         }
 
         /// <summary>
@@ -122,141 +92,101 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id организации</param>
         /// <param name="updateModel">Модель обновления организации</param>
-        /// <returns>Результат обновления организации</returns>
-        public async Task<IResult<IMessage, Organization>> UpdateAsync(int id, OrganizationUpdateModel updateModel)
+        /// <returns>Обновленная организация</returns>
+        public async Task<OrganizationReadModel> UpdateAsync(int id, OrganizationUpdateModel updateModel)
         {
             if (updateModel.ManagerId is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "Manager id is null")
-                });
+                throw new Exception("Manager id is empty");
             }
 
-            var organizationResult = await GetOrganizationEntityAsync(id);
+            var organization = await GetOrganizationEntityAsync(id);
 
-            if (!organizationResult.Succeeded)
+            if (organization is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(organizationResult.Messages);
+                throw new Exception($"Organization with id={id} not exists");
             }
 
-            var organizationEntity = organizationResult.Entity;
-
-            if (organizationEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"Organization with the ID {id} not found")
-                });
-            }
-
-            var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
+            var organizationDTO = _mapper.Map<OrganizationDTO>(organization);
             _mapper.Map(updateModel, organizationDTO);
-            _mapper.Map(organizationDTO, organizationEntity);
+            _mapper.Map(organizationDTO, organization);
 
-            _repositoryWrapper.Organization.Update(organizationEntity);
+            _repositoryWrapper.Organization.Update(organization);
             await _repositoryWrapper.SaveAsync();
 
-            return ResultFactory.GetSuccessfulResult(organizationEntity);
+            var organizationReadModel = _mapper.Map<OrganizationReadModel>(_mapper.Map<OrganizationDTO>(organization));
+
+            return organizationReadModel;
         }
 
         /// <summary>
         /// Удаляет организацию
         /// </summary>
         /// <param name="id">id организации</param>
-        /// <returns>Результат удаления организации</returns>
-        public async Task<IResult<IMessage, Organization>> DeleteAsync(int id)
+        /// <returns></returns>
+        public async Task DeleteAsync(int id)
         {
-            var organizationResult = await GetOrganizationEntityAsync(id);
+            var organization = await GetOrganizationEntityAsync(id);
 
-            if (!organizationResult.Succeeded)
+            if (organization is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(organizationResult.Messages);
+                throw new Exception($"Organization with id={id} not exists");
             }
 
-            var organizationEntity = organizationResult.Entity;
-
-            if (organizationEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"Organization with the ID {id} not found")
-                });
-
-            }
-
-            _repositoryWrapper.Organization.Delete(organizationEntity);
+            _repositoryWrapper.Organization.Delete(organization);
             await _repositoryWrapper.SaveAsync();
-
-            return ResultFactory.GetSuccessfulResult((Organization)null);
         }
 
         /// <summary>
-        /// Возвращает результат с организацией с указанным id
+        /// Возвращает организацию с указанным id
         /// </summary>
         /// <param name="id">id организации</param>
-        /// <returns>Результат с организацией с указанным id</returns>
-        public async Task<IResult<IMessage, Organization>> GetOrganizationEntityAsync(int id)
+        /// <returns>Организация</returns>
+        private async Task<Organization> GetOrganizationEntityAsync(int id)
         {
             var organization = await _repositoryWrapper.Organization
                 .FindByCondition(org => org.Id == id)
                 .SingleOrDefaultAsync();
 
-            if (organization is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<Organization>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"Organization with id = {id} not found")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(organization);
+            return organization;
         }
 
         /// <summary>
-        /// Возвращает результат с набором статистик по организациям
+        /// Возвращает набор статистик по организациям
         /// </summary>
         /// <param name="filters">Набор параметров в виде пар ключ-значение</param>
-        /// <returns>Результат с набором статистик по организациям</returns>
+        /// <returns>Набор статистик по организациям</returns>
         /// <remarks>Фильтры не используются</remarks>
-        public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetSimpleStatistics(IDictionary<string, string> filters)
+        public async Task<IEnumerable<ChartData>> GetOrganizationsStatistics(IDictionary<string, string> filters)
         {
-            var simpleStatistics = new List<SimpleStatistics>();
+            var statistics = new List<ChartData>();
             var mostPopularOrganizationStatistics = await GetMostPopularOrganizationStatistics();
 
             if (mostPopularOrganizationStatistics is not null)
             {
-                simpleStatistics.Add(mostPopularOrganizationStatistics);
+                statistics.Add(mostPopularOrganizationStatistics);
             }
 
             var mostProductiveOrganizationsStatistics = await GetMostProductiveOrganizationsStatistics();
 
             if (mostProductiveOrganizationsStatistics is not null)
             {
-                simpleStatistics.Add(mostProductiveOrganizationsStatistics);
+                statistics.Add(mostProductiveOrganizationsStatistics);
             }
 
             var countOfUsersInOrganizationStatistics = await GetCountOfUsersInOrganizationStatistics();
 
             if (countOfUsersInOrganizationStatistics is not null)
             {
-                simpleStatistics.Add(countOfUsersInOrganizationStatistics);
+                statistics.Add(countOfUsersInOrganizationStatistics);
             }
 
-            if (simpleStatistics.Count < 1)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<SimpleStatistics>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "Errors when getting a statistics for organizations")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(simpleStatistics.AsEnumerable());
+            return statistics;
         }
 
-        private async Task<SimpleStatistics> GetMostProductiveOrganizationsStatistics()
+        private async Task<ChartData> GetMostProductiveOrganizationsStatistics()
         {
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = $"Самые активные организации по количеству созданных событий за последний год",
                 Type = ChartTypes.Bar,
@@ -275,17 +205,14 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organizationResult = await GetOrganizationEntityAsync(entry.Key.Value);
+                    var organization = await GetOrganizationEntityAsync(entry.Key.Value);
 
-                    if (organizationResult.Succeeded)
+                    if (organization is null)
                     {
-                        var organization = organizationResult.Entity;
-
-                        if (organization is not null)
-                        {
-                            name = organization.Name;
-                        }
+                        throw new Exception($"Organization with id={entry.Key.Value} not exists");
                     }
+
+                    name = organization.Name;
                 }
 
                 statistics.Data.Add(
@@ -299,9 +226,9 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private async Task<SimpleStatistics> GetMostPopularOrganizationStatistics()
+        private async Task<ChartData> GetMostPopularOrganizationStatistics()
         {
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = $"Топ самых популярных организаций по количеству подписчиков на их события за последний год",
                 Data = new List<ChartDataPiece>()
@@ -347,17 +274,14 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organizationResult = await GetOrganizationEntityAsync(entry.Key);
+                    var organization = await GetOrganizationEntityAsync(entry.Key);
 
-                    if (organizationResult.Succeeded)
+                    if (organization is null)
                     {
-                        var organization = organizationResult.Entity;
-
-                        if (organization is not null)
-                        {
-                            name = organization.Name;
-                        }
+                        throw new Exception($"Organization with id={entry.Key} not exists");
                     }
+
+                    name = organization.Name;
                 }
 
                 statistics.Data.Add(
@@ -371,9 +295,9 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private async Task<SimpleStatistics> GetCountOfUsersInOrganizationStatistics()
+        private async Task<ChartData> GetCountOfUsersInOrganizationStatistics()
         {
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = $"Количество представителей организаций",
                 Data = new List<ChartDataPiece>(),
@@ -392,17 +316,14 @@ namespace MathEvent.Services.Services
 
                 if (entry.Key != -1)
                 {
-                    var organizationResult = await GetOrganizationEntityAsync(entry.Key.Value);
+                    var organization = await GetOrganizationEntityAsync(entry.Key.Value);
 
-                    if (organizationResult.Succeeded)
+                    if (organization is null)
                     {
-                        var organization = organizationResult.Entity;
-
-                        if (organization is not null)
-                        {
-                            name = organization.Name;
-                        }
+                        throw new Exception($"Organization with id={entry.Key.Value} not exists");
                     }
+
+                    name = organization.Name;
                 }
 
                 statistics.Data.Add(

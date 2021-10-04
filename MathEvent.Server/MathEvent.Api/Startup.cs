@@ -1,6 +1,11 @@
 using MathEvent.Api.Extensions;
+using MathEvent.AuthorizationHandlers.Extension;
+using MathEvent.Converters.Extension;
 using MathEvent.Database.Extensions;
+using MathEvent.Repository.Extensions;
 using MathEvent.ScheduledJobs.Extensions;
+using MathEvent.Services.Extension;
+using MathEvent.Validation.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -29,9 +34,10 @@ namespace MathEvent.Api
             services.ConfigureAuthorization();
             services.ConfigureRepositoryWrapper();
             services.ConfigureEmail(Configuration);
-            services.ConfigureEntityServices(Environment, Configuration);
+            services.ConfigureEntityServices(Environment.WebRootPath, Configuration.GetValue<long>("FileSizeLimit"));
             services.ConfigureAuthorizationHandlers();
             services.ConfigureMapper();
+            services.ConfigureValidation();
             services.ConfigureControllers();
             services.ConfigureQuartz();
             services.ConfigureOpenApi();

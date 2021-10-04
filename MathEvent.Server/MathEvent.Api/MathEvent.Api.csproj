@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.1" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="5.0.1" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.2" />
@@ -19,10 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
     <ProjectReference Include="..\MathEvent.Handlers\MathEvent.AuthorizationHandlers.csproj" />
+    <ProjectReference Include="..\MathEvent.Repository\MathEvent.Repository.csproj" />
     <ProjectReference Include="..\MathEvent.ScheduledJobs\MathEvent.ScheduledJobs.csproj" />
     <ProjectReference Include="..\MathEvent.Services\MathEvent.Services.csproj" />
+    <ProjectReference Include="..\MathEvent.Validation\MathEvent.Validation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,8 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Contracts\MathEvent.Contracts.csproj" />
-    <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
-    <ProjectReference Include="..\MathEvent.Services\MathEvent.Services.csproj" />
   </ItemGroup>
 
 </Project>

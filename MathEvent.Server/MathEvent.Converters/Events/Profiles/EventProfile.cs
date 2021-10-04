@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Events.DTOs;
-using MathEvent.Converters.Events.Models;
-using MathEvent.Converters.Identities.DTOs;
-using MathEvent.Converters.Organizations.DTOs;
+using MathEvent.DTOs.Events;
+using MathEvent.DTOs.Organizations;
+using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
+using MathEvent.Models.Events;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,7 +27,6 @@ namespace MathEvent.Converters.Events.Profiles
                 .ForMember(dest => dest.Organization, opt => opt.MapFrom<IdToOrganizationDTOResolver>());
 
             // DTO -> Model
-            CreateMap<EventDTO, EventSimpleReadModel>(); // чтение
             CreateMap<EventDTO, EventReadModel>(); // чтение
             CreateMap<EventWithUsersDTO, EventUpdateModel>()
                 .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<UserDTOToIdResolver>())

@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Files.DTOs;
-using MathEvent.Converters.Files.Models;
-using MathEvent.Converters.Others;
+using MathEvent.Contracts.Services;
+using MathEvent.DTOs.Files;
 using MathEvent.Entities.Entities;
-using MathEvent.Services.Results;
-using MathEvent.Services.Services.DataPath;
+using MathEvent.Models.Files;
+using MathEvent.Models.Others;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -18,96 +17,85 @@ namespace MathEvent.Services.Services
     /// <summary>
     /// Сервис по выполнению действий над файлами
     /// </summary>
-    public class FileService
+    public class FileService : IFileService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
         private readonly IMapper _mapper;
 
-        private readonly DataPathService _dataPathService;
+        private readonly IDataPathWorker _dataPathWorker;
 
         private const uint _breadcrumbRecursionDepth = 8;
 
-        public FileService(IRepositoryWrapper repositoryWrapper, IMapper mapper, DataPathService dataPathService)
+        public FileService(
+            IRepositoryWrapper repositoryWrapper,
+            IMapper mapper,
+            IDataPathWorker dataPathWorker)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _dataPathService = dataPathService;
+            _dataPathWorker = dataPathWorker;
         }
 
         /// <summary>
-        /// Предоставляет результат с набором моделей на чтение файла
+        /// Предоставляет набор моделей файлов
         /// </summary>
-        /// <param name="filters">Набор параметров - пар ключ-значение, которым должны соответствовать файлы</param>
-        /// <returns>Результат с набором моделей на чтение файла</returns>
+        /// <param name="filters">Набор параметров - пар ключ-значение, для фильтрации файлов</param>
+        /// <returns>Набор моделей файлов</returns>
         /// <remarks>Реализована фильтрация только по параметрам "parent" и "owner"</remarks>
-        public async Task<IResult<IMessage, IEnumerable<FileReadModel>>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<FileReadModel>> ListAsync(IDictionary<string, string> filters)
         {
             var files = await Filter(_repositoryWrapper.File.FindAll(), filters).ToListAsync();
+            var fileDTOs = _mapper.Map<IEnumerable<FileDTO>>(files);
+            var fileReadModels = _mapper.Map<IEnumerable<FileReadModel>>(fileDTOs);
 
-            if (files is not null)
-            {
-                var filesDTO = _mapper.Map<IEnumerable<FileDTO>>(files);
-
-                return ResultFactory.GetSuccessfulResult(_mapper.Map<IEnumerable<FileReadModel>>(filesDTO));
-            }
-
-            return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<FileReadModel>>(new List<IMessage>()
-            {
-                MessageFactory.GetSimpleMessage("402", "The list of files is empty")
-            });
+            return fileReadModels;
         }
 
         /// <summary>
-        /// Возвращает результат с моделью на чтение файла
+        /// Возвращает модель файл
         /// </summary>
         /// <param name="id">id файла</param>
-        /// <returns>Результат с моделью на чтение файла</returns>
-        public async Task<IResult<IMessage, FileReadModel>> RetrieveAsync(int id)
+        /// <returns>Модель файла</returns>
+        public async Task<FileReadModel> RetrieveAsync(int id)
         {
-            var fileResult = await GetFileEntityAsync(id);
-
-            if (!fileResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(fileResult.Messages);
-            }
-
-            var file = fileResult.Entity;
+            var file = await GetFileEntityAsync(id);
 
             if (file is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"File with the ID {id} not found")
-                });
+                return null;
             }
 
-            return ResultFactory.GetSuccessfulResult(_mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(file)));
+            var fileDTO = _mapper.Map<FileDTO>(file);
+            var fileReadModel = _mapper.Map<FileReadModel>(fileDTO);
+
+            return fileReadModel;
         }
 
         /// <summary>
         /// Создает файл
         /// </summary>
         /// <param name="createModel">Модель создания файла</param>
-        /// <returns>Результат создания файла</returns>
-        public async Task<IResult<IMessage, FileReadModel>> CreateAsync(FileCreateModel createModel)
+        /// <returns>Модель созданного файла</returns>
+        public async Task<FileReadModel> CreateAsync(FileCreateModel createModel)
         {
             var fileDTO = _mapper.Map<FileDTO>(createModel);
             fileDTO.Date = DateTime.Now;
             var fileEntity = _mapper.Map<File>(fileDTO);
 
-            if (fileEntity is null)
+            var fileEntityDb = await _repositoryWrapper.File.CreateAsync(fileEntity);
+
+            if (fileEntityDb is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, "Errors when mapping model")
-                });
+                throw new Exception("Errors while creating file");
             }
 
-            await _repositoryWrapper.File.CreateAsync(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return ResultFactory.GetSuccessfulResult(_mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(fileEntity)));
+            var createdFileDTO = _mapper.Map<FileDTO>(fileEntityDb);
+            var createdFileReadModel = _mapper.Map<FileReadModel>(createdFileDTO);
+
+            return createdFileReadModel;
         }
 
         /// <summary>
@@ -115,77 +103,54 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id файла</param>
         /// <param name="updateModel">Модель обновления файла</param>
-        /// <returns>Результат обновления файла</returns>
-        public async Task<IResult<IMessage, FileReadModel>> UpdateAsync(int id, FileUpdateModel updateModel)
+        /// <returns>Модель обновленного файла</returns>
+        public async Task<FileReadModel> UpdateAsync(int id, FileUpdateModel updateModel)
         {
-            var fileResult = await GetFileEntityAsync(id);
+            var file = await GetFileEntityAsync(id);
 
-            if (!fileResult.Succeeded)
+            if (file is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(fileResult.Messages);
+                throw new Exception($"File with id={id} is not exists");
             }
 
-            var fileEntity = fileResult.Entity;
-
-            if (fileEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"File with the ID {id} not found")
-                });
-            }
-
-            var fileDTO = _mapper.Map<FileDTO>(fileEntity);
+            var fileDTO = _mapper.Map<FileDTO>(file);
             _mapper.Map(updateModel, fileDTO);
-            _mapper.Map(fileDTO, fileEntity);
+            _mapper.Map(fileDTO, file);
 
-            _repositoryWrapper.File.Update(fileEntity);
+            _repositoryWrapper.File.Update(file);
             await _repositoryWrapper.SaveAsync();
 
-            return ResultFactory.GetSuccessfulResult(_mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(fileEntity)));
+            var fileReadModel = _mapper.Map<FileReadModel>(fileDTO);
+
+            return fileReadModel;
         }
 
         /// <summary>
         /// Удаляет файл
         /// </summary>
         /// <param name="id">id файла</param>
-        /// <returns>Результат удаления файла</returns>
-        public async Task<IResult<IMessage, FileReadModel>> DeleteAsync(int id)
+        /// <returns></returns>
+        public async Task DeleteAsync(int id)
         {
-            var fileResult = await GetFileEntityAsync(id);
+            var file = await GetFileEntityAsync(id);
 
-            if (!fileResult.Succeeded)
+            if (file is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(fileResult.Messages);
+                throw new Exception($"File with id={id} is not exists");
             }
 
-            var fileEntity = fileResult.Entity;
-
-            if (fileEntity is null)
+            if (file.Path is not null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"File with the ID {id} not found")
-                });
-            }
+                _dataPathWorker.DeleteFile(file.Path, out string deleteMessage);
 
-            if (fileEntity.Path is not null)
-            {
-                _dataPathService.DeleteFile(fileEntity.Path, out string deleteMessage);
-
-                if (deleteMessage is not null)
+                if (string.IsNullOrEmpty(deleteMessage))
                 {
-                    return ResultFactory.GetUnsuccessfulMessageResult<FileReadModel>(new List<IMessage>()
-                    {
-                        MessageFactory.GetSimpleMessage(null, deleteMessage)
-                    });
+                    throw new Exception(deleteMessage);
                 }
             }
 
-            _repositoryWrapper.File.Delete(fileEntity);
+            _repositoryWrapper.File.Delete(file);
             await _repositoryWrapper.SaveAsync();
-
-            return ResultFactory.GetSuccessfulResult((FileReadModel)null);
         }
 
         /// <summary>
@@ -193,195 +158,64 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="file">Файл</param>
         /// <param name="fileCreateModel">Модель создания файла</param>
-        /// <returns>Результат загрузки файла</returns>
-        public async Task<IResult<IMessage, File>> Upload(IFormFile file, FileCreateModel fileCreateModel)
+        /// <returns>Модель файла</returns>
+        public async Task<FileReadModel> Upload(IFormFile file, FileCreateModel fileCreateModel)
         {
-            var fileResult = await _dataPathService.Create(file, fileCreateModel.AuthorId);
-
-            if (!fileResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<File>(fileResult.Messages);
-            }
-
+            var filePath = await _dataPathWorker.Create(file, fileCreateModel.AuthorId);
             var fileDTO = _mapper.Map<FileDTO>(fileCreateModel);
-
-            if (fileDTO is null)
-            {
-                _dataPathService.DeleteFile(fileResult.Entity, out string deleteMessage);
-
-                var messageResult = ResultFactory.GetUnsuccessfulMessageResult<File>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when mapping model {fileCreateModel.Name}")
-                });
-
-                if (deleteMessage is not null)
-                {
-                    messageResult.Messages = messageResult.Messages.Append(MessageFactory.GetSimpleMessage(null, deleteMessage));
-                }
-
-                return messageResult;
-            }
-
             fileDTO.Extension = System.IO.Path.GetExtension(file.FileName);
-            fileDTO.Path = fileResult.Entity;
+            fileDTO.Path = filePath;
             fileDTO.Date = DateTime.Now;
 
             var fileEntity = _mapper.Map<File>(fileDTO);
 
-            if (fileEntity is null)
+            var createdFile = await _repositoryWrapper.File.CreateAsync(fileEntity);
+
+            if (createdFile is null)
             {
-                _dataPathService.DeleteFile(fileDTO.Path, out string deleteMessage);
-                var messageResult = ResultFactory.GetUnsuccessfulMessageResult<File>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when mapping DTO {fileDTO.Name}")
-                });
-
-                if (deleteMessage is not null)
-                {
-                    messageResult.Messages = messageResult.Messages.Append(MessageFactory.GetSimpleMessage(null, deleteMessage));
-                }
-
-                return messageResult;
+                throw new Exception("Errors while uploading file");
             }
 
-            await _repositoryWrapper.File.CreateAsync(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return ResultFactory.GetSuccessfulResult(fileEntity);
+            var fileReadModel = _mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(createdFile));
+
+            return fileReadModel;
         }
 
         /// <summary>
         /// Выгружает файл
         /// </summary>
         /// <param name="id">id файла</param>
-        /// <returns>Результат с потоком файла</returns>
-        public async Task<IResult<IMessage, System.IO.FileStream>> Download(int id)
+        /// <returns>Поток файла</returns>
+        public async Task<System.IO.FileStream> Download(int id)
         {
-            var fileResult = await GetFileEntityAsync(id);
-
-            if (!fileResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<System.IO.FileStream>(fileResult.Messages);
-            }
-
-            var file = fileResult.Entity;
+            var file = await GetFileEntityAsync(id);
 
             if (file is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<System.IO.FileStream>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"File with the ID {id} not found")
-                });
+                throw new Exception($"File with id={id} is not exists");
             }
 
-            return ResultFactory.GetSuccessfulResult(_dataPathService.GetFileStream(file.Path));
-        }
+            var fileStream = _dataPathWorker.GetFileStream(file.Path);
 
-        /// <summary>
-        /// Проверяет файл на корректность
-        /// </summary>
-        /// <param name="file">Файл</param>
-        /// <returns>Результат проверки</returns>
-        public IResult<IMessage, File> IsCorrectFile(IFormFile file)
-        {
-            var messages = new List<IMessage>();
-
-            if (!_dataPathService.IsPermittedExtension(file))
-            {
-                messages.Add(MessageFactory.GetSimpleMessage(null, $"Incorrect extension: {file.FileName}"));
-            }
-
-            if (!_dataPathService.IsCorrectSize(file))
-            {
-                messages.Add(MessageFactory.GetSimpleMessage(null, $"Wrong size: {file.FileName} ({file.Length})"));
-            }
-
-            if (messages.Count < 1)
-            {
-                return ResultFactory.GetSuccessfulResult((File)null);
-            }
-            else
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<File>(messages);
-            }
-        }
-
-        /// <summary>
-        /// Проверяет файл изображения на корректность
-        /// </summary>
-        /// <param name="file">Файл</param>
-        /// <returns>Результат проверки</returns>
-        public IResult<IMessage, File> IsCorrectImage(IFormFile file)
-        {
-            var messages = new List<IMessage>();
-
-            if (!_dataPathService.IsPermittedImageExtension(file))
-            {
-                messages.Add(MessageFactory.GetSimpleMessage(null, $"Incorrect extension: {file.FileName}"));
-            }
-
-            if (!_dataPathService.IsCorrectSize(file))
-            {
-                messages.Add(MessageFactory.GetSimpleMessage(null, $"Wrong size: {file.FileName} ({file.Length})"));
-            }
-
-            if (messages.Count < 1)
-            {
-                return ResultFactory.GetSuccessfulResult((File)null);
-            }
-            else
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<File>(messages);
-            }
-        }
-
-        /// <summary>
-        /// Возвращает результат с файлом с указанным id
-        /// </summary>
-        /// <param name="id">id файла</param>
-        /// <returns>Результат с файлом</returns>
-        public async Task<IResult<IMessage, File>> GetFileEntityAsync(int id)
-        {
-            var file = await _repositoryWrapper.File
-                .FindByCondition(f => f.Id == id)
-                .SingleOrDefaultAsync();
-
-            if (file is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<File>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"File with the ID {id} not found")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(file);
+            return fileStream;
         }
 
         /// <summary>
         /// Ищет дочерние файлы
         /// </summary>
         /// <param name="id">id файла</param>
-        /// <returns>Результат поиска. Если файл не имеет дочерних файлов, то возвращается результат неуспеха</returns>
-        public async Task<IResult<IMessage, IEnumerable<File>>> GetChildFiles(int id)
+        /// <returns>Дочерние файлы</returns>
+        public async Task<IEnumerable<FileReadModel>> GetChildFiles(int id)
         {
             var childFiles = await _repositoryWrapper.File
                 .FindByCondition(f => f.ParentId == id)
                 .ToListAsync();
+            var fileDTOs = _mapper.Map<IEnumerable<FileDTO>>(childFiles);
+            var fileReadModels = _mapper.Map<IEnumerable<FileReadModel>>(fileDTOs);
 
-            if (childFiles.Count < 1)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<File>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"File with id = {id} has no child files")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulMessageResult(
-                new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"File with id = {id} has child files")
-                },
-                childFiles.AsEnumerable());
+            return fileReadModels;
         }
 
         /// <summary>
@@ -389,34 +223,25 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id файла, для которого требуется найти хлебные крошки</param>
         /// <returns>Набор-цепочка родительских файлов в виде хлебных крошек</returns>
-        public async Task<IResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        public async Task<IEnumerable<Breadcrumb>> GetBreadcrumbs(int id)
         {
+            var file = await GetFileEntityAsync(id);
+
+            if (file is null)
+            {
+                throw new Exception($"File with id={id} is not exists");
+            }
+
             var breadcrumbs = new Stack<Breadcrumb>();
-            var fileResult = await GetFileEntityAsync(id);
-
-            if (!fileResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<Breadcrumb>>(fileResult.Messages);
-            }
-
-            var currentFile = fileResult.Entity;
-
-            if (currentFile is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<Breadcrumb>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"File with the ID {id} not found")
-                });
-            }
 
             breadcrumbs.Push(new Breadcrumb
             {
-                Id = currentFile.Id,
-                Name = currentFile.Name
+                Id = file.Id,
+                Name = file.Name
             });
 
             var parent = await _repositoryWrapper.File
-                .FindByCondition(e => e.Id == currentFile.ParentId)
+                .FindByCondition(e => e.Id == file.ParentId)
                 .SingleOrDefaultAsync();
             var depth = _breadcrumbRecursionDepth;
 
@@ -433,7 +258,21 @@ namespace MathEvent.Services.Services
                 depth--;
             }
 
-            return ResultFactory.GetSuccessfulResult(breadcrumbs.AsEnumerable());
+            return breadcrumbs;
+        }
+
+        /// <summary>
+        /// Возвращает сущность файл с указанным id
+        /// </summary>
+        /// <param name="id">id файла</param>
+        /// <returns>Сущность файла</returns>
+        private async Task<File> GetFileEntityAsync(int id)
+        {
+            var file = await _repositoryWrapper.File
+                .FindByCondition(f => f.Id == id)
+                .SingleOrDefaultAsync();
+
+            return file;
         }
 
         private static IQueryable<File> Filter(IQueryable<File> filesQuery, IDictionary<string, string> filters)

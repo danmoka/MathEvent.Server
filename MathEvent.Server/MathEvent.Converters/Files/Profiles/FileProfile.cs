@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using MathEvent.Converters.Files.DTOs;
-using MathEvent.Converters.Files.Models;
+using MathEvent.DTOs.Files;
 using MathEvent.Entities.Entities;
+using MathEvent.Models.Files;
 
 namespace MathEvent.Converters.Files.Profiles
 {

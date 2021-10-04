@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Identities.DTOs;
-using MathEvent.Converters.Organizations.DTOs;
-using MathEvent.Converters.Organizations.Models;
+using MathEvent.DTOs.Organizations;
+using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
+using MathEvent.Models.Organizations;
 using System.Linq;
 
 namespace MathEvent.Converters.Organizations.Profiles

@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Events.DTOs;
-using MathEvent.Converters.Events.Models;
-using MathEvent.Converters.Files.Models;
-using MathEvent.Converters.Others;
+using MathEvent.Contracts.Services;
+using MathEvent.DTOs.Events;
 using MathEvent.Entities.Entities;
-using MathEvent.Services.Results;
-using MathEvent.Services.Services.DataPath;
+using MathEvent.Models.Events;
+using MathEvent.Models.Files;
+using MathEvent.Models.Others;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -20,13 +19,13 @@ namespace MathEvent.Services.Services
     /// <summary>
     /// Сервис по выполнению действий над событиями
     /// </summary>
-    public class EventService
+    public class EventService : IEventService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
         private readonly IMapper _mapper;
 
-        private readonly DataPathService _dataPathService;
+        private readonly IDataPathWorker _dataPathService;
 
         private const uint _breadcrumbRecursionDepth = 8;
 
@@ -35,7 +34,7 @@ namespace MathEvent.Services.Services
         public EventService(
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
-            DataPathService dataPathService)
+            IDataPathWorker dataPathService)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -43,84 +42,60 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
-        /// Возвращает результат с набором событий, соответствующих фильтрам
+        /// Возвращает набор событий, соответствующих фильтрам
         /// </summary>
         /// <param name="filters">Набор пар ключ-значение</param>
-        /// <returns>Результат с набором событий, соответствующих фильтрам</returns>
-        /// <remarks>Доступен только ключ "parent" с указанием значения - id родительского события</remarks>
-        public async Task<IResult<IMessage, IEnumerable<EventReadModel>>> ListAsync(IDictionary<string, string> filters)
+        /// <returns>Набор событий, соответствующих фильтрам</returns>
+        public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
         {
             var events = await Filter(_repositoryWrapper.Event.FindAll(), filters)
                 .OrderBy(e => e.StartDate)
                 .ToListAsync();
 
-            if (events is not null)
-            {
-                var eventsDTO = _mapper.Map<IEnumerable<EventDTO>>(events);
+            var eventDTOs = _mapper.Map<IEnumerable<EventDTO>>(events);
+            var eventReadModels = _mapper.Map<IEnumerable<EventReadModel>>(eventDTOs);
 
-                return ResultFactory.GetSuccessfulResult(_mapper.Map<IEnumerable<EventReadModel>>(eventsDTO));
-            }
-
-            return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<EventReadModel>>(new List<IMessage>()
-            {
-                MessageFactory.GetSimpleMessage("402", "The list of events is empty")
-            });
+            return eventReadModels;
         }
 
         /// <summary>
-        /// Возвращает результат с событием с указанным id
+        /// Возвращает событие по указанному id
         /// </summary>
         /// <param name="id">id события, которое требуется получить</param>
-        /// <returns>Результат с событием с указанным id</returns>
-        public async Task<IResult<IMessage, EventWithUsersReadModel>> RetrieveAsync(int id)
+        /// <returns>Событие с указанным id</returns>
+        public async Task<EventWithUsersReadModel> RetrieveAsync(int id)
         {
-            var eventResult = await GetEventEntityAsync(id);
+            var eventEntity = await GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (eventEntity is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(eventResult.Messages);
+                return null;
             }
 
-            var eventEntity = eventResult.Entity;
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
 
-            return ResultFactory.GetSuccessfulResult(eventReadModel);
+            return eventReadModel;
         }
 
         /// <summary>
         /// Создает событие
         /// </summary>
         /// <param name="createModel">Модель нового события</param>
-        /// <returns>Результат создания события</returns>
-        public async Task<IResult<IMessage, EventWithUsersReadModel>> CreateAsync(EventCreateModel createModel)
+        /// <returns>Cозданное событие</returns>
+        public async Task<EventWithUsersReadModel> CreateAsync(EventCreateModel createModel)
         {
-            if (createModel.AuthorId is null)
+            if (string.IsNullOrEmpty(createModel.AuthorId))
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "Author id is null")
-                });
+                throw new Exception("AuthorId is empty");
             }
 
             var eventEntity = _mapper.Map<Event>(_mapper.Map<EventDTO>(createModel));
-
-            if (eventEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when mapping model {createModel.Name}")
-                });
-            }
-
             var eventEntityDb = await _repositoryWrapper.Event.CreateAsync(eventEntity);
 
             if (eventEntityDb is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when creating entity {eventEntity.Name}")
-                });
+                throw new Exception("Errors while creating event");
             }
 
             await _repositoryWrapper.SaveAsync();
@@ -131,7 +106,7 @@ namespace MathEvent.Services.Services
 
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
 
-            return ResultFactory.GetSuccessfulResult(eventReadModel);
+            return eventReadModel;
         }
 
         /// <summary>
@@ -139,25 +114,20 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id события, которое требуется обновить</param>
         /// <param name="updateModel">Модель для обновления события</param>
-        /// <returns>Результат обновления события</returns>
-        public async Task<IResult<IMessage, EventWithUsersReadModel>> UpdateAsync(int id, EventUpdateModel updateModel)
+        /// <returns>Обновленное событие</returns>
+        public async Task<EventWithUsersReadModel> UpdateAsync(int id, EventUpdateModel updateModel)
         {
             if (updateModel.Managers.Count < 1)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-                    {
-                        MessageFactory.GetSimpleMessage("400", "The list of event managers is empty")
-                    });
+                throw new Exception("The number of managers is less than 1");
             }
 
-            var eventResult = await GetEventEntityAsync(id);
+            var eventEntity = await GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (eventEntity is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(eventResult.Messages);
+                throw new Exception($"Event with id={id} is not exists");
             }
-
-            var eventEntity = eventResult.Entity;
 
             if (updateModel.Hierarchy is null && eventEntity.Hierarchy is not null)
             {
@@ -167,15 +137,14 @@ namespace MathEvent.Services.Services
 
                 if (children.Count > 0)
                 {
-                    return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-                    {
-                        MessageFactory.GetSimpleMessage("400", $"Event with the ID {id} has child elements")
-                    });
+                    throw new Exception($"Event with the id={id} has child elements");
                 }
             }
 
             await CreateNewSubscriptions(updateModel.ApplicationUsers, id);
+
             await CreateNewManagers(updateModel.Managers, id);
+
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             _mapper.Map(updateModel, eventDTO);
             _mapper.Map(eventDTO, eventEntity);
@@ -183,26 +152,27 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.Event.Update(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
-            return ResultFactory.GetSuccessfulResult(_mapper.Map<EventWithUsersReadModel>(eventDTO));
+            var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+
+            return eventReadModel;
         }
 
         /// <summary>
         /// Удаляет событие с указанным id
         /// </summary>
         /// <param name="id">id события, которое требуется удалить</param>
-        /// <returns>Результат удаления события</returns>
+        /// <returns></returns>
         /// <remarks>При удалении события удаляется аватар события</remarks>
         /// TODO: удаляются ли файлы события?
-        public async Task<IResult<IMessage, EventWithUsersReadModel>> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            var eventResult = await GetEventEntityAsync(id);
+            var eventEntity = await GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (eventEntity is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(eventResult.Messages);
+                throw new Exception($"Event with id={id} is not exists");
             }
 
-            var eventEntity = eventResult.Entity;
             var avatarPath = eventEntity.AvatarPath;
 
             _repositoryWrapper.Event.Delete(eventEntity);
@@ -214,14 +184,9 @@ namespace MathEvent.Services.Services
 
                 if (deleteMessage is not null)
                 {
-                    return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>()
-                    {
-                        MessageFactory.GetSimpleMessage("400", deleteMessage)
-                    });
+                    throw new Exception(deleteMessage);
                 }
             }
-
-            return ResultFactory.GetSuccessfulResult((EventWithUsersReadModel)null);
         }
 
         /// <summary>
@@ -230,23 +195,22 @@ namespace MathEvent.Services.Services
         /// <param name="id">id события</param>
         /// <param name="file">Файл - аватар события</param>
         /// <param name="fileCreateModel">Модель создания события</param>
-        /// <returns>Результат загрузки аватара для события</returns>
+        /// <returns>Модель события с обновленным аватаром</returns>
         /// <remarks>Предыдущий аватар удаляется. Модель создания события требуется для передачи данных об авторе</remarks>
-        public async Task<IResult<IMessage, EventWithUsersReadModel>> UploadAvatar(int id, IFormFile file, FileCreateModel fileCreateModel)
+        public async Task<EventWithUsersReadModel> UploadAvatar(int id, IFormFile file, FileCreateModel fileCreateModel)
         {
-            var eventResult = await GetEventEntityAsync(id);
+            var eventEntity = await GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (eventEntity is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(eventResult.Messages);
+                throw new Exception($"Event with id={id} is not exists");
             }
 
-            var eventEntity = eventResult.Entity;
-            var fileResult = await _dataPathService.Create(file, fileCreateModel.AuthorId);
+            var filePath = await _dataPathService.Create(file, fileCreateModel.AuthorId);
 
-            if (!fileResult.Succeeded)
+            if (filePath is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(fileResult.Messages);
+                throw new Exception("Errors while creating a file");
             }
 
             if (eventEntity.AvatarPath is not null)
@@ -255,16 +219,13 @@ namespace MathEvent.Services.Services
 
                 if (deleteMessage is not null)
                 {
-                    return ResultFactory.GetUnsuccessfulMessageResult<EventWithUsersReadModel>(new List<IMessage>
-                    {
-                        MessageFactory.GetSimpleMessage("400", deleteMessage)
-                    });
+                    throw new Exception(deleteMessage);
                 }
 
                 eventEntity.AvatarPath = null;
             }
 
-            eventEntity.AvatarPath = fileResult.Entity;
+            eventEntity.AvatarPath = filePath;
 
             _repositoryWrapper.Event.Update(eventEntity);
             await _repositoryWrapper.SaveAsync();
@@ -272,59 +233,24 @@ namespace MathEvent.Services.Services
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
 
-            return ResultFactory.GetSuccessfulResult(eventReadModel);
-        }
-
-        /// <summary>
-        /// Возвращает результат с событием с указанным id
-        /// </summary>
-        /// <param name="id">id события, которое требуется получить</param>
-        /// <returns>Результат с событием с указанным id</returns>
-        public async Task<IResult<IMessage, Event>> GetEventEntityAsync(int id)
-        {
-            var eventEntity = await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.Id == id)
-                .SingleOrDefaultAsync();
-
-            if (eventEntity is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<Event>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", "Event not found")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(eventEntity);
+            return eventReadModel;
         }
 
         /// <summary>
         /// Ищет дочерние события
         /// </summary>
         /// <param name="id">id события</param>
-        /// <returns>Результат поиска. Если событие не имеет дочерних событий, то возвращается результат неуспеха</returns>
-        public async Task<IResult<IMessage, IEnumerable<EventReadModel>>> GetChildEvents(int id)
+        /// <returns>Дочерние события</returns>
+        public async Task<IEnumerable<EventReadModel>> GetChildEvents(int id)
         {
             var childEvents = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.ParentId == id)
                 .ToListAsync();
 
-            if (childEvents.Count < 1)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<EventReadModel>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Event with id = {id} has no child events")
-                });
-            }
-
             var eventsDTO = _mapper.Map<IEnumerable<EventDTO>>(childEvents);
             var eventsReadModels = _mapper.Map<IEnumerable<EventReadModel>>(eventsDTO);
 
-            return ResultFactory.GetSuccessfulMessageResult(
-                new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Event with id = {id} has child events")
-                },
-                eventsReadModels);
+            return eventsReadModels;
         }
 
         /// <summary>
@@ -332,16 +258,17 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="start">Начало интервала времени</param>
         /// <param name="end">Конец интервала времени</param>
-        /// <returns>Результат поиска событий в интервале времени (по дате)</returns>
-        public async Task<IResult<IMessage, IEnumerable<EventWithUsersReadModel>>> GetEventsByDate(DateTime start, DateTime end)
+        /// <returns>События в интервале времени (по дате)</returns>
+        public async Task<IEnumerable<EventWithUsersReadModel>> GetEventsByDate(DateTime start, DateTime end)
         {
             var events = await _repositoryWrapper.Event
                 .FindByCondition(ev => ev.StartDate.Date >= start.Date && ev.StartDate.Date <= end.Date)
                 .ToListAsync();
+
             var eventsDTO = _mapper.Map<IEnumerable<EventWithUsersDTO>>(events);
             var eventsReadModels = _mapper.Map<IEnumerable<EventWithUsersReadModel>>(eventsDTO);
 
-            return ResultFactory.GetSuccessfulResult(eventsReadModels);
+            return eventsReadModels;
         }
 
         /// <summary>
@@ -349,26 +276,24 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id события, для которого требуется найти хлебные крошки</param>
         /// <returns>Набор-цепочка родительских событий в виде хлебных крошек</returns>
-        public async Task<IResult<IMessage, IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        public async Task<IEnumerable<Breadcrumb>> GetBreadcrumbs(int id)
         {
             var breadcrumbs = new Stack<Breadcrumb>();
-            var eventResult = await GetEventEntityAsync(id);
+            var eventEntity = await GetEventEntityAsync(id);
 
-            if (!eventResult.Succeeded)
+            if (eventEntity is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<Breadcrumb>>(eventResult.Messages);
+                throw new Exception($"Event with id={id} is not exists");
             }
-
-            var currentEvent = eventResult.Entity;
 
             breadcrumbs.Push(new Breadcrumb
             {
-                Id = currentEvent.Id,
-                Name = currentEvent.Name
+                Id = eventEntity.Id,
+                Name = eventEntity.Name
             });
 
             var parent = await _repositoryWrapper.Event
-                .FindByCondition(e => e.Id == currentEvent.ParentId)
+                .FindByCondition(e => e.Id == eventEntity.ParentId)
                 .SingleOrDefaultAsync();
             var depth = _breadcrumbRecursionDepth;
 
@@ -385,41 +310,33 @@ namespace MathEvent.Services.Services
                 depth--;
             }
 
-            return ResultFactory.GetSuccessfulResult(breadcrumbs.AsEnumerable());
+            return breadcrumbs;
         }
 
         /// <summary>
-        /// Возращает результат со статистикой по событию
+        /// Возвращает статистику по событию
         /// </summary>
         /// <param name="id">id события, статистику по которому требуется получить</param>
-        /// <returns>Результат со статистикой по событию</returns>
-        public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetEventStatistics(int id)
+        /// <returns>Статистика по событию</returns>
+        public async Task<IEnumerable<ChartData>> GetEventStatistics(int id)
         {
-            var simpleStatistics = await GetEventSubscribersByOrganizationStatistics(id);
+            var eventSubscribersByOrganizationStats = await GetEventSubscribersByOrganizationStatistics(id);
 
-            if (simpleStatistics is null)
+            var eventStatistics = new List<ChartData>()
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<SimpleStatistics>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", $"Errors when getting a statistics for event with id = {id}")
-                });
-            }
-
-            IEnumerable<SimpleStatistics> eventStatistics = new List<SimpleStatistics>()
-            {
-                simpleStatistics
+                eventSubscribersByOrganizationStats
             };
 
-            return ResultFactory.GetSuccessfulResult(eventStatistics);
+            return eventStatistics;
         }
 
         /// <summary>
-        /// Возвращает результат с набором статистик по событиям
+        /// Возвращает набор статистик по событиям
         /// </summary>
         /// <param name="filters">Набор параметров в виде пар ключ-значение</param>
-        /// <returns>Результат с набором статистик по событиям</returns>
+        /// <returns>Набор статистик по событиям</returns>
         /// <remarks>Параметр "eventSubsStatisticsTop" задает топ событий, который требуется получить</remarks>
-        public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetSimpleStatistics(IDictionary<string, string> filters)
+        public async Task<IEnumerable<ChartData>> GetEventsStatistics(IDictionary<string, string> filters)
         {
             var eventSubsStatisticsTop = _defaultEventSubsStatisticsTop;
 
@@ -434,38 +351,30 @@ namespace MathEvent.Services.Services
                 }
             }
 
-            var simpleStatistics = new List<SimpleStatistics>();
+            var evntsStatistics = new List<ChartData>();
             var subsStatistics = await GetSubcribersStatistics(eventSubsStatisticsTop);
 
             if (subsStatistics is not null)
             {
-                simpleStatistics.Add(subsStatistics);
+                evntsStatistics.Add(subsStatistics);
             }
 
             var monthStatistics = await GetMonthStatistics();
 
             if (monthStatistics is not null)
             {
-                simpleStatistics.Add(monthStatistics);
+                evntsStatistics.Add(monthStatistics);
             }
 
-            if (simpleStatistics.Count < 1)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<SimpleStatistics>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "Errors when getting a statistics for events")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(simpleStatistics.AsEnumerable());
+            return evntsStatistics;
         }
 
         /// <summary>
         /// Возвращает количество событий по датам
         /// </summary>
         /// <param name="dates">Словарь с граничными датами периода поиска</param>
-        /// <returns>Результат с количеством событий по датам</returns>
-        public async Task<IResult<IMessage, IDictionary<DateTime, int>>> GetEventsCountByDateAsync(IDictionary<string, string> dates)
+        /// <returns>Словарь с количеством событий по датам</returns>
+        public async Task<IDictionary<DateTime, int>> GetEventsCountByDateAsync(IDictionary<string, string> dates)
         {
             var startDateFrom = DateTime.Now.AddDays(-100).Date;
             var startDateTo = DateTime.Now.AddDays(100).Date;
@@ -480,27 +389,37 @@ namespace MathEvent.Services.Services
                 startDateTo = DateTime.Parse(startDateToParam);
             }
 
-            return ResultFactory.GetSuccessfulResult<IDictionary<DateTime, int>>(
-                await _repositoryWrapper
-                .Event.FindByCondition(ev => ev.StartDate.Date >= startDateFrom.Date && ev.StartDate.Date <= startDateTo.Date)
+            return await _repositoryWrapper.Event
+                .FindByCondition(ev => ev.StartDate.Date >= startDateFrom.Date && ev.StartDate.Date <= startDateTo.Date)
                 .GroupBy(ev => ev.StartDate.Date)
                 .Select(g => new { date = g.Key, count = g.Count() })
-                .ToDictionaryAsync(k => k.date, i => i.count)
-            );
+                .ToDictionaryAsync(k => k.date, i => i.count);
         }
 
-        private async Task<SimpleStatistics> GetEventSubscribersByOrganizationStatistics(int eventId)
+        /// <summary>
+        /// Возвращает событие с указанным id
+        /// </summary>
+        /// <param name="id">id события, которое требуется получить</param>
+        /// <returns>Событие с указанным id</returns>
+        private async Task<Event> GetEventEntityAsync(int id)
         {
-            var eventResult = await GetEventEntityAsync(eventId);
+            var eventEntity = await _repositoryWrapper.Event
+                .FindByCondition(ev => ev.Id == id)
+                .SingleOrDefaultAsync();
 
-            if (!eventResult.Succeeded)
+            return eventEntity;
+        }
+
+        private async Task<ChartData> GetEventSubscribersByOrganizationStatistics(int eventId)
+        {
+            var eventEntity = await GetEventEntityAsync(eventId);
+
+            if (eventEntity is null)
             {
-                return null;
+                throw new Exception($"Event with id={eventId} is not exists");
             }
 
-            var eventEntity = eventResult.Entity;
-
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = eventEntity.Hierarchy is null
                 ? $"Подписчики события по организациям"
@@ -542,6 +461,7 @@ namespace MathEvent.Services.Services
 
         private async Task<IDictionary<int, int>> GetEventSubscribersByOrganization(Event ev, int level, IDictionary<int, int> orgSubsCount)
         {
+            // TODO: мб вместо обращения к репозиторию, задействовать другие сервисы
             if (level > _breadcrumbRecursionDepth)
             {
                 return orgSubsCount;
@@ -557,7 +477,6 @@ namespace MathEvent.Services.Services
 
                 foreach (var subscription in subscriptions)
                 {
-                    // мб вообще статистику в отдельный сервис вынести потом, а не просто избавиться здесь от UserService
                     subscribers.Add(await _repositoryWrapper.User
                         .FindByCondition(user => user.Id == subscription.ApplicationUserId)
                         .SingleOrDefaultAsync());
@@ -595,9 +514,9 @@ namespace MathEvent.Services.Services
             return orgSubsCount;
         }
 
-        private async Task<SimpleStatistics> GetSubcribersStatistics(int number)
+        private async Task<ChartData> GetSubcribersStatistics(int number)
         {
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = $"Популярность событий по подписчикам",
                 Data = new List<ChartDataPiece>()
@@ -614,14 +533,12 @@ namespace MathEvent.Services.Services
             foreach (var entry in subscribersCountPerEvent)
             {
 
-                var eventResult = await GetEventEntityAsync(entry.Key);
+                var eventEntity = await GetEventEntityAsync(entry.Key);
 
-                if (!eventResult.Succeeded)
+                if (eventEntity is null)
                 {
-                    return null;
+                    throw new Exception($"Event with id={entry.Key} is not exists");
                 }
-
-                var eventEntity = eventResult.Entity;
 
                 statistics.Data.Add(
                     new ChartDataPiece
@@ -634,9 +551,9 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private async Task<SimpleStatistics> GetMonthStatistics()
+        private async Task<ChartData> GetMonthStatistics()
         {
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = $"Самые загруженные месяцы по количеству событий за последний год",
                 Type = ChartTypes.Bar,

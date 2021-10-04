@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
-    <ProjectReference Include="..\MathEvent.Repository\MathEvent.Repository.csproj" />
   </ItemGroup>
 
 </Project>

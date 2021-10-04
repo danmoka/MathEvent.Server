@@ -8,19 +8,19 @@ namespace MathEvent.Api.Controllers
     [ApiController]
     public class ImagesController : ControllerBase
     {
-        private readonly DataPathService _dataPathService;
+        // TODO: заменить на file service
+        private readonly DataPathWorker _dataPathService;
 
-        public ImagesController(DataPathService dataPathService)
+        public ImagesController(DataPathWorker dataPathService)
         {
             _dataPathService = dataPathService;
         }
 
-        // GET api/Images/?src=value
         [HttpGet]
         [AllowAnonymous]
         public IActionResult GetImage([FromQuery] string src)
         {
-            // TODO: безопасный ли этот метод?
+            // TODO: можно получить любой файл, зная к нему путь
             var image = _dataPathService.GetFileStream(src);
 
             return Ok(image);
