@@ -35,7 +35,7 @@ namespace MathEvent.Validation.Users
 
             validationErrors.AddRange(_userValidationUtils.ValidateName(model.Name));
             validationErrors.AddRange(_userValidationUtils.ValidateSurname(model.Surname));
-            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email));
+            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email, false));
             validationErrors.AddRange(_userValidationUtils.ValidateUsername(model.UserName));
 
             if (model.Patronymic is not null)
