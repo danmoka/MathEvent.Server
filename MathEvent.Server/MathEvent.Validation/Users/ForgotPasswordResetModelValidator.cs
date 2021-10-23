@@ -31,7 +31,7 @@ namespace MathEvent.Validation.Users
                 });
             }
 
-            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email));
+            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email, false));
             validationErrors.AddRange(_userValidationUtils.ValidatePassword(model.Password));
 
             if (model.Password != model.PasswordConfirm)

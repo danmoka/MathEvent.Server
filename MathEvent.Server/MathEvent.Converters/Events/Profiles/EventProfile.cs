@@ -25,6 +25,7 @@ namespace MathEvent.Converters.Events.Profiles
                 .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<IdToUserDTOResolver>())
                 .ForMember(dest => dest.Managers, opt => opt.MapFrom<IdToManagerDTOResolver>())
                 .ForMember(dest => dest.Organization, opt => opt.MapFrom<IdToOrganizationDTOResolver>());
+            CreateMap<EventWithUsersReadModel, EventWithUsersDTO>();
 
             // DTO -> Model
             CreateMap<EventDTO, EventReadModel>(); // чтение

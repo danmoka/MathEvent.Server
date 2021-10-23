@@ -143,7 +143,7 @@ namespace MathEvent.Services.Services
             {
                 _dataPathWorker.DeleteFile(file.Path, out string deleteMessage);
 
-                if (string.IsNullOrEmpty(deleteMessage))
+                if (!string.IsNullOrEmpty(deleteMessage))
                 {
                     throw new Exception(deleteMessage);
                 }

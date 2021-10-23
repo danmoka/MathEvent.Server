@@ -1,4 +1,4 @@
-﻿using MathEvent.Services.Services.DataPath;
+﻿using MathEvent.Contracts.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +9,9 @@ namespace MathEvent.Api.Controllers
     public class ImagesController : ControllerBase
     {
         // TODO: заменить на file service
-        private readonly DataPathWorker _dataPathService;
+        private readonly IDataPathWorker _dataPathService;
 
-        public ImagesController(DataPathWorker dataPathService)
+        public ImagesController(IDataPathWorker dataPathService)
         {
             _dataPathService = dataPathService;
         }

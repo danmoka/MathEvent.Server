@@ -2,7 +2,6 @@
 using MathEvent.Models.Users;
 using MathEvent.Validation.Common;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MathEvent.Validation.Users
@@ -22,7 +21,7 @@ namespace MathEvent.Validation.Users
         public async Task<IValidationResult> Validate(ForgotPasswordModel model)
         {
             var validationErrors = new List<IValidationError>();
-            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email));
+            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email, false));
 
             return new ValidationResult
             {

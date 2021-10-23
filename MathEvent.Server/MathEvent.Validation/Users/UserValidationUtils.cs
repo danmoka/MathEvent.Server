@@ -99,8 +99,9 @@ namespace MathEvent.Validation.Users
         /// Проверяет корректность email адреса
         /// </summary>
         /// <param name="email">Email адрес</param>
+        /// <param name="checkUserExistence">Требуется ли проверка существования пользователя с таким email</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateEmail(string email)
+        public async Task<IEnumerable<IValidationError>> ValidateEmail(string email, bool checkUserExistence = true)
         {
             var validationErrors = new List<IValidationError>();
 
@@ -123,7 +124,7 @@ namespace MathEvent.Validation.Users
                     });
                 }
 
-                if (await _userService.GetUserByEmail(email) != null)
+                if (checkUserExistence && await _userService.GetUserByEmail(email) != null)
                 {
                     validationErrors.Add(new ValidationError
                     {
