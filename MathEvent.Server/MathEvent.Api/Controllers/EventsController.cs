@@ -336,5 +336,12 @@ namespace MathEvent.Api.Controllers
 
             return Ok(eventsCountByDate);
         }
+
+        [HttpGet("SortByValues")]
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<SortDataModel>> GetSortByValues()
+        {
+            return Ok(_eventService.GetSortByValues());
+        }
     }
 }

@@ -3,6 +3,8 @@ using MathEvent.Contracts;
 using MathEvent.Contracts.Services;
 using MathEvent.DTOs.Events;
 using MathEvent.Entities.Entities;
+using MathEvent.Enums;
+using MathEvent.Enums.Extensions;
 using MathEvent.Models.Events;
 using MathEvent.Models.Files;
 using MathEvent.Models.Others;
@@ -48,9 +50,7 @@ namespace MathEvent.Services.Services
         /// <returns>Набор событий, соответствующих фильтрам</returns>
         public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
         {
-            var events = await Filter(_repositoryWrapper.Event.FindAll(), filters)
-                .OrderBy(e => e.StartDate)
-                .ToListAsync();
+            var events = await Filter(_repositoryWrapper.Event.FindAll().Distinct(), filters);
 
             var eventDTOs = _mapper.Map<IEnumerable<EventDTO>>(events);
             var eventReadModels = _mapper.Map<IEnumerable<EventReadModel>>(eventDTOs);
@@ -397,6 +397,21 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
+        /// Возвращает возможные варианты сортировки
+        /// </summary>
+        /// <returns>Набор вариантов сортировки</returns>
+        public IEnumerable<SortDataModel> GetSortByValues()
+        {
+            return Enum.GetValues(typeof(SortBy))
+                .Cast<SortBy>()
+                .Select(v => new SortDataModel
+                {
+                    Id = (int)v,
+                    Name = v.GetDescription()
+                });
+        }
+
+        /// <summary>
         /// Возвращает событие с указанным id
         /// </summary>
         /// <param name="id">id события, которое требуется получить</param>
@@ -613,8 +628,10 @@ namespace MathEvent.Services.Services
             }
         }
 
-        private static IQueryable<Event> Filter(IQueryable<Event> eventQuery, IDictionary<string, string> filters)
+        private static async Task<IList<Event>> Filter(IQueryable<Event> eventQuery, IDictionary<string, string> filters)
         {
+            var events = new List<Event>();
+
             if (filters is not null)
             {
                 if (filters.TryGetValue("parent", out string parentParam))
@@ -652,9 +669,43 @@ namespace MathEvent.Services.Services
                         eventQuery = eventQuery.Where(f => f.StartDate <= startDateTo);
                     }
                 }
+
+                events = await eventQuery.ToListAsync();
+
+                if (filters.TryGetValue("sortBy", out string sortParam))
+                {
+                    if (int.TryParse(sortParam, out int sortValue))
+                    {
+                        switch (sortValue)
+                        {
+                            case (int)SortBy.Closest:
+                                events = events
+                                    .OrderBy(e => (DateTime.Now - e.StartDate).Duration())
+                                    .ToList();
+                                break;
+                            case (int)SortBy.NotClosest:
+                                events = events
+                                    .OrderByDescending(e => (DateTime.Now - e.StartDate).Duration())
+                                    .ToList();
+                                break;
+                            case (int)SortBy.AtoZ:
+                                events = events
+                                    .OrderBy(e => e.Name)
+                                    .ToList();
+                                break;
+                            case (int)SortBy.ZtoA:
+                                events = events
+                                    .OrderByDescending(e => e.Name)
+                                    .ToList();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
             }
 
-            return eventQuery;
+            return events;
         }
     }
 }

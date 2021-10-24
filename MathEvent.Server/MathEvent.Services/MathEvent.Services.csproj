@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
+    <ProjectReference Include="..\MathEvent.Enums\MathEvent.Enums.csproj" />
   </ItemGroup>
 
 </Project>

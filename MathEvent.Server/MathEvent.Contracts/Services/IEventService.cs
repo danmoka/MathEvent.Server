@@ -32,5 +32,7 @@ namespace MathEvent.Contracts.Services
         Task<IEnumerable<ChartData>> GetEventsStatistics(IDictionary<string, string> filters);
 
         Task<IDictionary<DateTime, int>> GetEventsCountByDateAsync(IDictionary<string, string> dates);
+
+        IEnumerable<SortDataModel> GetSortByValues();
     }
 }
