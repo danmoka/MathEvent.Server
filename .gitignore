@@ -5,6 +5,7 @@
 
 **/media
 emailsettings.json
+appsettings.json
 
 .vscode
 **/Migrations/*
