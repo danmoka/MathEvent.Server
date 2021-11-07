@@ -8,13 +8,14 @@ namespace MathEvent.Services.Extension
 {
     public static class ServiceExtension
     {
-        public static void ConfigureEntityServices(this IServiceCollection services, string webRootPath, long fileSizeLimit)
+        public static void ConfigureEntityServices(this IServiceCollection services)
         {
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IEventService, EventService>();
             services.AddTransient<IFileService, FileService>();
             services.AddTransient<IOrganizationService, OrganizationService>();
-            services.AddTransient<IDataPathWorker>(s => new DataPathWorker(webRootPath, fileSizeLimit, new FileExtensionWorker()));
+            services.AddTransient<IFileExtensionWorker, FileExtensionWorker>();
+            services.AddTransient<IDataPathWorker, DataPathWorker>();
             services.AddTransient<IEmailSender, EmailSender>();
         }
     }

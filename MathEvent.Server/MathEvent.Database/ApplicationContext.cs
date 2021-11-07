@@ -18,6 +18,10 @@ namespace MathEvent.Database
         public DbSet<Event> Events { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<File> Files { get; set; }
+        public DbSet<Management> Management { get; set; }
+        public DbSet<Owner> Owners { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

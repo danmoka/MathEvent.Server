@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MathEvent.Contracts.Services;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ namespace MathEvent.Services.Services.DataPath
     /// <summary>
     /// Класс для работы с расширениями файлов
     /// </summary>
-    public class FileExtensionWorker
+    public class FileExtensionWorker : IFileExtensionWorker
     {
         private readonly IDictionary<string, List<byte[]>> _fileExtensionsAndSignatures = new Dictionary<string, List<byte[]>>
         {

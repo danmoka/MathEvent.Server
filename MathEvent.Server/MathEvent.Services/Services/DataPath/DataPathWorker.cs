@@ -1,5 +1,7 @@
 ﻿using MathEvent.Contracts.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,22 +11,26 @@ namespace MathEvent.Services.Services.DataPath
     /// <summary>
     /// Класс для работы с файлами и путями
     /// </summary>
-    /// TODO: добавить ResultFactory
     public class DataPathWorker : IDataPathWorker
     {
         private readonly string _basePath;
 
-        private readonly string _folder = "media"; // TODO: перенести в Configuration
+        private readonly string _folder;
 
         private readonly long _fileSizeLimit;
 
-        private readonly FileExtensionWorker _fileExtensionManager;
+        private readonly IFileExtensionWorker _fileExtensionWorker;
 
-        public DataPathWorker(string basePath, long fileSizeLimit, FileExtensionWorker fileExtensionManager)
+        public DataPathWorker(
+            IConfiguration configuration,
+            IFileExtensionWorker fileExtensionWorker,
+            IWebHostEnvironment webHostEnvironment)
         {
-            _basePath = basePath;
-            _fileSizeLimit = fileSizeLimit;
-            _fileExtensionManager = fileExtensionManager;
+            var fileSettings = configuration.GetSection("Files");
+            _basePath = webHostEnvironment.WebRootPath;
+            _folder = fileSettings["Folder"];
+            _fileSizeLimit = long.Parse(fileSettings["FileSizeLimit"]);
+            _fileExtensionWorker = fileExtensionWorker;
         }
 
         /// <summary>
@@ -122,8 +128,8 @@ namespace MathEvent.Services.Services.DataPath
         /// <returns>true, если расширение разрешено, false иначе</returns>
         public bool IsPermittedExtension(IFormFile file)
         {
-            return _fileExtensionManager.IsCorrectFileExtensionAndSignature(file)
-                || _fileExtensionManager.IsCorrectImgExtensionAndSignature(file);
+            return _fileExtensionWorker.IsCorrectFileExtensionAndSignature(file)
+                || _fileExtensionWorker.IsCorrectImgExtensionAndSignature(file);
         }
 
         /// <summary>
@@ -133,7 +139,7 @@ namespace MathEvent.Services.Services.DataPath
         /// <returns>true, если расширение разрешено, false иначе</returns>
         public bool IsPermittedImageExtension(IFormFile file)
         {
-            return _fileExtensionManager.IsCorrectImgExtensionAndSignature(file);
+            return _fileExtensionWorker.IsCorrectImgExtensionAndSignature(file);
         }
 
         /// <summary>

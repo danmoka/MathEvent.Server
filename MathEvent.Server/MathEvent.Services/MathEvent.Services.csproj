@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MathEvent.Converters\MathEvent.Converters.csproj" />
     <ProjectReference Include="..\MathEvent.Enums\MathEvent.Enums.csproj" />
   </ItemGroup>

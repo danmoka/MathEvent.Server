@@ -21,14 +21,15 @@ namespace MathEvent.Api.Extensions
         /// <param name="configuration">Поставщик конфигурации</param>
         public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            // TODO: взять ссылку из конфигурацию
-            // accepts any access token issued by identity server
+            var authenticationSettings = configuration.GetSection("Authentication");
             services.AddAuthentication().AddJwtBearer(options =>
             {
-                options.Authority = configuration.GetValue<string>("Authority");
+                options.Authority = authenticationSettings["Authority"];
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = authenticationSettings["IssuerUri"],
                 };
             });
         }
@@ -37,17 +38,20 @@ namespace MathEvent.Api.Extensions
         /// Настройка авторизации
         /// </summary>
         /// <param name="services">Зависимости</param>
-        public static void ConfigureAuthorization(this IServiceCollection services)
+        /// <param name="configuration">Поставщик конфигурации</param>
+        public static void ConfigureAuthorization(this IServiceCollection services, IConfiguration configuration)
         {
-            // TODO: использовать configuration для начитки строковых значений
-            // adds an authorization policy to make sure the token is for scope 'matheventapi'
+            var authenticationSettings = configuration.GetSection("Authentication");
+
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("ApiScope", policy =>
+                options.AddPolicy("MathEventApi", policy =>
                 {
                     policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
-                    policy.RequireClaim("scope", new string[] { "matheventapi" });
+                    policy.RequireClaim("scope", authenticationSettings
+                        .GetSection("Scopes")
+                        .Get<string[]>());
                 });
             });
         }
@@ -72,7 +76,7 @@ namespace MathEvent.Api.Extensions
         public static void ConfigureEmail(this IServiceCollection services, IConfiguration configuration)
         {
             var emailConfig = configuration
-                .GetSection("EmailConfiguration")
+                .GetSection("Email")
                 .Get<EmailConfiguration>();
             services.AddSingleton<IEmailConfiguration>(emailConfig);
         }

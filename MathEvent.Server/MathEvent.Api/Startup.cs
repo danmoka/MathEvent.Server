@@ -31,10 +31,10 @@ namespace MathEvent.Api
             services.ConfigureConnection(Configuration);
             services.ConfigureIndentity();
             services.ConfigureAuthentication(Configuration);
-            services.ConfigureAuthorization();
+            services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();
             services.ConfigureEmail(Configuration);
-            services.ConfigureEntityServices(Environment.WebRootPath, Configuration.GetValue<long>("FileSizeLimit"));
+            services.ConfigureEntityServices();
             services.ConfigureAuthorizationHandlers();
             services.ConfigureMapper();
             services.ConfigureValidation();
@@ -72,7 +72,7 @@ namespace MathEvent.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers()
-                .RequireAuthorization("ApiScope");
+                .RequireAuthorization("MathEventApi");
             });
         }
     }

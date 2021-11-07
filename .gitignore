@@ -8,7 +8,7 @@ emailsettings.json
 appsettings.json
 
 .vscode
-**/Migrations/*
+**/Migrations/
 
 # User-specific files
 *.rsuser
