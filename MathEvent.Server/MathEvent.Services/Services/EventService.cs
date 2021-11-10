@@ -180,7 +180,7 @@ namespace MathEvent.Services.Services
 
             if (avatarPath is not null)
             {
-                _dataPathService.DeleteFile(avatarPath, out string deleteMessage);
+                _dataPathService.DeleteWebRootFile(avatarPath, out string deleteMessage);
 
                 if (deleteMessage is not null)
                 {
@@ -206,7 +206,7 @@ namespace MathEvent.Services.Services
                 throw new Exception($"Event with id={id} is not exists");
             }
 
-            var filePath = await _dataPathService.Create(file, fileCreateModel.AuthorId);
+            var filePath = await _dataPathService.CreateWebRootFile(file, fileCreateModel.AuthorId);
 
             if (filePath is null)
             {
@@ -215,7 +215,7 @@ namespace MathEvent.Services.Services
 
             if (eventEntity.AvatarPath is not null)
             {
-                _dataPathService.DeleteFile(eventEntity.AvatarPath, out string deleteMessage);
+                _dataPathService.DeleteWebRootFile(eventEntity.AvatarPath, out string deleteMessage);
 
                 if (deleteMessage is not null)
                 {

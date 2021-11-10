@@ -141,7 +141,7 @@ namespace MathEvent.Services.Services
 
             if (file.Path is not null)
             {
-                _dataPathWorker.DeleteFile(file.Path, out string deleteMessage);
+                _dataPathWorker.DeleteContentFile(file.Path, out string deleteMessage);
 
                 if (!string.IsNullOrEmpty(deleteMessage))
                 {
@@ -161,7 +161,7 @@ namespace MathEvent.Services.Services
         /// <returns>Модель файла</returns>
         public async Task<FileReadModel> Upload(IFormFile file, FileCreateModel fileCreateModel)
         {
-            var filePath = await _dataPathWorker.Create(file, fileCreateModel.AuthorId);
+            var filePath = await _dataPathWorker.CreateContentFile(file, fileCreateModel.AuthorId);
             var fileDTO = _mapper.Map<FileDTO>(fileCreateModel);
             fileDTO.Extension = System.IO.Path.GetExtension(file.FileName);
             fileDTO.Path = filePath;
@@ -197,7 +197,7 @@ namespace MathEvent.Services.Services
                 throw new Exception($"File with id={id} is not exists");
             }
 
-            var fileStream = _dataPathWorker.GetFileStream(file.Path);
+            var fileStream = _dataPathWorker.GetContentFileStream(file.Path);
 
             return fileStream;
         }

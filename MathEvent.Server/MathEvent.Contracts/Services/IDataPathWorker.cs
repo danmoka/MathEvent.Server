@@ -9,11 +9,17 @@ namespace MathEvent.Contracts.Services
     /// </summary>
     public interface IDataPathWorker
     {
-        Task<string> Create(IFormFile file, string userId);
+        Task<string> CreateContentFile(IFormFile file, string userId);
 
-        FileStream GetFileStream(string path);
+        Task<string> CreateWebRootFile(IFormFile file, string userId);
 
-        void DeleteFile(string path, out string message);
+        FileStream GetContentFileStream(string path);
+
+        FileStream GetWebRootFileStream(string path);
+
+        void DeleteContentFile(string path, out string message);
+
+        void DeleteWebRootFile(string path, out string message);
 
         bool IsPermittedExtension(IFormFile file);
 
