@@ -11,7 +11,7 @@ namespace MathEvent.Models.Events
 
         public string Description { get; set; }
 
-        public DateTime StartDate { get; set; }
+        public string StartDate { get; set; }
 
         public string Location { get; set; }
 

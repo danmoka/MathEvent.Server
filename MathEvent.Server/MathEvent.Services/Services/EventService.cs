@@ -256,13 +256,15 @@ namespace MathEvent.Services.Services
         /// <summary>
         /// Возвращает события в указанном промежутке времени
         /// </summary>
-        /// <param name="start">Начало интервала времени</param>
-        /// <param name="end">Конец интервала времени</param>
+        /// <param name="startUTC">Начало интервала времени в UTC</param>
+        /// <param name="endUTC">Конец интервала времени в UTC</param>
         /// <returns>События в интервале времени (по дате)</returns>
-        public async Task<IEnumerable<EventWithUsersReadModel>> GetEventsByDate(DateTime start, DateTime end)
+        public async Task<IEnumerable<EventWithUsersReadModel>> GetEventsByDate(DateTime startUTC, DateTime endUTC)
         {
             var events = await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.StartDate.Date >= start.Date && ev.StartDate.Date <= end.Date)
+                .FindByCondition(ev =>
+                    ev.StartDate.Date >= startUTC.Date
+                    && ev.StartDate.Date <= endUTC.Date)
                 .ToListAsync();
 
             var eventsDTO = _mapper.Map<IEnumerable<EventWithUsersDTO>>(events);
@@ -376,21 +378,23 @@ namespace MathEvent.Services.Services
         /// <returns>Словарь с количеством событий по датам</returns>
         public async Task<IDictionary<DateTime, int>> GetEventsCountByDateAsync(IDictionary<string, string> dates)
         {
-            var startDateFrom = DateTime.Now.AddDays(-100).Date;
-            var startDateTo = DateTime.Now.AddDays(100).Date;
+            var startDateFrom = DateTime.UtcNow.AddDays(-100).Date;
+            var startDateTo = DateTime.UtcNow.AddDays(100).Date;
 
             if (dates.TryGetValue("startDateFrom", out string startDateFromParam))
             {
-                startDateFrom = DateTime.Parse(startDateFromParam);
+                startDateFrom = DateTime.Parse(startDateFromParam).ToUniversalTime();
             }
 
             if (dates.TryGetValue("startDateTo", out string startDateToParam))
             {
-                startDateTo = DateTime.Parse(startDateToParam);
+                startDateTo = DateTime.Parse(startDateToParam).ToUniversalTime();
             }
 
             return await _repositoryWrapper.Event
-                .FindByCondition(ev => ev.StartDate.Date >= startDateFrom.Date && ev.StartDate.Date <= startDateTo.Date)
+                .FindByCondition(ev =>
+                    ev.StartDate.Date >= startDateFrom.Date
+                    && ev.StartDate.Date <= startDateTo.Date)
                 .GroupBy(ev => ev.StartDate.Date)
                 .Select(g => new { date = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.date, i => i.count);
@@ -576,7 +580,7 @@ namespace MathEvent.Services.Services
             };
 
             var numberOfEventsPerMonthResult = await _repositoryWrapper.Event
-                .FindByCondition(e => e.StartDate >= DateTime.Now.AddYears(-1))
+                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1))
                 .GroupBy(e => e.StartDate.Month)
                 .Select(g => new { month = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.month, i => i.count);
@@ -658,7 +662,7 @@ namespace MathEvent.Services.Services
                 {
                     if (DateTime.TryParse(startDateFromParam, out DateTime startDateFrom))
                     {
-                        eventQuery = eventQuery.Where(f => f.StartDate >= startDateFrom);
+                        eventQuery = eventQuery.Where(f => f.StartDate >= startDateFrom.ToUniversalTime());
                     }
                 }
 
@@ -666,7 +670,7 @@ namespace MathEvent.Services.Services
                 {
                     if (DateTime.TryParse(startDateToParam, out DateTime startDateTo))
                     {
-                        eventQuery = eventQuery.Where(f => f.StartDate <= startDateTo);
+                        eventQuery = eventQuery.Where(f => f.StartDate <= startDateTo.ToUniversalTime());
                     }
                 }
 
@@ -680,12 +684,12 @@ namespace MathEvent.Services.Services
                         {
                             case (int)SortBy.Closest:
                                 events = events
-                                    .OrderBy(e => (DateTime.Now - e.StartDate).Duration())
+                                    .OrderBy(e => (DateTime.UtcNow - e.StartDate).Duration())
                                     .ToList();
                                 break;
                             case (int)SortBy.NotClosest:
                                 events = events
-                                    .OrderByDescending(e => (DateTime.Now - e.StartDate).Duration())
+                                    .OrderByDescending(e => (DateTime.UtcNow - e.StartDate).Duration())
                                     .ToList();
                                 break;
                             case (int)SortBy.AtoZ:

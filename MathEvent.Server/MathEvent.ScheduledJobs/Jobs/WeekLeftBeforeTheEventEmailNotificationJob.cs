@@ -29,7 +29,7 @@ namespace MathEvent.ScheduledJobs.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            var nextWeekDayDate = DateTime.Now.AddDays(7);
+            var nextWeekDayDate = DateTime.UtcNow.AddDays(7);
             var events = await _eventService.GetEventsByDate(nextWeekDayDate, nextWeekDayDate);
 
             foreach (var ev in events)
@@ -47,10 +47,10 @@ namespace MathEvent.ScheduledJobs.Jobs
             }
         }
 
-        private static Message CreateNotificationMessage(string email, string eventName, DateTime eventDate)
+        private static Message CreateNotificationMessage(string email, string eventName, DateTime eventDateTimeUTC)
         {
             var subject = "Напоминание: до события осталась одна неделя!";
-            var content = $"Событие \"{eventName}\" состоится через неделю ({eventDate})";
+            var content = $"Событие \"{eventName}\" состоится через неделю ({eventDateTimeUTC} (UTC))";
 
             return new Message(
                 new string[] { email },

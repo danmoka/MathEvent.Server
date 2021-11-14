@@ -80,7 +80,7 @@ namespace MathEvent.Services.Services
         public async Task<FileReadModel> CreateAsync(FileCreateModel createModel)
         {
             var fileDTO = _mapper.Map<FileDTO>(createModel);
-            fileDTO.Date = DateTime.Now;
+            fileDTO.Date = DateTime.UtcNow;
             var fileEntity = _mapper.Map<File>(fileDTO);
 
             var fileEntityDb = await _repositoryWrapper.File.CreateAsync(fileEntity);
@@ -165,7 +165,7 @@ namespace MathEvent.Services.Services
             var fileDTO = _mapper.Map<FileDTO>(fileCreateModel);
             fileDTO.Extension = System.IO.Path.GetExtension(file.FileName);
             fileDTO.Path = filePath;
-            fileDTO.Date = DateTime.Now;
+            fileDTO.Date = DateTime.UtcNow;
 
             var fileEntity = _mapper.Map<File>(fileDTO);
 

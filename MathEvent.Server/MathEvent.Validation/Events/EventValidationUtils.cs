@@ -28,18 +28,26 @@ namespace MathEvent.Validation.Events
         /// <summary>
         /// Проверяет время начала события
         /// </summary>
-        /// <param name="startDate">Время</param>
+        /// <param name="startDateISOString">Время</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateStartDateTime(DateTime startDate)
+        public IEnumerable<IValidationError> ValidateStartDateTime(string startDateISOString)
         {
             var validationErrors = new List<IValidationError>();
 
-            if (startDate.ToUniversalTime() < DateTime.UtcNow)
+            if (!DateTime.TryParse(startDateISOString, out DateTime dateTime))
             {
                 validationErrors.Add(new ValidationError
                 {
-                    Field = nameof(startDate),
-                    Message = "Дата начала события не должна быть меньше текущей",
+                    Field = nameof(startDateISOString),
+                    Message = "Неподдерживаемый формат даты и времени",
+                });
+            }
+            else if (dateTime.ToUniversalTime() < DateTime.UtcNow)
+            {
+                validationErrors.Add(new ValidationError
+                {
+                    Field = nameof(startDateISOString),
+                    Message = "Дата не может быть меньше текущей",
                 });
             }
 

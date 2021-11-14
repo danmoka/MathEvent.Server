@@ -194,7 +194,7 @@ namespace MathEvent.Services.Services
             };
 
             var numberOfEventsPerMonthResult = await _repositoryWrapper.Event
-                .FindByCondition(e => e.StartDate >= DateTime.Now.AddYears(-1))
+                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1))
                 .GroupBy(e => e.OrganizationId)
                 .Select(g => new { orgId = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.orgId is null ? -1 : k.orgId, i => i.count);
@@ -242,7 +242,7 @@ namespace MathEvent.Services.Services
 
             var organizationSubcribersPerEvent = new Dictionary<int, int>();
             var events = await _repositoryWrapper.Event
-                .FindByCondition(e => e.StartDate >= DateTime.Now.AddYears(-1))
+                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1))
                 .ToListAsync();
 
             foreach (var ev in events)
