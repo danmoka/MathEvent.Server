@@ -6,8 +6,9 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
-    <ProjectReference Include="..\MathEvent.Entities\MathEvent.Entities.csproj" />
-    <ProjectReference Include="..\MathEvent.Repository\MathEvent.Repository.csproj" />
+    <ProjectReference Include="..\MathEvent.Contracts\MathEvent.Contracts.csproj" />
+    <ProjectReference Include="..\MathEvent.DTOs\MathEvent.DTOs.csproj" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
   </ItemGroup>
 
 </Project>

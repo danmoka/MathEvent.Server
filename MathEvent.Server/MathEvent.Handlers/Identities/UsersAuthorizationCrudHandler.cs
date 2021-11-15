@@ -1,7 +1,7 @@
-﻿using MathEvent.Entities.Entities;
+﻿using MathEvent.Contracts.Services;
+using MathEvent.Models.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
 namespace MathEvent.AuthorizationHandlers.Identities
@@ -10,22 +10,21 @@ namespace MathEvent.AuthorizationHandlers.Identities
     /// Обработчик запроса на авторизацию для CRUD операций пользователей
     /// </summary>
     public class UsersAuthorizationCrudHandler :
-        AuthorizationHandler<OperationAuthorizationRequirement, ApplicationUser>
+        AuthorizationHandler<OperationAuthorizationRequirement, UserWithEventsReadModel>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
 
-        public UsersAuthorizationCrudHandler(
-            UserManager<ApplicationUser> userManager)
+        public UsersAuthorizationCrudHandler(IUserService userService)
         {
-            _userManager = userManager;
+            _userService = userService;
         }
 
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement,
-            ApplicationUser resource)
+            UserWithEventsReadModel resource)
         {
-            var user = await _userManager.GetUserAsync(context.User);
+            var user = await _userService.GetUserAsync(context.User);
 
             if (requirement.Name == Operations.Update.Name
                 || requirement.Name == Operations.Delete.Name)

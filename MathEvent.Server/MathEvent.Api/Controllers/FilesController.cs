@@ -1,7 +1,8 @@
 ﻿using MathEvent.AuthorizationHandlers;
-using MathEvent.Converters.Files.Models;
-using MathEvent.Converters.Others;
-using MathEvent.Services.Services;
+using MathEvent.Contracts.Services;
+using MathEvent.Contracts.Validators;
+using MathEvent.Models.Files;
+using MathEvent.Models.Others;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,188 +18,171 @@ namespace MathEvent.Api.Controllers
     [ApiController]
     public class FilesController : ControllerBase
     {
-        private readonly FileService _fileService;
+        private readonly IFileService _fileService;
 
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
         private readonly IAuthorizationService _authorizationService;
 
+        private readonly IFileCreateModelValidator _fileCreateModelValidator;
+
+        private readonly IFileUpdateModelValidator _fileUpdateModelValidator;
+
+        private readonly IFileValidator _fileValidator;
+
         public FilesController(
-            FileService fileService,
-            UserService userService,
-            IAuthorizationService authorizationService)
+            IFileService fileService,
+            IUserService userService,
+            IAuthorizationService authorizationService,
+            IFileCreateModelValidator fileCreateModelValidator,
+            IFileUpdateModelValidator fileUpdateModelValidator,
+            IFileValidator fileValidator)
         {
             _fileService = fileService;
             _userService = userService;
             _authorizationService = authorizationService;
+            _fileCreateModelValidator = fileCreateModelValidator;
+            _fileUpdateModelValidator = fileUpdateModelValidator;
+            _fileValidator = fileValidator;
         }
 
-        // GET api/Files/?key1=value1&key2=value2
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FileReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
+        public async Task<ActionResult<IEnumerable<FileReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var filesResult = await _fileService.ListAsync(filters);
+            var files = await _fileService.ListAsync(filters);
 
-            if (filesResult.Succeeded)
-            {
-                var fileReadModels = filesResult.Entity;
-
-                if (fileReadModels is not null)
-                {
-                    return Ok(fileReadModels);
-                }
-            }
-
-            return NotFound(filesResult.Messages);
+            return Ok(files);
         }
 
-        // GET api/Files/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<FileReadModel>> RetrieveAsync(int id)
+        public async Task<ActionResult<FileReadModel>> Retrieve([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var fileResult = await _fileService.RetrieveAsync(id);
+            var file = await _fileService.RetrieveAsync(id);
 
-            if (fileResult.Succeeded && fileResult.Entity is not null)
+            if (file is null)
             {
-                return Ok(fileResult.Entity);
+                return NotFound($"Файл с id={id} не найден");
             }
 
-            return NotFound(fileResult.Messages);
+            return Ok(file);
         }
 
-        // POST api/Files
         [HttpPost]
-        public async Task<ActionResult> CreateAsync([FromBody] FileCreateModel fileCreateModel)
+        public async Task<ActionResult> Create([FromBody] FileCreateModel fileCreateModel)
         {
+            var validationResult = await _fileCreateModelValidator.Validate(fileCreateModel);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var authorizationResult = await _authorizationService
                 .AuthorizeAsync(User, fileCreateModel.OwnerId, Operations.Create);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя создавать файл для объекта-владельца с id={fileCreateModel.OwnerId}");
             }
 
-            var userResult = await _userService.GetCurrentUserAsync(User);
+            var user = await _userService.GetUserAsync(User);
 
-            if (!userResult.Succeeded || userResult.Entity is null)
+            if (user is null)
             {
-                return NotFound(userResult.Messages);
+                return NotFound("Не удается определить текущего пользователя");
             }
-
-            var user = userResult.Entity;
 
             fileCreateModel.AuthorId = user.Id;
-            var createResult = await _fileService.CreateAsync(fileCreateModel);
+            var createdFile = await _fileService.CreateAsync(fileCreateModel);
 
-            if (createResult.Succeeded)
+            if (createdFile is null)
             {
-                var createdFile = createResult.Entity;
-
-                if (createdFile is null)
-                {
-                    return StatusCode(201);
-                }
-
-                return StatusCode(201, createdFile);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время создания файла");
             }
-            else
-            {
-                return StatusCode(500, createResult.Messages);
-            }
+
+            return CreatedAtAction(nameof(Retrieve), new { id = createdFile.Id }, createdFile);
         }
 
-        // PUT api/Files/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, [FromBody] FileUpdateModel fileUpdateModel)
+        public async Task<ActionResult> Update([FromRoute] int id, [FromBody] FileUpdateModel fileUpdateModel)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var fileResult = await _fileService.GetFileEntityAsync(id);
+            var validationResult = await _fileUpdateModelValidator.Validate(fileUpdateModel);
 
-            if (!fileResult.Succeeded)
+            if (!validationResult.IsValid)
             {
-                return NotFound(fileResult.Messages);
+                return BadRequest(validationResult.Errors);
+            }
+
+            var file = await _fileService.RetrieveAsync(id);
+
+            if (file is null)
+            {
+                return NotFound($"Файл с id={id} не найден");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, fileResult.Entity.OwnerId, Operations.Update);
+                .AuthorizeAsync(User, file.OwnerId, Operations.Update);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать файл для объекта-владельца с id={file.OwnerId}");
             }
 
-            var updateResult = await _fileService.UpdateAsync(id, fileUpdateModel);
+            var updatedFile = await _fileService.UpdateAsync(id, fileUpdateModel);
 
-            if (updateResult.Succeeded)
+            if (updatedFile is null)
             {
-                var createdFile = updateResult.Entity;
-
-                if (createdFile is null)
-                {
-                    return Ok(id);
-                }
-
-                return Ok(createdFile);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления файла");
             }
-            else
-            {
-                return StatusCode(500, updateResult.Messages);
-            }
+
+            return Ok(updatedFile);
         }
 
-        // DELETE api/Files/{id}
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DestroyAsync(int id)
+        public async Task<ActionResult> Destroy([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var childFilesResult = await _fileService.GetChildFiles(id);
+            var file = await _fileService.RetrieveAsync(id);
 
-            if (childFilesResult.Succeeded)
+            if (file is null)
             {
-                return BadRequest(childFilesResult.Messages);
+                return NotFound($"Файл с id={id} не найден");
             }
 
-            var fileResult = await _fileService.GetFileEntityAsync(id);
+            var child = new List<FileReadModel>(await _fileService.GetChildFiles(id));
 
-            if (!fileResult.Succeeded)
+            if (child.Count > 0)
             {
-                return NotFound(fileResult.Messages);
+                return BadRequest($"Файл с id={id} имеет дочерние файлы");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, fileResult.Entity.OwnerId, Operations.Delete);
+                .AuthorizeAsync(User, file.OwnerId, Operations.Delete);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалять файл объекта-владельца с id={file.OwnerId}");
             }
 
-            var deleteResult = await _fileService.DeleteAsync(id);
+            await _fileService.DeleteAsync(id);
 
-            if (deleteResult.Succeeded)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return StatusCode(500, deleteResult.Messages);
-            }
+            return NoContent();
         }
 
-        // POST api/Files/Upload/?parentId=value1&ownerId=value2
         [HttpPost("Upload")]
         public async Task<ActionResult> Upload([FromForm] IEnumerable<IFormFile> files, [FromQuery] string parentId, [FromQuery] string ownerId)
         {
@@ -220,28 +204,27 @@ namespace MathEvent.Api.Controllers
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя загружать файл для объекта-владельца с id={owner}");
             }
 
 
             foreach (var formFile in files)
             {
-                var checkResult = _fileService.IsCorrectFile(formFile);
+                var checkResult = await _fileValidator.Validate(formFile);
 
-                if (!checkResult.Succeeded)
+                if (!checkResult.IsValid)
                 {
-                    return BadRequest(checkResult.Messages);
+                    return BadRequest(checkResult.Errors);
                 }
             }
 
-            var userResult = await _userService.GetCurrentUserAsync(User);
+            var user = await _userService.GetUserAsync(User);
 
-            if (!userResult.Succeeded || userResult.Entity is null)
+            if (user is null)
             {
-                return NotFound(userResult.Messages);
+                return NotFound("Не удается определить текущего пользователя");
             }
 
-            var user = userResult.Entity;
             var fileIds = new List<int>();
 
             foreach (var formFile in files)
@@ -255,78 +238,67 @@ namespace MathEvent.Api.Controllers
                     OwnerId = owner
                 };
 
-                if (!TryValidateModel(fileCreateModel))
+                var validationResult = await _fileCreateModelValidator.Validate(fileCreateModel);
+
+                if (!validationResult.IsValid)
                 {
-                    return ValidationProblem(ModelState);
+                    return BadRequest(validationResult.Errors);
                 }
 
-                var createResult = await _fileService.Upload(formFile, fileCreateModel);
+                var createdFile = await _fileService.Upload(formFile, fileCreateModel);
 
-                if (!createResult.Succeeded || createResult.Entity is null)
+                if (createdFile is null)
                 {
-                    return StatusCode(500, createResult.Messages);
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время загрузки изображения");
                 }
-                else
-                {
-                    fileIds.Add(createResult.Entity.Id);
-                }
+
+                fileIds.Add(createdFile.Id);
             }
 
             return Ok(fileIds);
         }
 
-        // GET api/Files/Download
         [HttpGet("Download/{id}")]
-        public async Task<ActionResult> Download(int id)
+        public async Task<ActionResult> Download([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var fileResult = await _fileService.GetFileEntityAsync(id);
+            var file = await _fileService.RetrieveAsync(id);
 
-            if (!fileResult.Succeeded || fileResult.Entity is null)
+            if (file is null)
             {
-                return NotFound(fileResult.Messages);
+                return NotFound($"Файл с id={id} не найден");
             }
-
-            var file = fileResult.Entity;
 
             if (file.Hierarchy is not null)
             {
-                return BadRequest("Hierarchy is not null");
+                return BadRequest("Скачивание папок невозможно");
             }
 
-            var downloadResult = await _fileService.Download(id);
+            var downloadedFile = await _fileService.Download(id);
 
-            if (!downloadResult.Succeeded || downloadResult.Entity is null)
+            if (downloadedFile is null)
             {
-                return StatusCode(500, downloadResult.Messages);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время получения файла для скачивания");
             }
 
-            return File(downloadResult.Entity, "application/octet-stream", $"\"{HttpUtility.UrlEncode(file.Name, Encoding.UTF8)}{file.Extension}\"");
+            return File(downloadedFile, "application/octet-stream", $"\"{HttpUtility.UrlEncode(file.Name, Encoding.UTF8)}{file.Extension}\"");
         }
 
-        // GET api/Files/Breadcrumbs/{id}
         [HttpGet("Breadcrumbs/{id}")]
-        public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var result = await _fileService.GetBreadcrumbs(id);
+            var breadcrumbs = await _fileService.GetBreadcrumbs(id);
 
-            if (result.Succeeded)
-            {
-                return Ok(result.Entity);
-            }
-            else
-            {
-                return StatusCode(500, result.Messages);
-            }
+            return Ok(breadcrumbs);
         }
     }
 }

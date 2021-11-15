@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using MathEvent.AuthorizationHandlers;
-using MathEvent.Converters.Events.DTOs;
-using MathEvent.Converters.Events.Models;
-using MathEvent.Converters.Files.Models;
-using MathEvent.Converters.Others;
-using MathEvent.Services.Services;
+using MathEvent.Contracts.Services;
+using MathEvent.Contracts.Validators;
+using MathEvent.DTOs.Events;
+using MathEvent.Models.Events;
+using MathEvent.Models.Files;
+using MathEvent.Models.Others;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -22,310 +23,252 @@ namespace MathEvent.Api.Controllers
     {
         private readonly IMapper _mapper;
 
-        private readonly EventService _eventService;
+        private readonly IEventService _eventService;
 
-        private readonly FileService _fileService;
-
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
         private readonly IAuthorizationService _authorizationService;
 
+        private readonly IEventCreateModelValidator _eventCreateModelValidator;
+
+        private readonly IEventUpdateModelValidator _eventUpdateModelValidator;
+
+        private readonly IImageValidator _imageValidator;
+
         public EventsController(
             IMapper mapper,
-            EventService eventService,
-            FileService fileService,
-            UserService userService,
-            IAuthorizationService authorizationService)
+            IEventService eventService,
+            IUserService userService,
+            IAuthorizationService authorizationService,
+            IEventCreateModelValidator eventCreateModelValidator,
+            IEventUpdateModelValidator eventUpdateModelValidator,
+            IImageValidator imageValidator)
         {
             _mapper = mapper;
             _eventService = eventService;
-            _fileService = fileService;
             _userService = userService;
             _authorizationService = authorizationService;
+            _eventCreateModelValidator = eventCreateModelValidator;
+            _eventUpdateModelValidator = eventUpdateModelValidator;
+            _imageValidator = imageValidator;
         }
 
-        // GET api/Events/?key1=value1&key2=value2
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<EventReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
+        public async Task<ActionResult<IEnumerable<EventReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var eventsResult = await _eventService.ListAsync(filters);
+            var events = await _eventService.ListAsync(filters);
 
-            if (eventsResult.Succeeded)
-            {
-                var eventReadModels = eventsResult.Entity;
-
-                if (eventReadModels is not null)
-                {
-                    return Ok(eventReadModels);
-                }
-            }
-
-            return NotFound(eventsResult.Messages);
+            return Ok(events);
         }
 
-        // GET api/Events/{id}
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<EventWithUsersReadModel>> RetrieveAsync(int id)
+        public async Task<ActionResult<EventWithUsersReadModel>> Retrieve([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var eventResult = await _eventService.RetrieveAsync(id);
+            var ev = await _eventService.RetrieveAsync(id);
 
-            if (eventResult.Succeeded && eventResult.Entity is not null)
+            if (ev is null)
             {
-                return Ok(eventResult.Entity);
+                return NotFound($"Событие с id={id} не найдено");
             }
 
-            return NotFound(eventResult.Messages);
+            return Ok(ev);
         }
 
-        // POST api/Events
         [HttpPost]
-        public async Task<ActionResult<EventWithUsersReadModel>> CreateAsync([FromBody] EventCreateModel eventCreateModel)
+        public async Task<ActionResult<EventWithUsersReadModel>> Create([FromBody] EventCreateModel eventCreateModel)
         {
-            var userResult = await _userService.GetCurrentUserAsync(User);
+            var validationResult = await _eventCreateModelValidator.Validate(eventCreateModel);
 
-            if (!userResult.Succeeded || userResult.Entity is null)
+            if (!validationResult.IsValid)
             {
-                return StatusCode(401);
+                return BadRequest(validationResult.Errors);
             }
 
-            eventCreateModel.AuthorId = userResult.Entity.Id;
-            var createResult = await _eventService.CreateAsync(eventCreateModel);
+            var user = await _userService.GetUserAsync(User);
 
-            if (createResult.Succeeded)
+            if (user is null)
             {
-                var createdEvent = createResult.Entity;
-
-                if (createdEvent is null)
-                {
-                    return StatusCode(201);
-                }
-
-                return StatusCode(201, createdEvent);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Не удается получить данные о текущем пользователе");
             }
-            else
+
+            eventCreateModel.AuthorId = user.Id;
+            var createdEvent = await _eventService.CreateAsync(eventCreateModel);
+
+            if (createdEvent is null)
             {
-                return StatusCode(500, createResult.Messages);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время создания события");
             }
+
+            return CreatedAtAction(nameof(Retrieve), new { id = createdEvent.Id }, createdEvent);
         }
 
-        // PUT api/Events/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, [FromBody] EventUpdateModel eventUpdateModel)
+        public async Task<ActionResult> Update([FromRoute] int id, [FromBody] EventUpdateModel eventUpdateModel)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            if (eventUpdateModel.Managers.Count < 1)
+            var validationResult = await _eventUpdateModelValidator.Validate(eventUpdateModel);
+
+            if (!validationResult.IsValid)
             {
-                return BadRequest("The list of event managers is empty");
+                return BadRequest(validationResult.Errors);
             }
 
-            var eventResult = await _eventService.GetEventEntityAsync(id);
+            var ev = await _eventService.RetrieveAsync(id);
 
-            if (!eventResult.Succeeded || eventResult.Entity is null)
+            if (ev is null)
             {
-                return NotFound(eventResult.Messages);
+                return NotFound($"Событие с id={id} не найдено");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, eventResult.Entity, Operations.Update);
+                .AuthorizeAsync(User, ev, Operations.Update);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать событие с id={id}");
             }
 
-            var updateResult = await _eventService.UpdateAsync(id, eventUpdateModel);
+            var updatedEvent = await _eventService.UpdateAsync(id, eventUpdateModel);
 
-            if (updateResult.Succeeded)
+            if (updatedEvent is null)
             {
-                var updatedEvent = updateResult.Entity;
-
-                if (updatedEvent is null)
-                {
-                    return Ok(id);
-                }
-
-                return Ok(updatedEvent);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления события");
             }
-            else
-            {
-                return StatusCode(500, updateResult.Messages);
-            }
+
+            return Ok(updatedEvent);
         }
 
-        //PATCH api/Events/{id}
         [HttpPatch("{id}")]
-        public async Task<ActionResult> PartialUpdateAsync(int id, [FromBody] JsonPatchDocument<EventUpdateModel> patchDocument)
+        public async Task<ActionResult> PartialUpdate([FromRoute] int id, [FromBody] JsonPatchDocument<EventUpdateModel> patchDocument)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
             if (patchDocument is null)
             {
-                return BadRequest("Patch document is null");
+                return BadRequest("Тело запроса не задано");
             }
 
-            var eventResult = await _eventService.GetEventEntityAsync(id);
+            var ev = await _eventService.RetrieveAsync(id);
 
-            if (!eventResult.Succeeded || eventResult.Entity is null)
+            if (ev is null)
             {
-                return NotFound(eventResult.Messages);
+                return NotFound($"Событие с id={id} не найдено");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, eventResult.Entity, Operations.Update);
+                .AuthorizeAsync(User, ev, Operations.Update);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать событие с id={id}");
             }
 
-            var eventDTO = _mapper.Map<EventWithUsersDTO>(eventResult.Entity);
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(ev);
             var eventToPatch = _mapper.Map<EventUpdateModel>(eventDTO);
             patchDocument.ApplyTo(eventToPatch, ModelState);
 
-            if (!TryValidateModel(eventToPatch))
+            var validationResult = await _eventUpdateModelValidator.Validate(eventToPatch);
+
+            if (!validationResult.IsValid)
             {
-                return ValidationProblem(ModelState);
+                return BadRequest(validationResult.Errors);
             }
 
-            if (eventToPatch.Managers.Count < 1)
+            var updatedEvent = await _eventService.UpdateAsync(id, eventToPatch);
+
+            if (updatedEvent is null)
             {
-                // такие проверки мб уйдут после изменения валидации для таких полей
-                return BadRequest("The list of event managers is empty");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления события");
             }
 
-            var updateResult = await _eventService.UpdateAsync(id, eventToPatch);
-
-            if (updateResult.Succeeded)
-            {
-                var updatedEvent = updateResult.Entity;
-
-                if (updatedEvent is null)
-                {
-                    return Ok(id);
-                }
-
-                return Ok(updatedEvent);
-            }
-            else
-            {
-                return StatusCode(500, updateResult.Messages);
-            }
+            return Ok(updatedEvent);
         }
 
-        // DELETE api/Events/{id}
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DestroyAsync(int id)
+        public async Task<ActionResult> Destroy([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var eventResult = await _eventService.GetEventEntityAsync(id);
+            var ev = await _eventService.RetrieveAsync(id);
 
-            if (!eventResult.Succeeded || eventResult.Entity is null)
+            if (ev is null)
             {
-                return NotFound(eventResult.Messages);
+                return NotFound($"Событие с id={id} не найдено");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, eventResult.Entity, Operations.Delete);
+                .AuthorizeAsync(User, ev, Operations.Delete);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалить событие с id={id}");
             }
 
-            var childEventsResult = await _eventService.GetChildEvents(id);
+            var childEvents = new List<EventReadModel>(await _eventService.GetChildEvents(id));
 
-            if (childEventsResult.Succeeded)
+            if (childEvents.Count > 0)
             {
-                return BadRequest(childEventsResult.Messages);
+                return BadRequest($"Событие с id={id} имеет дочерние события");
             }
 
-            var deleteResult = await _eventService.DeleteAsync(id);
+            await _eventService.DeleteAsync(id);
 
-            if (deleteResult.Succeeded)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return StatusCode(500, deleteResult.Messages);
-            }
+            return NoContent();
         }
 
-        // GET api/Events/Breadcrumbs/{id}
         [HttpGet("Breadcrumbs/{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs(int id)
+        public async Task<ActionResult<IEnumerable<Breadcrumb>>> GetBreadcrumbs([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var result = await _eventService.GetBreadcrumbs(id);
+            var breadcrumbs = await _eventService.GetBreadcrumbs(id);
 
-            if (result.Succeeded)
-            {
-                return Ok(result.Entity);
-            }
-            else
-            {
-                return StatusCode(500, result.Messages);
-            }
+            return Ok(breadcrumbs);
         }
 
-        // GET api/Events/Statistics/?key1=value1&key2=value2
         [HttpGet("Statistics/")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
+        public async Task<ActionResult<IEnumerable<ChartData>>> Statistics([FromQuery] IDictionary<string, string> filters)
         {
-            var eventsStatisticsResult = await _eventService.GetSimpleStatistics(filters);
+            var eventsStatistics = await _eventService.GetEventsStatistics(filters);
 
-            if (eventsStatisticsResult.Succeeded && eventsStatisticsResult.Entity is not null)
-            {
-                return Ok(eventsStatisticsResult.Entity);
-            }
-
-            return StatusCode(500, eventsStatisticsResult.Messages);
+            return Ok(eventsStatistics);
         }
 
-        // GET api/Events/Statistics/{id}
         [HttpGet("Statistics/{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> EventStatisticsAsync(int id)
+        public async Task<ActionResult<IEnumerable<ChartData>>> EventStatistics([FromRoute] int id)
         {
-            var eventStatisticsResult = await _eventService.GetEventStatistics(id);
+            var eventStatistics = await _eventService.GetEventStatistics(id);
 
-            if (eventStatisticsResult.Succeeded && eventStatisticsResult.Entity is not null)
-            {
-                return Ok(eventStatisticsResult.Entity);
-            }
-
-            return StatusCode(500, eventStatisticsResult.Messages);
+            return Ok(eventStatistics);
         }
 
-        // POST api/Events/Avatar/?id=value1
         [HttpPost("Avatar")]
         public async Task<ActionResult> UploadAvatar([FromForm] IFormFile file, [FromQuery] string id)
         {
-            int eventId = -1;
+            var eventId = -1;
 
             if (int.TryParse(id, out int eventIdParam))
             {
@@ -334,43 +277,36 @@ namespace MathEvent.Api.Controllers
 
             if (eventId < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var eventResult = await _eventService.GetEventEntityAsync(eventId);
+            var ev = await _eventService.RetrieveAsync(eventId);
 
-            if (!eventResult.Succeeded || eventResult.Entity is null)
+            if (ev is null)
             {
-                return NotFound(eventResult.Messages);
+                return NotFound($"Событие с id={id} не найдено");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, eventResult.Entity, Operations.Update);
+                .AuthorizeAsync(User, ev, Operations.Update);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать событие с id={id}");
             }
 
-            var checkResult = _fileService.IsCorrectImage(file);
+            var checkResult = await _imageValidator.Validate(file);
 
-            if (!checkResult.Succeeded)
+            if (!checkResult.IsValid)
             {
-                return BadRequest(checkResult.Messages);
+                return BadRequest(checkResult.Errors);
             }
 
-            var userResult = await _userService.GetCurrentUserAsync(User);
-
-            if (!userResult.Succeeded)
-            {
-                return NotFound(userResult.Messages);
-            }
-
-            var user = userResult.Entity;
+            var user = await _userService.GetUserAsync(User);
 
             if (user is null)
             {
-                return StatusCode(500, "Entity is null");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Не удается определить текущего пользователя");
             }
 
             var fileCreateModel = new FileCreateModel
@@ -382,38 +318,30 @@ namespace MathEvent.Api.Controllers
                 OwnerId = null
             };
 
-            var uploadResult = await _eventService.UploadAvatar(eventId, file, fileCreateModel);
+            var updatedEvent = await _eventService.UploadAvatar(eventId, file, fileCreateModel);
 
-            if (uploadResult.Succeeded)
+            if (updatedEvent is null)
             {
-                var updatedEvent = uploadResult.Entity;
-
-                if (updatedEvent is null)
-                {
-                    return Ok(id);
-                }
-
-                return Ok(updatedEvent);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка по время загрузки изображения");
             }
-            else
-            {
-                return StatusCode(500, uploadResult.Messages);
-            }
+
+            return Ok(updatedEvent);
         }
 
-        // GET api/Events/EventsCountByDate/?startDateFrom=value1&startDateTo=value2
         [HttpGet("EventsCountByDate")]
         [AllowAnonymous]
         public async Task<ActionResult<IDictionary<DateTime, int>>> GetEventsCountByDate([FromQuery] IDictionary<string, string> dates)
         {
-            var eventsCountByDateResult = await _eventService.GetEventsCountByDateAsync(dates);
+            var eventsCountByDate = await _eventService.GetEventsCountByDateAsync(dates);
 
-            if (eventsCountByDateResult.Succeeded)
-            {
-                return Ok(eventsCountByDateResult.Entity);
-            }
+            return Ok(eventsCountByDate);
+        }
 
-            return StatusCode(500, eventsCountByDateResult.Messages);
+        [HttpGet("SortByValues")]
+        [AllowAnonymous]
+        public ActionResult<IEnumerable<SortDataModel>> GetSortByValues()
+        {
+            return Ok(_eventService.GetSortByValues());
         }
     }
 }

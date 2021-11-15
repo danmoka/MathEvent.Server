@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Identities.DTOs;
-using MathEvent.Converters.Identities.Models;
-using MathEvent.Converters.Others;
+using MathEvent.Contracts.Services;
+using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
-using MathEvent.Services.Results;
+using MathEvent.Models.Others;
+using MathEvent.Models.Users;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -17,15 +18,15 @@ namespace MathEvent.Services.Services
     /// <summary>
     /// Сервис по выполнению действий над пользователями
     /// </summary>
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
         private readonly IMapper _mapper;
 
-        private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly IEmailSender _emailSender;
+
+        private readonly UserManager<ApplicationUser> _userManager;
 
         private const int _defaultActiveUsersStatisticsTop = 10;
 
@@ -42,98 +43,67 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
-        /// Возвращает результат с набором пользователей
+        /// Возвращает набор пользователей
         /// </summary>
         /// <param name="filters">Набор пар ключ-значение</param>
-        /// <returns>Результат с набором пользователей</returns>
+        /// <returns>Набор пользователей</returns>
         /// <remarks>Фильтры не используются</remarks>
-        public async Task<IResult<IMessage, IEnumerable<UserReadModel>>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<UserReadModel>> ListAsync(IDictionary<string, string> filters)
         {
             var users = await Filter(_repositoryWrapper.User.FindAll(), filters).ToListAsync();
+            var userDTOs = _mapper.Map<IEnumerable<UserDTO>>(users);
+            var userReadModels = _mapper.Map<IEnumerable<UserReadModel>>(userDTOs);
 
-            if (users is not null)
-            {
-                var usersDTO = _mapper.Map<IEnumerable<UserDTO>>(users);
-
-                return ResultFactory.GetSuccessfulResult(_mapper.Map<IEnumerable<UserReadModel>>(usersDTO));
-            }
-
-            return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<UserReadModel>>(new List<IMessage>()
-            {
-                MessageFactory.GetSimpleMessage("402", "The list of users is empty")
-            });
+            return userReadModels;
         }
 
         /// <summary>
-        /// Возвращает результат с пользователем с указанным id
+        /// Возвращает пользователя с указанным id
         /// </summary>
         /// <param name="id">id пользователя</param>
-        /// <returns>Результат с пользователем</returns>
-        public async Task<IResult<IMessage, UserWithEventsReadModel>> RetrieveAsync(string id)
+        /// <returns>Пользователь</returns>
+        public async Task<UserWithEventsReadModel> RetrieveAsync(string id)
         {
-            var userResult = await GetUserEntityAsync(id);
-
-            if (!userResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(userResult.Messages);
-            }
-
-            var user = userResult.Entity;
+            var user = await GetUserEntityAsync(id);
 
             if (user is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"User with id = {id} not found")
-                });
+                return null;
             }
 
             var userDTO = _mapper.Map<UserWithEventsDTO>(user);
             var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
             userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-            return ResultFactory.GetSuccessfulResult(userReadModel);
+            return userReadModel;
         }
 
         /// <summary>
         /// Создает пользователя
         /// </summary>
         /// <param name="createModel">Модель создания пользователя</param>
-        /// <returns>Результат создания пользователя</returns>
-        public async Task<IResult<IMessage, UserWithEventsReadModel>> CreateAsync(UserCreateModel createModel)
+        /// <returns>Новый пользователь</returns>
+        public async Task<UserWithEventsReadModel> CreateAsync(UserCreateModel createModel)
         {
             var user = _mapper.Map<ApplicationUser>(_mapper.Map<UserDTO>(createModel));
-
-            if (user is null)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when mapping model {createModel.Name}")
-                });
-            }
-
-            var createResult = await _repositoryWrapper.User
-                    .CreateAsync(user, createModel.Password);
+            var createResult = await _repositoryWrapper.User.CreateAsync(user, createModel.Password);
 
             if (!createResult.Succeeded)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(ResultUtils.MapIdentityErrorsToMessages(createResult.Errors));
+                throw new Exception(createResult.Errors.ToString());
             }
 
             await _repositoryWrapper.SaveAsync();
 
             if (await CreateUserOwnerAsync(user.Id, Owner.Type.File) is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage(null, $"Errors when creating an owner for user with id = {user.Id}")
-                });
+                throw new Exception("Errors while creating owner");
             }
 
-            UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
             userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-            return ResultFactory.GetSuccessfulResult(userReadModel);
+            return userReadModel;
         }
 
         /// <summary>
@@ -141,73 +111,51 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id пользователя</param>
         /// <param name="updateModel">Модель обновления пользователя</param>
-        /// <returns>Результат обновления пользователя</returns>
-        public async Task<IResult<IMessage, UserWithEventsReadModel>> UpdateAsync(string id, UserUpdateModel updateModel)
+        /// <returns>Обновленный пользователь</returns>
+        public async Task<UserWithEventsReadModel> UpdateAsync(string id, UserUpdateModel updateModel)
         {
-            var userResult = await GetUserEntityAsync(id);
-
-            if (!userResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(userResult.Messages);
-            }
-
-            var user = userResult.Entity;
-            // TODO: ? AddToRoleAsync
+            var user = await GetUserEntityAsync(id);
 
             if (user is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"User with the ID {id} not found")
-                });
+                throw new Exception($"User with id={id} is not found");
             }
 
             await CreateNewSubscriptions(updateModel.Events, id);
+
             await CreateNewManagers(updateModel.ManagedEvents, id);
+
             var userDTO = _mapper.Map<UserWithEventsDTO>(user);
             _mapper.Map(updateModel, userDTO);
             _mapper.Map(userDTO, user);
 
             var updateResult = await _repositoryWrapper.User.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                throw new Exception(updateResult.Errors.ToString());
+            }
+
             await _repositoryWrapper.SaveAsync();
 
-            UserWithEventsReadModel userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
             userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-            if (updateResult.Succeeded)
-            {
-                await _repositoryWrapper.SaveAsync();
-
-                return ResultFactory.GetSuccessfulResult(userReadModel);
-            }
-            else
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(ResultUtils.MapIdentityErrorsToMessages(updateResult.Errors));
-            }
+            return userReadModel;
         }
 
         /// <summary>
         /// Удаляет пользователя
         /// </summary>
         /// <param name="id">id пользователя</param>
-        /// <returns>Результат удаления пользователя</returns>
-        public async Task<IResult<IMessage, UserWithEventsReadModel>> DeleteAsync(string id)
+        /// <returns></returns>
+        public async Task DeleteAsync(string id)
         {
-            var userResult = await GetUserEntityAsync(id);
-
-            if (!userResult.Succeeded)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(userResult.Messages);
-            }
-
-            var user = userResult.Entity;
+            var user = await GetUserEntityAsync(id);
 
             if (user is null)
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("404", $"User with the ID {id} not found")
-                });
+                throw new Exception($"User with id={id} is not found");
             }
 
             var deleteResult = await _repositoryWrapper.User.DeleteAsync(user);
@@ -215,70 +163,47 @@ namespace MathEvent.Services.Services
             if (deleteResult.Succeeded)
             {
                 await _repositoryWrapper.SaveAsync();
-
-                return ResultFactory.GetSuccessfulResult((UserWithEventsReadModel)null);
             }
             else
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<UserWithEventsReadModel>(ResultUtils.MapIdentityErrorsToMessages(deleteResult.Errors));
+                throw new Exception(deleteResult.Errors.ToString());
             }
         }
 
         /// <summary>
-        /// Возвращает результат с пользователем с указанным id
+        /// Возвращает пользователем по его claims
         /// </summary>
-        /// <param name="id">id пользователя</param>
-        /// <returns>Результат с пользователем с указанным id</returns>
-        public async Task<IResult<IMessage, ApplicationUser>> GetUserEntityAsync(string id)
-        {
-            var user = await _repositoryWrapper.User
-                .FindByCondition(user => user.Id == id)
-                .SingleOrDefaultAsync();
-
-            if (user is not null)
-            {
-                return ResultFactory.GetSuccessfulResult(user);
-            }
-
-            return ResultFactory.GetUnsuccessfulMessageResult<ApplicationUser>(new List<IMessage>()
-            {
-                MessageFactory.GetSimpleMessage("404", $"User with id = {id} is not found")
-            });
-        }
-
-        /// <summary>
-        /// Возвращает результат с текущим пользователем
-        /// </summary>
-        /// <param name="userPrincipal">Данные, определяющие текущего пользователя</param>
-        /// <returns>Результат с текущим пользователем</returns>
-        public async Task<IResult<IMessage, ApplicationUser>> GetCurrentUserAsync(ClaimsPrincipal userPrincipal)
+        /// <param name="userPrincipal">Данные, определяющие пользователя</param>
+        /// <returns>Пользователь</returns>
+        public async Task<ApplicationUser> GetUserAsync(ClaimsPrincipal userPrincipal)
         {
             var user = await _userManager.GetUserAsync(userPrincipal);
 
-            if (user is not null)
-            {
-                return ResultFactory.GetSuccessfulResult(user);
-            }
+            return user;
+        }
 
-            return ResultFactory.GetUnsuccessfulMessageResult<ApplicationUser>(new List<IMessage>()
-            {
-                MessageFactory.GetSimpleMessage("404", $"User is not found")
-            });
+        /// <summary>
+        /// Возвращает пользователя по email
+        /// </summary>
+        /// <param name="email">email</param>
+        /// <returns>Пользователь</returns>
+        public async Task<ApplicationUser> GetUserByEmail(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            return user;
         }
 
         /// <summary>
         /// Отправляет токен смены пароля на электронную почту пользователя
         /// </summary>
         /// <param name="email">Адрес электронной почты пользователя</param>
-        /// <returns>Результат генерации и отправки токена</returns>
-        public async Task<IResult<IMessage, string>> ForgotPasswordAsync(string email)
+        /// <returns></returns>
+        public async Task ForgotPasswordAsync(string email)
         {
             if (string.IsNullOrEmpty(email))
             {
-                return ResultFactory.GetUnsuccessfulMessageResult<string>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "The user's email address is empty")
-                });
+                throw new Exception("The user's email address is empty");
             }
 
             var user = await _repositoryWrapper
@@ -288,7 +213,7 @@ namespace MathEvent.Services.Services
 
             if (user is null)
             {
-                return ResultFactory.GetSuccessfulResult("Ok");
+                return;
             }
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -296,47 +221,42 @@ namespace MathEvent.Services.Services
                 new string[] { user.Email },
                 "Смена пароля",
                 $"Подтверждающий код: {token}");
-            _emailSender.SendEmail(message);
 
-            return ResultFactory.GetSuccessfulResult("Ok");
+            _emailSender.SendEmail(message);
         }
 
         /// <summary>
         /// Меняет пароль пользователя
         /// </summary>
         /// <param name="resetModel">Модель смены пароля</param>
-        /// <returns>Результат смены пароля</returns>
-        public async Task<IResult<IMessage, string>> ResetPasswordAsync(ForgotPasswordResetModel resetModel)
+        /// <returns></returns>
+        public async Task ResetPasswordAsync(ForgotPasswordResetModel resetModel)
         {
             var user = await _userManager.FindByEmailAsync(resetModel.Email);
 
             if (user is null)
             {
-                return ResultFactory.GetSuccessfulResult("Ok");
+                return;
             }
 
             var result = await _userManager.ResetPasswordAsync(user, resetModel.Token, resetModel.Password);
 
-            if (result.Succeeded)
+            if (!result.Succeeded)
             {
-                return ResultFactory.GetSuccessfulResult("Password changed");
+                throw new Exception(result.Errors.ToString());
             }
-            else
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<string>(
-                    new List<IMessage>(result.Errors
-                    .Select(er => MessageFactory.GetIdentityMessage(er))));
-            }
+
+            return;
         }
 
         /// <summary>
-        /// Возвращает результат со статистикой по пользователю
+        /// Возвращает статистику по пользователю
         /// </summary>
         /// <param name="id">id пользователя</param>
-        /// <returns>Результат со статистикой по пользователю</returns>
-        public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetUserStatistics(string id)
+        /// <returns>Статистика по пользователю</returns>
+        public async Task<IEnumerable<ChartData>> GetUserStatistics(string id)
         {
-            var statistics = new List<SimpleStatistics>();
+            var statistics = new List<ChartData>();
             var favoriteOrganizations = await GetFavoriteOrganizationsBySubscriptions(id);
 
             if (favoriteOrganizations is not null)
@@ -344,18 +264,15 @@ namespace MathEvent.Services.Services
                 statistics.Add(favoriteOrganizations);
             }
 
-            if (statistics.Count < 1)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<SimpleStatistics>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", $"Errors when getting a statistics for user with id = {id}")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(statistics.AsEnumerable());
+            return statistics;
         }
 
-        public async Task<IResult<IMessage, IEnumerable<SimpleStatistics>>> GetSimpleStatistics(IDictionary<string, string> filters)
+        /// <summary>
+        /// Возвращает статистику по пользователям
+        /// </summary>
+        /// <param name="filters">Набор пар для фильтрации пользователей</param>
+        /// <returns>Статистика по пользователям</returns>
+        public async Task<IEnumerable<ChartData>> GetUsersStatistics(IDictionary<string, string> filters)
         {
             var activeUsersTop = _defaultActiveUsersStatisticsTop;
 
@@ -370,26 +287,32 @@ namespace MathEvent.Services.Services
                 }
             }
 
-            var simpleStatistics = new List<SimpleStatistics>();
+            var usersStatistics = new List<ChartData>();
             var mostActiveUsersStatistics = await GetMostActiveUsersStatistics(activeUsersTop);
 
             if (mostActiveUsersStatistics is not null)
             {
-                simpleStatistics.Add(mostActiveUsersStatistics);
+                usersStatistics.Add(mostActiveUsersStatistics);
             }
 
-            if (simpleStatistics.Count < 1)
-            {
-                return ResultFactory.GetUnsuccessfulMessageResult<IEnumerable<SimpleStatistics>>(new List<IMessage>()
-                {
-                    MessageFactory.GetSimpleMessage("400", "Errors when getting a statistics for users")
-                });
-            }
-
-            return ResultFactory.GetSuccessfulResult(simpleStatistics.AsEnumerable());
+            return usersStatistics;
         }
 
-        private async Task<SimpleStatistics> GetFavoriteOrganizationsBySubscriptions(string userId)
+        /// <summary>
+        /// Возвращает пользователя с указанным id
+        /// </summary>
+        /// <param name="id">id пользователя</param>
+        /// <returns>Пользователь с указанным id</returns>
+        private async Task<ApplicationUser> GetUserEntityAsync(string id)
+        {
+            var user = await _repositoryWrapper.User
+                .FindByCondition(user => user.Id == id)
+                .SingleOrDefaultAsync();
+
+            return user;
+        }
+
+        private async Task<ChartData> GetFavoriteOrganizationsBySubscriptions(string userId)
         {
             var userSubscriptions = await _repositoryWrapper.Subscription
                 .FindByCondition(s => s.ApplicationUserId == userId)
@@ -409,7 +332,7 @@ namespace MathEvent.Services.Services
                 .Select(g => new { orgId = g.Key, count = g.Count() })
                 .ToDictionary(k => k.orgId is null ? -1 : k.orgId, i => i.count);
 
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = "Доли организаций в подписках пользователя",
                 Data = new List<ChartDataPiece>()
@@ -438,9 +361,9 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private async Task<SimpleStatistics> GetMostActiveUsersStatistics(int number)
+        private async Task<ChartData> GetMostActiveUsersStatistics(int number)
         {
-            var statistics = new SimpleStatistics
+            var statistics = new ChartData
             {
                 Title = $"Топ самых активных пользователей по количеству посещаемых событий",
                 Data = new List<ChartDataPiece>()
@@ -456,21 +379,16 @@ namespace MathEvent.Services.Services
 
             foreach (var entry in eventsCountPerUser)
             {
-                var userResult = await GetUserEntityAsync(entry.Key);
+                var user = await GetUserEntityAsync(entry.Key);
 
-                if (userResult.Succeeded)
+                if (user is not null)
                 {
-                    var userEntity = userResult.Entity;
-
-                    if (userEntity is not null)
+                    statistics.Data.Add(
+                    new ChartDataPiece
                     {
-                        statistics.Data.Add(
-                        new ChartDataPiece
-                        {
-                            X = $"{userEntity.Name[0]}. {userEntity.Surname} ({userEntity.UserName})",
-                            Y = entry.Value
-                        });
-                    }
+                        X = $"{user.Name[0]}. {user.Surname} ({user.UserName})",
+                        Y = entry.Value
+                    });
                 }
             }
 
@@ -529,6 +447,7 @@ namespace MathEvent.Services.Services
         /// <returns>Владелец</returns>
         private async Task<Owner> CreateUserOwnerAsync(string id, Owner.Type type)
         {
+            // TODO: вынести работу по созданию owner в profile. При попытке получения owner'а создавать его, если его нет
             var owner = await _repositoryWrapper.Owner.CreateAsync(
                 new Owner
                 {

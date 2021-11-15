@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using MathEvent.AuthorizationHandlers;
-using MathEvent.Converters.Organizations.DTOs;
-using MathEvent.Converters.Organizations.Models;
-using MathEvent.Converters.Others;
-using MathEvent.Services.Services;
+using MathEvent.Contracts.Services;
+using MathEvent.Contracts.Validators;
+using MathEvent.DTOs.Organizations;
+using MathEvent.Models.Organizations;
+using MathEvent.Models.Others;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -18,250 +20,212 @@ namespace MathEvent.Api.Controllers
     {
         private readonly IMapper _mapper;
 
-        private readonly OrganizationService _organizationService;
+        private readonly IOrganizationService _organizationService;
 
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
         private readonly IAuthorizationService _authorizationService;
 
+        private readonly IOrganizationCreateModelValidator _organizationCreateModelValidator;
+
+        private readonly IOrganizationUpdateModelValidator _organizationUpdateModelValidator;
+
         public OrganizationsController(
             IMapper mapper,
-            OrganizationService organizationService,
-            UserService userService,
-            IAuthorizationService authorizationService)
+            IOrganizationService organizationService,
+            IUserService userService,
+            IAuthorizationService authorizationService,
+            IOrganizationCreateModelValidator organizationCreateModelValidator,
+            IOrganizationUpdateModelValidator organizationUpdateModelValidator)
         {
             _mapper = mapper;
             _organizationService = organizationService;
             _userService = userService;
             _authorizationService = authorizationService;
+            _organizationCreateModelValidator = organizationCreateModelValidator;
+            _organizationUpdateModelValidator = organizationUpdateModelValidator;
         }
 
-        // GET api/Organizations/?key1=value1&key2=value2
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<OrganizationReadModel>>> ListAsync([FromQuery] IDictionary<string, string> filters)
+        public async Task<ActionResult<IEnumerable<OrganizationReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var organizationResult = await _organizationService.ListAsync(filters);
+            var organizations = await _organizationService.ListAsync(filters);
 
-            if (organizationResult.Succeeded && organizationResult.Entity is not null)
-            {
-                return Ok(organizationResult.Entity);
-            }
-
-            return NotFound(organizationResult.Messages);
+            return Ok(organizations);
         }
 
-        // GET api/Organizations/{id}
         [HttpGet("{id}")]
         [AllowAnonymous]
-        public async Task<ActionResult<OrganizationReadModel>> RetrieveAsync(int id)
+        public async Task<ActionResult<OrganizationReadModel>> Retrieve([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var organizationResult = await _organizationService.RetrieveAsync(id);
+            var organization = await _organizationService.RetrieveAsync(id);
 
-            if (organizationResult.Succeeded && organizationResult.Entity is not null)
+            if (organization is null)
             {
-                return Ok(organizationResult.Entity);
+                return NotFound($"Организация с id={id} не найдена");
             }
 
-            return NotFound(organizationResult.Messages);
+            return Ok(organization);
         }
 
-        // POST api/Organizations
         [HttpPost]
-        public async Task<ActionResult> CreateAsync([FromBody] OrganizationCreateModel organizaionCreateModel)
+        public async Task<ActionResult> Create([FromBody] OrganizationCreateModel organizaionCreateModel)
         {
-            var userResult = await _userService.GetCurrentUserAsync(User);
+            var validationResult = await _organizationCreateModelValidator.Validate(organizaionCreateModel);
 
-            if (!userResult.Succeeded || userResult.Entity is null)
+            if (!validationResult.IsValid)
             {
-                return StatusCode(401);
+                return BadRequest(validationResult.Errors);
             }
 
-            organizaionCreateModel.ManagerId = userResult.Entity.Id;
-            var createResult = await _organizationService.CreateAsync(organizaionCreateModel);
+            var user = await _userService.GetUserAsync(User);
 
-            if (createResult.Succeeded)
+            if (user is null)
             {
-                var createdEvent = createResult.Entity;
-
-                if (createdEvent is null)
-                {
-                    return Ok();
-                }
-
-                return StatusCode(201, createdEvent.Id);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Не удается получить данные о текущем пользователе");
             }
-            else
+
+            organizaionCreateModel.ManagerId = user.Id;
+            var createdOrganization = await _organizationService.CreateAsync(organizaionCreateModel);
+
+            if (createdOrganization is null)
             {
-                return StatusCode(500, createResult.Messages);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время создания организации");
             }
+
+            return CreatedAtAction(nameof(Retrieve), new { id = createdOrganization.Id }, createdOrganization);
         }
 
-        // PUT api/Organizations/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateAsync(int id, [FromBody] OrganizationUpdateModel organizationUpdateModel)
+        public async Task<ActionResult> Update([FromRoute] int id, [FromBody] OrganizationUpdateModel organizationUpdateModel)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            if (organizationUpdateModel.ManagerId is null)
+            var validationResult = await _organizationUpdateModelValidator.Validate(organizationUpdateModel);
+
+            if (!validationResult.IsValid)
             {
-                return BadRequest("Manager id is null");
+                return BadRequest(validationResult.Errors);
             }
 
-            var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
+            var organization = await _organizationService.RetrieveAsync(id);
 
-            if (!organizationResult.Succeeded)
+            if (organization is null)
             {
-                return NotFound(organizationResult.Messages);
+                return NotFound($"Организация с id={id} не найдена");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, organizationResult.Entity, Operations.Update);
+                .AuthorizeAsync(User, organization, Operations.Update);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать организацию с id={id}");
             }
 
-            var updateResult = await _organizationService.UpdateAsync(id, organizationUpdateModel);
+            var updatedOrganization = await _organizationService.UpdateAsync(id, organizationUpdateModel);
 
-            if (updateResult.Succeeded)
+            if (updatedOrganization is null)
             {
-                var updatedOrganization = updateResult.Entity;
-
-                if (updatedOrganization is null)
-                {
-                    return Ok(id);
-                }
-
-                return Ok(updatedOrganization);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления события");
             }
-            else
-            {
-                return StatusCode(500, updateResult.Messages);
-            }
+
+            return Ok(updatedOrganization);
         }
 
-        // PATCH api/Organizations/{id}
         [HttpPatch("{id}")]
-        public async Task<ActionResult> PartialUpdateAsync(int id, [FromBody] JsonPatchDocument<OrganizationUpdateModel> patchDocument)
+        public async Task<ActionResult> PartialUpdateAsync([FromRoute] int id, [FromBody] JsonPatchDocument<OrganizationUpdateModel> patchDocument)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
             if (patchDocument is null)
             {
-                return BadRequest("Patch document is null");
+                return BadRequest("Тело запроса не задано");
             }
 
-            var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
+            var organization = await _organizationService.RetrieveAsync(id);
 
-            if (!organizationResult.Succeeded || organizationResult.Entity is null)
+            if (organization is null)
             {
-                return NotFound(organizationResult.Messages);
+                return NotFound($"Организация с id={id} не найдена");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, organizationResult.Entity, Operations.Update);
+                .AuthorizeAsync(User, organization, Operations.Update);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать организацию с id={id}");
             }
 
-            var organizationEntity = organizationResult.Entity;
-            var organizationDTO = _mapper.Map<OrganizationDTO>(organizationEntity);
+            var organizationDTO = _mapper.Map<OrganizationDTO>(organization);
             var organizationToPatch = _mapper.Map<OrganizationUpdateModel>(organizationDTO);
             patchDocument.ApplyTo(organizationToPatch, ModelState);
 
-            if (!TryValidateModel(organizationToPatch))
+            var validationResult = await _organizationUpdateModelValidator.Validate(organizationToPatch);
+
+            if (!validationResult.IsValid)
             {
-                return ValidationProblem(ModelState);
+                return BadRequest(validationResult.Errors);
             }
 
-            if (organizationToPatch.ManagerId is null)
+            var updatedOrganization = await _organizationService.UpdateAsync(id, organizationToPatch);
+
+            if (updatedOrganization is null)
             {
-                return BadRequest("Manager id is null");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления события");
             }
 
-            var updateResult = await _organizationService.UpdateAsync(id, organizationToPatch);
-
-            if (updateResult.Succeeded)
-            {
-                var updatedOrganization = updateResult.Entity;
-
-                if (updatedOrganization is null)
-                {
-                    return Ok(id);
-                }
-
-                return Ok(updatedOrganization);
-            }
-            else
-            {
-                return StatusCode(500, updateResult.Messages);
-            }
+            return Ok(updatedOrganization);
         }
 
-        // DELETE api/Organizations/{id}
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DestroyAsync(int id)
+        public async Task<ActionResult> Destroy([FromRoute] int id)
         {
             if (id < 0)
             {
-                return BadRequest($"id = {id} less then 0");
+                return BadRequest($"id={id} меньше 0");
             }
 
-            var organizationResult = await _organizationService.GetOrganizationEntityAsync(id);
+            var organization = await _organizationService.RetrieveAsync(id);
 
-            if (!organizationResult.Succeeded)
+            if (organization is null)
             {
-                return NotFound(organizationResult.Messages);
+                return NotFound($"Организация с id={id} не найдена");
             }
 
             var authorizationResult = await _authorizationService
-                .AuthorizeAsync(User, organizationResult.Entity, Operations.Delete);
+                .AuthorizeAsync(User, organization, Operations.Delete);
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(403);
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалять организацию с id={id}");
             }
 
-            var deleteResult = await _organizationService.DeleteAsync(id);
+            await _organizationService.DeleteAsync(id);
 
-            if (deleteResult.Succeeded)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return StatusCode(500, deleteResult.Messages);
-            }
+            return NoContent();
         }
 
-        // GET api/Organizations/Statistics/?key1=value1&key2=value2
         [HttpGet("Statistics/")]
         [AllowAnonymous]
-        public async Task<ActionResult<IEnumerable<SimpleStatistics>>> StatisticsAsync([FromQuery] IDictionary<string, string> filters)
+        public async Task<ActionResult<IEnumerable<ChartData>>> Statistics([FromQuery] IDictionary<string, string> filters)
         {
-            var organizationResult = await _organizationService.GetSimpleStatistics(filters);
+            var statistics = await _organizationService.GetOrganizationsStatistics(filters);
 
-            if (organizationResult.Succeeded && organizationResult.Entity is not null)
-            {
-                return Ok(organizationResult.Entity);
-            }
-
-            return StatusCode(500, organizationResult.Messages);
+            return Ok(statistics);
         }
     }
 }

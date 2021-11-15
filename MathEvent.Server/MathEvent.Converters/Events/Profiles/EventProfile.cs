@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using MathEvent.Contracts;
-using MathEvent.Converters.Events.DTOs;
-using MathEvent.Converters.Events.Models;
-using MathEvent.Converters.Identities.DTOs;
-using MathEvent.Converters.Organizations.DTOs;
+using MathEvent.DTOs.Events;
+using MathEvent.DTOs.Organizations;
+using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
+using MathEvent.Models.Events;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,14 +21,17 @@ namespace MathEvent.Converters.Events.Profiles
             //Source -> target
 
             // Model -> DTO
-            CreateMap<EventCreateModel, EventDTO>(); // создание
+            CreateMap<EventCreateModel, EventDTO>()
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(source => DateTime.Parse(source.StartDate).ToUniversalTime())); // создание
             CreateMap<EventUpdateModel, EventWithUsersDTO>() // обновление
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(source => DateTime.Parse(source.StartDate).ToUniversalTime()))
                 .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<IdToUserDTOResolver>())
                 .ForMember(dest => dest.Managers, opt => opt.MapFrom<IdToManagerDTOResolver>())
                 .ForMember(dest => dest.Organization, opt => opt.MapFrom<IdToOrganizationDTOResolver>());
+            CreateMap<EventWithUsersReadModel, EventWithUsersDTO>();
+            CreateMap<EventReadModel, EventDTO>();
 
             // DTO -> Model
-            CreateMap<EventDTO, EventSimpleReadModel>(); // чтение
             CreateMap<EventDTO, EventReadModel>(); // чтение
             CreateMap<EventWithUsersDTO, EventUpdateModel>()
                 .ForMember(dest => dest.ApplicationUsers, opt => opt.MapFrom<UserDTOToIdResolver>())

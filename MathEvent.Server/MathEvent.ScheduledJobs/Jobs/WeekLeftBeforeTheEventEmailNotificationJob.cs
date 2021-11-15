@@ -1,6 +1,5 @@
-﻿using MathEvent.Contracts;
+﻿using MathEvent.Contracts.Services;
 using MathEvent.Entities.Entities;
-using MathEvent.Services.Services;
 using Quartz;
 using System;
 using System.Threading.Tasks;
@@ -14,14 +13,14 @@ namespace MathEvent.ScheduledJobs.Jobs
     {
         private readonly IEmailSender _emailSender;
 
-        private readonly EventService _eventService;
+        private readonly IEventService _eventService;
 
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
         public WeekLeftBeforeTheEventEmailNotificationJob(
             IEmailSender emailSender,
-            EventService eventService,
-            UserService userService)
+            IEventService eventService,
+            IUserService userService)
         {
             _emailSender = emailSender;
             _eventService = eventService;
@@ -30,34 +29,28 @@ namespace MathEvent.ScheduledJobs.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            var nextWeekDayDate = DateTime.Now.AddDays(7);
-            var eventsResult = await _eventService.GetEventsByDate(nextWeekDayDate, nextWeekDayDate);
+            var nextWeekDayDate = DateTime.UtcNow.AddDays(7);
+            var events = await _eventService.GetEventsByDate(nextWeekDayDate, nextWeekDayDate);
 
-            if (eventsResult.Succeeded)
+            foreach (var ev in events)
             {
-                var events = eventsResult.Entity;
-
-                foreach (var ev in events)
+                foreach (var userModel in ev.ApplicationUsers)
                 {
-                    foreach (var userModel in ev.ApplicationUsers)
-                    {
-                        var userResult = await _userService.RetrieveAsync(userModel.Id);
+                    var user = await _userService.RetrieveAsync(userModel.Id);
 
-                        if (userResult.Succeeded)
-                        {
-                            var user = userResult.Entity;
-                            var message = CreateNotificationMessage(user.Email, ev.Name, ev.StartDate);
-                            _emailSender.SendEmail(message);
-                        }
+                    if (user is not null)
+                    {
+                        var message = CreateNotificationMessage(user.Email, ev.Name, ev.StartDate);
+                        _emailSender.SendEmail(message);
                     }
                 }
             }
         }
 
-        private static Message CreateNotificationMessage(string email, string eventName, DateTime eventDate)
+        private static Message CreateNotificationMessage(string email, string eventName, DateTime eventDateTimeUTC)
         {
             var subject = "Напоминание: до события осталась одна неделя!";
-            var content = $"Событие \"{eventName}\" состоится через неделю ({eventDate})";
+            var content = $"Событие \"{eventName}\" состоится через неделю ({eventDateTimeUTC} (UTC))";
 
             return new Message(
                 new string[] { email },
