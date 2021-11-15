@@ -1,7 +1,7 @@
-﻿using MathEvent.Entities.Entities;
+﻿using MathEvent.Contracts.Services;
+using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
 namespace MathEvent.AuthorizationHandlers.Organizations
@@ -9,12 +9,11 @@ namespace MathEvent.AuthorizationHandlers.Organizations
     public class OrganizationsAuthorizationCrudHandler :
         AuthorizationHandler<OperationAuthorizationRequirement, Organization>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
 
-        public OrganizationsAuthorizationCrudHandler(
-            UserManager<ApplicationUser> userManager)
+        public OrganizationsAuthorizationCrudHandler(IUserService userService)
         {
-            _userManager = userManager;
+            _userService = userService;
         }
 
         protected override async Task HandleRequirementAsync(
@@ -22,7 +21,7 @@ namespace MathEvent.AuthorizationHandlers.Organizations
             OperationAuthorizationRequirement requirement,
             Organization resource)
         {
-            var user = await _userManager.GetUserAsync(context.User);
+            var user = await _userService.GetUserAsync(context.User);
 
             if (requirement.Name == Operations.Update.Name
                 || requirement.Name == Operations.Delete.Name)
