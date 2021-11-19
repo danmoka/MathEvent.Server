@@ -3,6 +3,7 @@ using MathEvent.Contracts;
 using MathEvent.Contracts.Services;
 using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
+using MathEvent.Models.Email;
 using MathEvent.Models.Others;
 using MathEvent.Models.Users;
 using Microsoft.AspNetCore.Identity;
@@ -24,7 +25,7 @@ namespace MathEvent.Services.Services
 
         private readonly IMapper _mapper;
 
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
 
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -34,7 +35,7 @@ namespace MathEvent.Services.Services
             IRepositoryWrapper repositoryWrapper,
             IMapper mapper,
             UserManager<ApplicationUser> userManager,
-            IEmailSender emailSender)
+            IEmailService emailSender)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
@@ -206,10 +207,7 @@ namespace MathEvent.Services.Services
                 throw new Exception("The user's email address is empty");
             }
 
-            var user = await _repositoryWrapper
-                .User
-                .FindByCondition(u => u.Email == email)
-                .SingleOrDefaultAsync();
+            var user = await GetUserByEmail(email);
 
             if (user is null)
             {
@@ -232,7 +230,7 @@ namespace MathEvent.Services.Services
         /// <returns></returns>
         public async Task ResetPasswordAsync(ForgotPasswordResetModel resetModel)
         {
-            var user = await _userManager.FindByEmailAsync(resetModel.Email);
+            var user = await GetUserByEmail(resetModel.Email);
 
             if (user is null)
             {

@@ -1,5 +1,5 @@
 ﻿using MathEvent.Contracts.Services;
-using MathEvent.Entities.Entities;
+using MathEvent.Models.Email;
 using Quartz;
 using System;
 using System.Threading.Tasks;
@@ -11,14 +11,14 @@ namespace MathEvent.ScheduledJobs.Jobs
     /// </summary>
     public class WeekLeftBeforeTheEventEmailNotificationJob : IJob
     {
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailService _emailSender;
 
         private readonly IEventService _eventService;
 
         private readonly IUserService _userService;
 
         public WeekLeftBeforeTheEventEmailNotificationJob(
-            IEmailSender emailSender,
+            IEmailService emailSender,
             IEventService eventService,
             IUserService userService)
         {

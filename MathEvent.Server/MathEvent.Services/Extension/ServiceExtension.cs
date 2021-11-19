@@ -1,7 +1,6 @@
 ﻿using MathEvent.Contracts.Services;
 using MathEvent.Services.Services;
 using MathEvent.Services.Services.DataPath;
-using MathEvent.Services.Services.Email;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MathEvent.Services.Extension
@@ -16,7 +15,6 @@ namespace MathEvent.Services.Extension
             services.AddTransient<IOrganizationService, OrganizationService>();
             services.AddTransient<IFileExtensionWorker, FileExtensionWorker>();
             services.AddTransient<IDataPathWorker, DataPathWorker>();
-            services.AddTransient<IEmailSender, EmailSender>();
         }
     }
 }

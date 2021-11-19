@@ -1,21 +1,21 @@
 ﻿using MailKit.Net.Smtp;
-using MathEvent.Contracts;
 using MathEvent.Contracts.Services;
-using MathEvent.Entities.Entities;
+using MathEvent.Models.Email;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 
-namespace MathEvent.Services.Services.Email
+namespace MathEvent.Email
 {
     /// <summary>
     /// Сервис отправки email сообщений
     /// </summary>
-    public class EmailSender : IEmailSender
+    public class EmailService : IEmailService
     {
-        private readonly IEmailConfiguration _emailConfig;
+        private readonly IConfigurationSection _emailConfig;
 
-        public EmailSender(IEmailConfiguration emailConfig)
+        public EmailService(IConfiguration configuration)
         {
-            _emailConfig = emailConfig;
+            _emailConfig = configuration.GetSection("Email");
         }
 
         public void SendEmail(Message message)
@@ -26,7 +26,7 @@ namespace MathEvent.Services.Services.Email
         private MimeMessage CreateEmailMessage(Message message)
         {
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress(_emailConfig.From));
+            emailMessage.From.Add(new MailboxAddress(_emailConfig["From"]));
             emailMessage.To.AddRange(message.To);
             emailMessage.Subject = message.Subject;
             emailMessage.Body = new TextPart(MimeKit.Text.TextFormat.Text) { Text = message.Content };
@@ -40,9 +40,9 @@ namespace MathEvent.Services.Services.Email
 
             try
             {
-                client.Connect(_emailConfig.SmtpServer, _emailConfig.Port, true);
+                client.Connect(_emailConfig["SmtpServer"], int.Parse(_emailConfig["Port"]), true);
                 client.AuthenticationMechanisms.Remove("XOAUTH2");
-                client.Authenticate(_emailConfig.UserName, _emailConfig.Password);
+                client.Authenticate(_emailConfig["UserName"], _emailConfig["Password"]);
                 client.Send(mailMessage);
             }
             finally

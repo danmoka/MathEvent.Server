@@ -44,6 +44,7 @@ namespace MathEvent.Validation.Users
 
             if (id is null)
             {
+                // TODO: ValidationError - в Models проект
                 validationErrors.Add(new ValidationError
                 {
                     Field = nameof(id),

@@ -1,6 +1,4 @@
-﻿using MathEvent.Api.Configuration;
-using MathEvent.Contracts;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -66,19 +64,6 @@ namespace MathEvent.Api.Extensions
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
-        }
-
-        /// <summary>
-        /// Настройка отправки email сообщений
-        /// </summary>
-        /// <param name="services">Зависимости</param>
-        /// <param name="configuration">Поставщик конфигурации</param>
-        public static void ConfigureEmail(this IServiceCollection services, IConfiguration configuration)
-        {
-            var emailConfig = configuration
-                .GetSection("Email")
-                .Get<EmailConfiguration>();
-            services.AddSingleton<IEmailConfiguration>(emailConfig);
         }
 
         /// <summary>

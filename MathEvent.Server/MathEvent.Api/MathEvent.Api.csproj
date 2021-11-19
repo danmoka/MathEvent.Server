@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MathEvent.Email\MathEvent.Email.csproj" />
     <ProjectReference Include="..\MathEvent.Handlers\MathEvent.AuthorizationHandlers.csproj" />
     <ProjectReference Include="..\MathEvent.Repository\MathEvent.Repository.csproj" />
     <ProjectReference Include="..\MathEvent.ScheduledJobs\MathEvent.ScheduledJobs.csproj" />

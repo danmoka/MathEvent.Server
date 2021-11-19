@@ -2,6 +2,7 @@ using MathEvent.Api.Extensions;
 using MathEvent.AuthorizationHandlers.Extension;
 using MathEvent.Converters.Extension;
 using MathEvent.Database.Extensions;
+using MathEvent.Email.Extensions;
 using MathEvent.Repository.Extensions;
 using MathEvent.ScheduledJobs.Extensions;
 using MathEvent.Services.Extension;
@@ -33,7 +34,7 @@ namespace MathEvent.Api
             services.ConfigureAuthentication(Configuration);
             services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();
-            services.ConfigureEmail(Configuration);
+            services.ConfigureEmail();
             services.ConfigureEntityServices();
             services.ConfigureAuthorizationHandlers();
             services.ConfigureMapper();

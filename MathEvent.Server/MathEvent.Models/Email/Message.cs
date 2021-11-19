@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace MathEvent.Entities.Entities
+namespace MathEvent.Models.Email
 {
     /// <summary>
     /// Модель сообщения
