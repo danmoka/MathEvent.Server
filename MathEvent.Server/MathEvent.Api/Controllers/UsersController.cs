@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -28,83 +29,112 @@ namespace MathEvent.Api.Controllers
 
         private readonly IUserUpdateModelValidator _userUpdateModelValidator;
 
-        private readonly IForgotPasswordModelValidator _forgotPasswordModelValidator;
-
-        private readonly IForgotPasswordResetModelValidator _forgotPasswordResetModelValidator;
-
         public UsersController(
             IMapper mapper,
             IUserService userService,
             IAuthorizationService authorizationService,
             IUserCreateModelValidator userCreateModelValidator,
-            IUserUpdateModelValidator userUpdateModelValidator,
-            IForgotPasswordModelValidator forgotPasswordModelValidator,
-            IForgotPasswordResetModelValidator forgotPasswordResetModelValidator)
+            IUserUpdateModelValidator userUpdateModelValidator)
         {
             _mapper = mapper;
             _userService = userService;
             _authorizationService = authorizationService;
             _userCreateModelValidator = userCreateModelValidator;
             _userUpdateModelValidator = userUpdateModelValidator;
-            _forgotPasswordModelValidator = forgotPasswordModelValidator;
-            _forgotPasswordResetModelValidator = forgotPasswordResetModelValidator;
         }
 
         [HttpGet]
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<UserReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var users = await _userService.ListAsync(filters);
+            var users = await _userService.List(filters);
 
             return Ok(users);
         }
 
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        public async Task<ActionResult<UserWithEventsReadModel>> Retrieve([FromRoute] string id)
+        [HttpGet("{identityUserId}")]
+        public async Task<ActionResult<UserWithEventsReadModel>> Retrieve([FromRoute] Guid identityUserId)
         {
-            if (string.IsNullOrEmpty(id))
+            if (Guid.Empty == identityUserId)
             {
-                return BadRequest($"id не задан");
+                return BadRequest($"identityUserId не задан");
             }
 
-            var user = await _userService.RetrieveAsync(id);
+            var user = await _userService.RetrieveByIdentityUserId(identityUserId);
 
             if (user is null)
             {
-                return NotFound($"Пользователь с id={id} не найден");
+                return NotFound($"Пользователь с id={identityUserId} платформы аутентификации не найден");
             }
 
             return Ok(user);
         }
 
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<ActionResult> Create([FromBody] UserCreateModel userCreateModel)
+        public async Task<ActionResult> CreateOrUpdate([FromBody] UserCreateModel userCreateModel)
         {
-            var validationResult = await _userCreateModelValidator.Validate(userCreateModel);
+            var user = await _userService.GetUserByEmail(userCreateModel.Email);
 
-            if (!validationResult.IsValid)
+            if (user is not null)
             {
-                return BadRequest(validationResult.Errors);
+                var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+                var updateModel = _mapper.Map<UserUpdateModel>(userDTO);
+
+                updateModel.IdentityUserId = userCreateModel.IdentityUserId;
+                updateModel.Name = userCreateModel.Name;
+                updateModel.Surname = userCreateModel.Surname;
+
+                var validationResult = await _userUpdateModelValidator.Validate(updateModel);
+
+                if (!validationResult.IsValid)
+                {
+                    return BadRequest(validationResult.Errors);
+                }
+
+                var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, user, Operations.Update);
+
+                if (!authorizationResult.Succeeded)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать пользователя");
+                }
+
+                user = await _userService.UpdateByEmail(user.Email, updateModel);
+            }
+            else
+            {
+                var validationResult = await _userCreateModelValidator.Validate(userCreateModel);
+
+                if (!validationResult.IsValid)
+                {
+                    return BadRequest(validationResult.Errors);
+                }
+
+                var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, userCreateModel, Operations.Create);
+
+                if (!authorizationResult.Succeeded)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя создать пользователя");
+                }
+
+                user = await _userService.Create(userCreateModel);
             }
 
-            var createdUser = await _userService.CreateAsync(userCreateModel);
-
-            if (createdUser is null)
+            if (user is null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время создания пользователя");
             }
 
-            return CreatedAtAction(nameof(Retrieve), new { id = createdUser.Id }, createdUser);
+            return CreatedAtAction(nameof(Retrieve), new { identityUserId = user.IdentityUserId }, user);
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update([FromRoute] string id, [FromBody] UserUpdateModel userUpdateModel)
+        [HttpPut("{identityUserId}")]
+        public async Task<ActionResult> Update([FromRoute] Guid identityUserId, [FromBody] UserUpdateModel userUpdateModel)
         {
-            if (string.IsNullOrEmpty(id))
+            if (Guid.Empty == identityUserId)
             {
-                return BadRequest("id не задан");
+                return BadRequest("identityId не задан");
             }
 
             var validationResult = await _userUpdateModelValidator.Validate(userUpdateModel);
@@ -114,11 +144,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var user = await _userService.RetrieveAsync(id);
+            var user = await _userService.RetrieveByIdentityUserId(identityUserId);
 
             if (user is null)
             {
-                return NotFound($"Пользователь с id={id} не найден");
+                return NotFound($"Пользователь с id={identityUserId} платформы аутентификации не найден");
             }
 
             var authorizationResult = await _authorizationService
@@ -126,10 +156,10 @@ namespace MathEvent.Api.Controllers
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать пользователя с id={id}");
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать пользователя с id={identityUserId} платформы аутентификации");
             }
 
-            var updatedUser = await _userService.UpdateAsync(id, userUpdateModel);
+            var updatedUser = await _userService.UpdateByIdentityUserId(identityUserId, userUpdateModel);
 
             if (updatedUser is null)
             {
@@ -139,12 +169,12 @@ namespace MathEvent.Api.Controllers
             return Ok(updatedUser);
         }
 
-        [HttpPatch("{id}")]
-        public async Task<ActionResult> PartialUpdate([FromRoute] string id, [FromBody] JsonPatchDocument<UserUpdateModel> patchDocument)
+        [HttpPatch("{identityUserId}")]
+        public async Task<ActionResult> PartialUpdate([FromRoute] Guid identityUserId, [FromBody] JsonPatchDocument<UserUpdateModel> patchDocument)
         {
-            if (string.IsNullOrEmpty(id))
+            if (Guid.Empty == identityUserId)
             {
-                return BadRequest("id не задан");
+                return BadRequest("identityUserId не задан");
             }
 
             if (patchDocument is null)
@@ -152,11 +182,11 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("Тело запроса не задано");
             }
 
-            var user = await _userService.RetrieveAsync(id);
+            var user = await _userService.RetrieveByIdentityUserId(identityUserId);
 
             if (user is null)
             {
-                return NotFound($"Пользователь с id={id} не найден");
+                return NotFound($"Пользователь с id={identityUserId} платформы аутентификации не найден");
             }
 
             var authorizationResult = await _authorizationService
@@ -164,7 +194,7 @@ namespace MathEvent.Api.Controllers
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать пользователя с id={id}");
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать пользователя с id={identityUserId} платформы аутентификации");
             };
 
             var userDTO = _mapper.Map<UserWithEventsDTO>(user);
@@ -178,7 +208,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var updatedUser = await _userService.UpdateAsync(id, userToPatch);
+            var updatedUser = await _userService.UpdateByIdentityUserId(identityUserId, userToPatch);
 
             if (updatedUser is null)
             {
@@ -188,19 +218,19 @@ namespace MathEvent.Api.Controllers
             return Ok(updatedUser);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> Destroy([FromRoute] string id)
+        [HttpDelete("{identityUserId}")]
+        public async Task<ActionResult> Destroy([FromRoute] Guid identityUserId)
         {
-            if (string.IsNullOrEmpty(id))
+            if (Guid.Empty == identityUserId)
             {
                 return BadRequest("id не задан");
             }
 
-            var user = await _userService.RetrieveAsync(id);
+            var user = await _userService.RetrieveByIdentityUserId(identityUserId);
 
             if (user is null)
             {
-                return NotFound($"Пользователь с id={id} не найден");
+                return NotFound($"Пользователь с id={identityUserId} платформы аутентификации не найден");
             }
 
             var authorizationResult = await _authorizationService
@@ -208,44 +238,12 @@ namespace MathEvent.Api.Controllers
 
             if (!authorizationResult.Succeeded)
             {
-                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалять пользователя с id={id}");
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалять пользователя с id={identityUserId} платформы аутентификации");
             }
 
-            await _userService.DeleteAsync(id);
+            await _userService.DeleteByIdentityUserId(identityUserId);
 
             return NoContent();
-        }
-
-        [HttpPost("ForgotPassword/")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordModel forgotPasswordModel)
-        {
-            var validationResult = await _forgotPasswordModelValidator.Validate(forgotPasswordModel);
-
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
-            await _userService.ForgotPasswordAsync(forgotPasswordModel.Email);
-
-            return Ok();
-        }
-
-        [HttpPost("ResetPassword/")]
-        [AllowAnonymous]
-        public async Task<IActionResult> ResetPasswordAsync(ForgotPasswordResetModel resetModel)
-        {
-            var validationResult = await _forgotPasswordResetModelValidator.Validate(resetModel);
-
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
-            await _userService.ResetPasswordAsync(resetModel);
-
-            return Ok();
         }
 
         [HttpGet("Statistics/")]
@@ -257,10 +255,15 @@ namespace MathEvent.Api.Controllers
             return Ok(usersStatistics);
         }
 
-        [HttpGet("Statistics/{id}")]
-        public async Task<ActionResult<IEnumerable<ChartData>>> UserStatistics([FromRoute] string id)
+        [HttpGet("Statistics/{identityUserId}")]
+        public async Task<ActionResult<IEnumerable<ChartData>>> UserStatistics([FromRoute] Guid identityUserId)
         {
-            var userStatistics = await _userService.GetUserStatistics(id);
+            if (Guid.Empty == identityUserId)
+            {
+                return BadRequest("id не задан");
+            }
+
+            var userStatistics = await _userService.GetUserStatistics(identityUserId);
 
             return Ok(userStatistics);
         }

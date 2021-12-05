@@ -19,6 +19,7 @@ namespace MathEvent.AuthorizationHandlers.Extension
             services.AddScoped<IAuthorizationHandler, FilesAuthorizationCrudHandler>();
             services.AddScoped<IAuthorizationHandler, OrganizationsAuthorizationCrudHandler>();
             services.AddScoped<IAuthorizationHandler, UsersAuthorizationCrudHandler>();
+            services.AddScoped<IAuthorizationHandler, UsersCreateAuthorizationHandler>();
         }
     }
 }

@@ -28,7 +28,7 @@ namespace MathEvent.Entities.Entities
 
         [Required]
         [ForeignKey("ApplicationUser")]
-        public string AuthorId { get; set; }
+        public Guid AuthorId { get; set; }
 
         [Required]
         [ForeignKey("FileOwner")]

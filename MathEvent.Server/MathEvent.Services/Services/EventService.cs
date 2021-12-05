@@ -48,7 +48,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="filters">Набор пар ключ-значение</param>
         /// <returns>Набор событий, соответствующих фильтрам</returns>
-        public async Task<IEnumerable<EventReadModel>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<EventReadModel>> List(IDictionary<string, string> filters)
         {
             var events = await Filter(_repositoryWrapper.Event.FindAll().Distinct(), filters);
 
@@ -63,7 +63,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id события, которое требуется получить</param>
         /// <returns>Событие с указанным id</returns>
-        public async Task<EventWithUsersReadModel> RetrieveAsync(int id)
+        public async Task<EventWithUsersReadModel> Retrieve(int id)
         {
             var eventEntity = await GetEventEntityAsync(id);
 
@@ -74,6 +74,7 @@ namespace MathEvent.Services.Services
 
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+            eventReadModel.OwnerId = (await GetEventOwner(eventReadModel.Id, Owner.Type.File)).Id;
 
             return eventReadModel;
         }
@@ -83,28 +84,24 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="createModel">Модель нового события</param>
         /// <returns>Cозданное событие</returns>
-        public async Task<EventWithUsersReadModel> CreateAsync(EventCreateModel createModel)
+        public async Task<EventWithUsersReadModel> Create(EventCreateModel createModel)
         {
-            if (string.IsNullOrEmpty(createModel.AuthorId))
+            if (Guid.Empty == createModel.AuthorId)
             {
                 throw new Exception("AuthorId is empty");
             }
 
             var eventEntity = _mapper.Map<Event>(_mapper.Map<EventDTO>(createModel));
-            var eventEntityDb = await _repositoryWrapper.Event.CreateAsync(eventEntity);
 
-            if (eventEntityDb is null)
-            {
-                throw new Exception("Errors while creating event");
-            }
+            _repositoryWrapper.Event.Create(eventEntity);
+            await _repositoryWrapper.SaveAsync();
+
+            await CreateNewManagers(new Guid[] { createModel.AuthorId }, eventEntity.Id);
 
             await _repositoryWrapper.SaveAsync();
 
-            await CreateNewManagers(new string[] { createModel.AuthorId }, eventEntityDb.Id);
-
-            await _repositoryWrapper.SaveAsync();
-
-            var eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntityDb));
+            var eventReadModel = _mapper.Map<EventWithUsersReadModel>(_mapper.Map<EventWithUsersDTO>(eventEntity));
+            eventReadModel.OwnerId = (await GetEventOwner(eventReadModel.Id, Owner.Type.File)).Id;
 
             return eventReadModel;
         }
@@ -115,7 +112,7 @@ namespace MathEvent.Services.Services
         /// <param name="id">id события, которое требуется обновить</param>
         /// <param name="updateModel">Модель для обновления события</param>
         /// <returns>Обновленное событие</returns>
-        public async Task<EventWithUsersReadModel> UpdateAsync(int id, EventUpdateModel updateModel)
+        public async Task<EventWithUsersReadModel> Update(int id, EventUpdateModel updateModel)
         {
             if (updateModel.Managers.Count < 1)
             {
@@ -153,6 +150,7 @@ namespace MathEvent.Services.Services
             await _repositoryWrapper.SaveAsync();
 
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+            eventReadModel.OwnerId = (await GetEventOwner(eventReadModel.Id, Owner.Type.File)).Id;
 
             return eventReadModel;
         }
@@ -164,7 +162,7 @@ namespace MathEvent.Services.Services
         /// <returns></returns>
         /// <remarks>При удалении события удаляется аватар события</remarks>
         /// TODO: удаляются ли файлы события?
-        public async Task DeleteAsync(int id)
+        public async Task Delete(int id)
         {
             var eventEntity = await GetEventEntityAsync(id);
 
@@ -178,6 +176,7 @@ namespace MathEvent.Services.Services
             _repositoryWrapper.Event.Delete(eventEntity);
             await _repositoryWrapper.SaveAsync();
 
+            // TODO: НЕ УДАЛЯЮТСЯ НИКАКИЕ ФАЙЛЫ
             if (avatarPath is not null)
             {
                 _dataPathService.DeleteWebRootFile(avatarPath, out string deleteMessage);
@@ -232,6 +231,7 @@ namespace MathEvent.Services.Services
 
             var eventDTO = _mapper.Map<EventWithUsersDTO>(eventEntity);
             var eventReadModel = _mapper.Map<EventWithUsersReadModel>(eventDTO);
+            eventReadModel.OwnerId = (await GetEventOwner(eventReadModel.Id, Owner.Type.File)).Id;
 
             return eventReadModel;
         }
@@ -269,6 +269,11 @@ namespace MathEvent.Services.Services
 
             var eventsDTO = _mapper.Map<IEnumerable<EventWithUsersDTO>>(events);
             var eventsReadModels = _mapper.Map<IEnumerable<EventWithUsersReadModel>>(eventsDTO);
+
+            foreach (var readModel in eventsReadModels)
+            {
+                readModel.OwnerId = (await GetEventOwner(readModel.Id, Owner.Type.File)).Id;
+            }
 
             return eventsReadModels;
         }
@@ -394,7 +399,8 @@ namespace MathEvent.Services.Services
             return await _repositoryWrapper.Event
                 .FindByCondition(ev =>
                     ev.StartDate.Date >= startDateFrom.Date
-                    && ev.StartDate.Date <= startDateTo.Date)
+                    && ev.StartDate.Date <= startDateTo.Date
+                    && ev.ParentId == null)
                 .GroupBy(ev => ev.StartDate.Date)
                 .Select(g => new { date = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.date, i => i.count);
@@ -580,7 +586,7 @@ namespace MathEvent.Services.Services
             };
 
             var numberOfEventsPerMonthResult = await _repositoryWrapper.Event
-                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1))
+                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1) && e.StartDate <= DateTime.UtcNow)
                 .GroupBy(e => e.StartDate.Month)
                 .Select(g => new { month = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.month, i => i.count);
@@ -598,7 +604,7 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private async Task CreateNewSubscriptions(IEnumerable<string> newIds, int eventId)
+        private async Task CreateNewSubscriptions(IEnumerable<Guid> newIds, int eventId)
         {
             await _repositoryWrapper.Subscription
                 .FindByCondition(s => s.EventId == eventId)
@@ -606,8 +612,8 @@ namespace MathEvent.Services.Services
 
             foreach (var userId in newIds)
             {
-                await _repositoryWrapper.Subscription
-                    .CreateAsync(new Subscription()
+                _repositoryWrapper.Subscription
+                    .Create(new Subscription()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId
@@ -615,7 +621,7 @@ namespace MathEvent.Services.Services
             }
         }
 
-        private async Task CreateNewManagers(IEnumerable<string> newIds, int eventId)
+        private async Task CreateNewManagers(IEnumerable<Guid> newIds, int eventId)
         {
             await _repositoryWrapper.Management
                 .FindByCondition(m => m.EventId == eventId)
@@ -623,13 +629,47 @@ namespace MathEvent.Services.Services
 
             foreach (var userId in newIds)
             {
-                await _repositoryWrapper.Management
-                    .CreateAsync(new Management()
+                _repositoryWrapper.Management
+                    .Create(new Management()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId
                     });
             }
+        }
+
+        private async Task<Owner> GetEventOwner(int id, Owner.Type type)
+        {
+            var owner = await _repositoryWrapper.Owner
+                    .FindByCondition(ow => ow.EventId == id && ow.OwnedType == type)
+                    .SingleOrDefaultAsync();
+
+            if (owner is null)
+            {
+                owner = await CreateEventOwner(id, type);
+            }
+
+            return owner;
+        }
+
+        /// <summary>
+        /// Создает владельца-событие
+        /// </summary>
+        /// <param name="id">Идентификатор события</param>
+        /// <param name="type">Тип обладаемой сущности</param>
+        /// <returns>Владелец</returns>
+        private async Task<Owner> CreateEventOwner(int id, Owner.Type type)
+        {
+            var owner = new Owner
+            {
+                EventId = id,
+                OwnedType = type
+            };
+
+            _repositoryWrapper.Owner.Create(owner);
+            await _repositoryWrapper.SaveAsync();
+
+            return owner;
         }
 
         private static async Task<IList<Event>> Filter(IQueryable<Event> eventQuery, IDictionary<string, string> filters)

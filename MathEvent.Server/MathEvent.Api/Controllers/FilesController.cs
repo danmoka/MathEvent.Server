@@ -49,7 +49,7 @@ namespace MathEvent.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<FileReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var files = await _fileService.ListAsync(filters);
+            var files = await _fileService.List(filters);
 
             return Ok(files);
         }
@@ -62,7 +62,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var file = await _fileService.RetrieveAsync(id);
+            var file = await _fileService.Retrieve(id);
 
             if (file is null)
             {
@@ -90,7 +90,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя создавать файл для объекта-владельца с id={fileCreateModel.OwnerId}");
             }
 
-            var user = await _userService.GetUserAsync(User);
+            var user = await _userService.GetUserByClaims(User);
 
             if (user is null)
             {
@@ -98,7 +98,7 @@ namespace MathEvent.Api.Controllers
             }
 
             fileCreateModel.AuthorId = user.Id;
-            var createdFile = await _fileService.CreateAsync(fileCreateModel);
+            var createdFile = await _fileService.Create(fileCreateModel);
 
             if (createdFile is null)
             {
@@ -123,7 +123,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var file = await _fileService.RetrieveAsync(id);
+            var file = await _fileService.Retrieve(id);
 
             if (file is null)
             {
@@ -138,7 +138,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать файл для объекта-владельца с id={file.OwnerId}");
             }
 
-            var updatedFile = await _fileService.UpdateAsync(id, fileUpdateModel);
+            var updatedFile = await _fileService.Update(id, fileUpdateModel);
 
             if (updatedFile is null)
             {
@@ -156,7 +156,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var file = await _fileService.RetrieveAsync(id);
+            var file = await _fileService.Retrieve(id);
 
             if (file is null)
             {
@@ -178,7 +178,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалять файл объекта-владельца с id={file.OwnerId}");
             }
 
-            await _fileService.DeleteAsync(id);
+            await _fileService.Delete(id);
 
             return NoContent();
         }
@@ -218,7 +218,7 @@ namespace MathEvent.Api.Controllers
                 }
             }
 
-            var user = await _userService.GetUserAsync(User);
+            var user = await _userService.GetUserByClaims(User);
 
             if (user is null)
             {
@@ -266,7 +266,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var file = await _fileService.RetrieveAsync(id);
+            var file = await _fileService.Retrieve(id);
 
             if (file is null)
             {

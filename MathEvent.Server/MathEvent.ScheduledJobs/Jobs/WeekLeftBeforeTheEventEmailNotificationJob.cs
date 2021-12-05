@@ -36,7 +36,7 @@ namespace MathEvent.ScheduledJobs.Jobs
             {
                 foreach (var userModel in ev.ApplicationUsers)
                 {
-                    var user = await _userService.RetrieveAsync(userModel.Id);
+                    var user = await _userService.Retrieve(userModel.Id);
 
                     if (user is not null)
                     {

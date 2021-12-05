@@ -1,10 +1,7 @@
 ﻿using AutoMapper;
-using MathEvent.Contracts;
 using MathEvent.DTOs.Organizations;
-using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
 using MathEvent.Models.Organizations;
-using System.Linq;
 
 namespace MathEvent.Converters.Organizations.Profiles
 {
@@ -15,10 +12,8 @@ namespace MathEvent.Converters.Organizations.Profiles
             //Source -> target
 
             // Model -> DTO
-            CreateMap<OrganizationCreateModel, OrganizationDTO>()
-                .ForMember(dest => dest.Manager, opt => opt.MapFrom<IdToManagerDTOResolverByOrganizationCreateModel>()); // создание
-            CreateMap<OrganizationUpdateModel, OrganizationDTO>()
-                .ForMember(dest => dest.Manager, opt => opt.MapFrom<IdToManagerDTOResolverByOrganizationUpdateModel>());// обновление
+            CreateMap<OrganizationCreateModel, OrganizationDTO>();
+            CreateMap<OrganizationUpdateModel, OrganizationDTO>();
             CreateMap<OrganizationReadModel, OrganizationDTO>();
 
             // DTO -> Model
@@ -29,76 +24,7 @@ namespace MathEvent.Converters.Organizations.Profiles
             CreateMap<OrganizationDTO, Organization>();
 
             // Entity -> DTO
-            CreateMap<Organization, OrganizationDTO>()
-                .ForMember(dest => dest.Manager, opt => opt.MapFrom<IdToManagerDTOResolverByOrganization>());
-        }
-
-        private static UserDTO GetUserById(string id, IRepositoryWrapper repositoryWrapper, IMapper mapper)
-        {
-            return mapper.Map<UserDTO>(repositoryWrapper
-                    .User
-                    .FindByCondition(u => u.Id == id)
-                    .SingleOrDefault());
-        }
-
-        /// <summary>
-        /// Класс, описывающий маппинг id пользователя на transfer объект пользователя, связанного с управлением
-        /// </summary>
-        public class IdToManagerDTOResolverByOrganization : IValueResolver<Organization, OrganizationDTO, UserDTO>
-        {
-            private readonly IRepositoryWrapper _repositoryWrapper;
-            private readonly IMapper _mapper;
-
-            public IdToManagerDTOResolverByOrganization(IRepositoryWrapper repositoryWrapper, IMapper mapper)
-            {
-                _repositoryWrapper = repositoryWrapper;
-                _mapper = mapper;
-            }
-
-            public UserDTO Resolve(Organization source, OrganizationDTO destination, UserDTO destMember, ResolutionContext context)
-            {
-                return GetUserById(source.ManagerId, _repositoryWrapper, _mapper);
-            }
-        }
-
-        /// <summary>
-        /// Класс, описывающий маппинг id пользователя на transfer объект пользователя, связанного с управлением
-        /// </summary>
-        public class IdToManagerDTOResolverByOrganizationCreateModel : IValueResolver<OrganizationCreateModel, OrganizationDTO, UserDTO>
-        {
-            private readonly IRepositoryWrapper _repositoryWrapper;
-            private readonly IMapper _mapper;
-
-            public IdToManagerDTOResolverByOrganizationCreateModel(IRepositoryWrapper repositoryWrapper, IMapper mapper)
-            {
-                _repositoryWrapper = repositoryWrapper;
-                _mapper = mapper;
-            }
-
-            public UserDTO Resolve(OrganizationCreateModel source, OrganizationDTO destination, UserDTO destMember, ResolutionContext context)
-            {
-                return GetUserById(source.ManagerId, _repositoryWrapper, _mapper);
-            }
-        }
-
-        /// <summary>
-        /// Класс, описывающий маппинг id пользователя на transfer объект пользователя, связанного с управлением
-        /// </summary>
-        public class IdToManagerDTOResolverByOrganizationUpdateModel : IValueResolver<OrganizationUpdateModel, OrganizationDTO, UserDTO>
-        {
-            private readonly IRepositoryWrapper _repositoryWrapper;
-            private readonly IMapper _mapper;
-
-            public IdToManagerDTOResolverByOrganizationUpdateModel(IRepositoryWrapper repositoryWrapper, IMapper mapper)
-            {
-                _repositoryWrapper = repositoryWrapper;
-                _mapper = mapper;
-            }
-
-            public UserDTO Resolve(OrganizationUpdateModel source, OrganizationDTO destination, UserDTO destMember, ResolutionContext context)
-            {
-                return GetUserById(source.ManagerId, _repositoryWrapper, _mapper);
-            }
+            CreateMap<Organization, OrganizationDTO>();
         }
     }
 }

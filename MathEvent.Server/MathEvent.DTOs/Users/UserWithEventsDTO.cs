@@ -1,5 +1,6 @@
 ﻿using MathEvent.DTOs.Events;
 using MathEvent.DTOs.Organizations;
+using System;
 using System.Collections.Generic;
 
 namespace MathEvent.DTOs.Users
@@ -15,17 +16,15 @@ namespace MathEvent.DTOs.Users
             ManagedEvents = new HashSet<EventDTO>();
         }
 
-        public string Id { get; set; }
+        public Guid Id { get; set; }
+
+        public Guid IdentityUserId { get; set; }
 
         public string Name { get; set; }
 
         public string Surname { get; set; }
 
-        public string Patronymic { get; set; }
-
         public string Email { get; set; }
-
-        public string UserName { get; set; }
 
         public OrganizationDTO Organization { get; set; }
 

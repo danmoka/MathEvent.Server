@@ -1,6 +1,4 @@
-﻿using MathEvent.DTOs.Users;
-
-namespace MathEvent.DTOs.Organizations
+﻿namespace MathEvent.DTOs.Organizations
 {
     public class OrganizationDTO
     {
@@ -10,6 +8,6 @@ namespace MathEvent.DTOs.Organizations
 
         public string Name { get; set; }
 
-        public UserDTO Manager { get; set; }
+        public string Description { get; set; }
     }
 }

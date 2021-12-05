@@ -3,10 +3,8 @@ using MathEvent.Contracts;
 using MathEvent.Contracts.Services;
 using MathEvent.DTOs.Users;
 using MathEvent.Entities.Entities;
-using MathEvent.Models.Email;
 using MathEvent.Models.Others;
 using MathEvent.Models.Users;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -25,22 +23,14 @@ namespace MathEvent.Services.Services
 
         private readonly IMapper _mapper;
 
-        private readonly IEmailService _emailSender;
-
-        private readonly UserManager<ApplicationUser> _userManager;
-
         private const int _defaultActiveUsersStatisticsTop = 10;
 
         public UserService(
             IRepositoryWrapper repositoryWrapper,
-            IMapper mapper,
-            UserManager<ApplicationUser> userManager,
-            IEmailService emailSender)
+            IMapper mapper)
         {
             _repositoryWrapper = repositoryWrapper;
             _mapper = mapper;
-            _userManager = userManager;
-            _emailSender = emailSender;
         }
 
         /// <summary>
@@ -49,7 +39,7 @@ namespace MathEvent.Services.Services
         /// <param name="filters">Набор пар ключ-значение</param>
         /// <returns>Набор пользователей</returns>
         /// <remarks>Фильтры не используются</remarks>
-        public async Task<IEnumerable<UserReadModel>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<UserReadModel>> List(IDictionary<string, string> filters)
         {
             var users = await Filter(_repositoryWrapper.User.FindAll(), filters).ToListAsync();
             var userDTOs = _mapper.Map<IEnumerable<UserDTO>>(users);
@@ -59,13 +49,34 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
-        /// Возвращает пользователя с указанным id
+        /// Возвращает пользователя по id платформы аутентификации
+        /// </summary>
+        /// <param name="identityUserId">id пользователя платформы аутентификации</param>
+        /// <returns>Пользователь</returns>
+        public async Task<UserWithEventsReadModel> RetrieveByIdentityUserId(Guid identityUserId)
+        {
+            var user = await GetUserWithIdentityId(identityUserId);
+
+            if (user is null)
+            {
+                return null;
+            }
+
+            var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+
+            return userReadModel;
+        }
+
+        /// <summary>
+        /// Возвращает пользователя по id
         /// </summary>
         /// <param name="id">id пользователя</param>
         /// <returns>Пользователь</returns>
-        public async Task<UserWithEventsReadModel> RetrieveAsync(string id)
+        public async Task<UserWithEventsReadModel> Retrieve(Guid id)
         {
-            var user = await GetUserEntityAsync(id);
+            var user = await GetUserWithId(id);
 
             if (user is null)
             {
@@ -84,16 +95,11 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="createModel">Модель создания пользователя</param>
         /// <returns>Новый пользователь</returns>
-        public async Task<UserWithEventsReadModel> CreateAsync(UserCreateModel createModel)
+        public async Task<UserWithEventsReadModel> Create(UserCreateModel createModel)
         {
             var user = _mapper.Map<ApplicationUser>(_mapper.Map<UserDTO>(createModel));
-            var createResult = await _repositoryWrapper.User.CreateAsync(user, createModel.Password);
 
-            if (!createResult.Succeeded)
-            {
-                throw new Exception(createResult.Errors.ToString());
-            }
-
+            _repositoryWrapper.User.Create(user);
             await _repositoryWrapper.SaveAsync();
 
             if (await CreateUserOwnerAsync(user.Id, Owner.Type.File) is null)
@@ -108,35 +114,61 @@ namespace MathEvent.Services.Services
         }
 
         /// <summary>
-        /// Обновляет пользователя
+        /// Обновляет пользователя по email
         /// </summary>
-        /// <param name="id">id пользователя</param>
+        /// <param name="email">email пользователя</param>
         /// <param name="updateModel">Модель обновления пользователя</param>
         /// <returns>Обновленный пользователь</returns>
-        public async Task<UserWithEventsReadModel> UpdateAsync(string id, UserUpdateModel updateModel)
+        public async Task<UserWithEventsReadModel> UpdateByEmail(string email, UserUpdateModel updateModel)
         {
-            var user = await GetUserEntityAsync(id);
+            var user = await GetUserWithEmail(email);
 
             if (user is null)
             {
-                throw new Exception($"User with id={id} is not found");
+                throw new Exception($"User with email={email} is not found");
             }
 
-            await CreateNewSubscriptions(updateModel.Events, id);
+            await CreateNewSubscriptions(updateModel.Events, user.Id);
 
-            await CreateNewManagers(updateModel.ManagedEvents, id);
+            await CreateNewManagers(updateModel.ManagedEvents, user.Id);
 
             var userDTO = _mapper.Map<UserWithEventsDTO>(user);
             _mapper.Map(updateModel, userDTO);
             _mapper.Map(userDTO, user);
 
-            var updateResult = await _repositoryWrapper.User.UpdateAsync(user);
+            _repositoryWrapper.User.Update(user);
+            await _repositoryWrapper.SaveAsync();
 
-            if (!updateResult.Succeeded)
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+
+            return userReadModel;
+        }
+
+        /// <summary>
+        /// Обновляет пользователя
+        /// </summary>
+        /// <param name="identityUserId">id пользователя платформы аутентификации</param>
+        /// <param name="updateModel">Модель обновления пользователя</param>
+        /// <returns>Обновленный пользователь</returns>
+        public async Task<UserWithEventsReadModel> UpdateByIdentityUserId(Guid identityUserId, UserUpdateModel updateModel)
+        {
+            var user = await GetUserWithIdentityId(identityUserId);
+
+            if (user is null)
             {
-                throw new Exception(updateResult.Errors.ToString());
+                throw new Exception($"User with identityUserId={identityUserId} is not found");
             }
 
+            await CreateNewSubscriptions(updateModel.Events, user.Id);
+
+            await CreateNewManagers(updateModel.ManagedEvents, user.Id);
+
+            var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+            _mapper.Map(updateModel, userDTO);
+            _mapper.Map(userDTO, user);
+
+            _repositoryWrapper.User.Update(user);
             await _repositoryWrapper.SaveAsync();
 
             var userReadModel = _mapper.Map<UserWithEventsReadModel>(_mapper.Map<UserWithEventsDTO>(user));
@@ -148,39 +180,49 @@ namespace MathEvent.Services.Services
         /// <summary>
         /// Удаляет пользователя
         /// </summary>
-        /// <param name="id">id пользователя</param>
+        /// <param name="identityUserId">id пользователя платформы аутентификации</param>
         /// <returns></returns>
-        public async Task DeleteAsync(string id)
+        public async Task DeleteByIdentityUserId(Guid identityUserId)
         {
-            var user = await GetUserEntityAsync(id);
+            var user = await GetUserWithIdentityId(identityUserId);
 
             if (user is null)
             {
-                throw new Exception($"User with id={id} is not found");
+                throw new Exception($"User with identityUserId={identityUserId} is not found");
             }
 
-            var deleteResult = await _repositoryWrapper.User.DeleteAsync(user);
-
-            if (deleteResult.Succeeded)
-            {
-                await _repositoryWrapper.SaveAsync();
-            }
-            else
-            {
-                throw new Exception(deleteResult.Errors.ToString());
-            }
+            _repositoryWrapper.User.Delete(user);
+            await _repositoryWrapper.SaveAsync();
         }
 
         /// <summary>
         /// Возвращает пользователем по его claims
         /// </summary>
-        /// <param name="userPrincipal">Данные, определяющие пользователя</param>
+        /// <param name="userClaims">Данные, определяющие пользователя</param>
         /// <returns>Пользователь</returns>
-        public async Task<ApplicationUser> GetUserAsync(ClaimsPrincipal userPrincipal)
+        public async Task<UserWithEventsReadModel> GetUserByClaims(ClaimsPrincipal userClaims)
         {
-            var user = await _userManager.GetUserAsync(userPrincipal);
+            var email = userClaims.Claims
+                .Where(c => c.Type == ClaimTypes.Email)
+                .SingleOrDefault();
 
-            return user;
+            if (email is null || string.IsNullOrEmpty(email.Value))
+            {
+                throw new InvalidOperationException("User email is not specified");
+            }
+
+            var user = await GetUserByEmail(email.Value);
+
+            if (user is null)
+            {
+                return null;
+            }
+
+            var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
+
+            return userReadModel;
         }
 
         /// <summary>
@@ -188,74 +230,62 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="email">email</param>
         /// <returns>Пользователь</returns>
-        public async Task<ApplicationUser> GetUserByEmail(string email)
-        {
-            var user = await _userManager.FindByEmailAsync(email);
-
-            return user;
-        }
-
-        /// <summary>
-        /// Отправляет токен смены пароля на электронную почту пользователя
-        /// </summary>
-        /// <param name="email">Адрес электронной почты пользователя</param>
-        /// <returns></returns>
-        public async Task ForgotPasswordAsync(string email)
+        public async Task<UserWithEventsReadModel> GetUserByEmail(string email)
         {
             if (string.IsNullOrEmpty(email))
             {
-                throw new Exception("The user's email address is empty");
+                throw new InvalidOperationException("User email is not specified");
             }
 
-            var user = await GetUserByEmail(email);
+            var user = await GetUserWithEmail(email);
 
             if (user is null)
             {
-                return;
+                return null;
             }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var message = new Message(
-                new string[] { user.Email },
-                "Смена пароля",
-                $"Подтверждающий код: {token}");
+            var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-            _emailSender.SendEmail(message);
+            return userReadModel;
         }
 
         /// <summary>
-        /// Меняет пароль пользователя
+        /// Возвращает пользователя по id пользователя платформы аутентификации
         /// </summary>
-        /// <param name="resetModel">Модель смены пароля</param>
-        /// <returns></returns>
-        public async Task ResetPasswordAsync(ForgotPasswordResetModel resetModel)
+        /// <param name="identityUserId">id пользователя платформы аутентификации</param>
+        /// <returns>Пользователь</returns>
+        public async Task<UserWithEventsReadModel> GetUserByIdentityUserId(Guid identityUserId)
         {
-            var user = await GetUserByEmail(resetModel.Email);
+            if (Guid.Empty == identityUserId)
+            {
+                throw new InvalidOperationException("Identity id is not specified");
+            }
+
+            var user = await GetUserWithIdentityId(identityUserId);
 
             if (user is null)
             {
-                return;
+                return null;
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, resetModel.Token, resetModel.Password);
+            var userDTO = _mapper.Map<UserWithEventsDTO>(user);
+            var userReadModel = _mapper.Map<UserWithEventsReadModel>(userDTO);
+            userReadModel.OwnerId = (await GetUserOwnerAsync(userReadModel.Id, Owner.Type.File)).Id;
 
-            if (!result.Succeeded)
-            {
-                throw new Exception(result.Errors.ToString());
-            }
-
-            return;
+            return userReadModel;
         }
 
         /// <summary>
         /// Возвращает статистику по пользователю
         /// </summary>
-        /// <param name="id">id пользователя</param>
+        /// <param name="identityUserId">id пользователя платформы аутентификации</param>
         /// <returns>Статистика по пользователю</returns>
-        public async Task<IEnumerable<ChartData>> GetUserStatistics(string id)
+        public async Task<IEnumerable<ChartData>> GetUserStatistics(Guid identityUserId)
         {
             var statistics = new List<ChartData>();
-            var favoriteOrganizations = await GetFavoriteOrganizationsBySubscriptions(id);
+            var favoriteOrganizations = await GetFavoriteOrganizationsBySubscriptions(identityUserId);
 
             if (favoriteOrganizations is not null)
             {
@@ -301,7 +331,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id пользователя</param>
         /// <returns>Пользователь с указанным id</returns>
-        private async Task<ApplicationUser> GetUserEntityAsync(string id)
+        private async Task<ApplicationUser> GetUserEntityAsync(Guid id)
         {
             var user = await _repositoryWrapper.User
                 .FindByCondition(user => user.Id == id)
@@ -310,10 +340,64 @@ namespace MathEvent.Services.Services
             return user;
         }
 
-        private async Task<ChartData> GetFavoriteOrganizationsBySubscriptions(string userId)
+        private async Task<ApplicationUser> GetUserWithEmail(string email)
         {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new InvalidOperationException("User email is not specified");
+            }
+
+            var user = await _repositoryWrapper.User
+                .FindByCondition(u => u.Email == email)
+                .SingleOrDefaultAsync();
+
+            return user;
+        }
+
+        private async Task<ApplicationUser> GetUserWithIdentityId(Guid identityUserId)
+        {
+            if (Guid.Empty == identityUserId)
+            {
+                throw new InvalidOperationException("Identity id is not specified");
+            }
+
+            var user = await _repositoryWrapper.User
+                .FindByCondition(u => u.IdentityUserId == identityUserId)
+                .SingleOrDefaultAsync();
+
+            return user;
+        }
+
+        private async Task<ApplicationUser> GetUserWithId(Guid id)
+        {
+            if (Guid.Empty == id)
+            {
+                throw new InvalidOperationException("User id is not specified");
+            }
+
+            var user = await _repositoryWrapper.User
+                .FindByCondition(u => u.Id == id)
+                .SingleOrDefaultAsync();
+
+            return user;
+        }
+
+        private async Task<ChartData> GetFavoriteOrganizationsBySubscriptions(Guid identityUserId)
+        {
+            var statistics = new ChartData
+            {
+                Title = "Доли организаций в подписках пользователя",
+                Data = new List<ChartDataPiece>()
+            };
+            var user = await GetUserWithIdentityId(identityUserId);
+
+            if (user is null)
+            {
+                return statistics;
+            }
+
             var userSubscriptions = await _repositoryWrapper.Subscription
-                .FindByCondition(s => s.ApplicationUserId == userId)
+                .FindByCondition(s => s.ApplicationUserId == user.Id)
                 .ToListAsync();
 
             var events = new List<Event>();
@@ -329,12 +413,6 @@ namespace MathEvent.Services.Services
                 .GroupBy(s => s.OrganizationId)
                 .Select(g => new { orgId = g.Key, count = g.Count() })
                 .ToDictionary(k => k.orgId is null ? -1 : k.orgId, i => i.count);
-
-            var statistics = new ChartData
-            {
-                Title = "Доли организаций в подписках пользователя",
-                Data = new List<ChartDataPiece>()
-            };
 
             foreach (var entry in organizationsCountPerEvent)
             {
@@ -384,7 +462,7 @@ namespace MathEvent.Services.Services
                     statistics.Data.Add(
                     new ChartDataPiece
                     {
-                        X = $"{user.Name[0]}. {user.Surname} ({user.UserName})",
+                        X = $"{user.Name} {user.Surname}",
                         Y = entry.Value
                     });
                 }
@@ -393,7 +471,7 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private async Task CreateNewSubscriptions(IEnumerable<int> newIds, string userId)
+        private async Task CreateNewSubscriptions(IEnumerable<int> newIds, Guid userId)
         {
             await _repositoryWrapper.Subscription
                 .FindByCondition(s => s.ApplicationUserId == userId)
@@ -401,8 +479,8 @@ namespace MathEvent.Services.Services
 
             foreach (var eventId in newIds)
             {
-                await _repositoryWrapper.Subscription
-                    .CreateAsync(new Subscription()
+                _repositoryWrapper.Subscription
+                    .Create(new Subscription()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId
@@ -410,7 +488,7 @@ namespace MathEvent.Services.Services
             }
         }
 
-        private async Task CreateNewManagers(IEnumerable<int> newIds, string userId)
+        private async Task CreateNewManagers(IEnumerable<int> newIds, Guid userId)
         {
             await _repositoryWrapper.Management
                 .FindByCondition(m => m.ApplicationUserId == userId)
@@ -418,8 +496,8 @@ namespace MathEvent.Services.Services
 
             foreach (var eventId in newIds)
             {
-                await _repositoryWrapper.Management
-                    .CreateAsync(new Management()
+                _repositoryWrapper.Management
+                    .Create(new Management()
                     {
                         ApplicationUserId = userId,
                         EventId = eventId
@@ -443,25 +521,25 @@ namespace MathEvent.Services.Services
         /// <param name="id">Идентификатор пользователя</param>
         /// <param name="type">Тип обладаемой сущности</param>
         /// <returns>Владелец</returns>
-        private async Task<Owner> CreateUserOwnerAsync(string id, Owner.Type type)
+        private async Task<Owner> CreateUserOwnerAsync(Guid id, Owner.Type type)
         {
-            // TODO: вынести работу по созданию owner в profile. При попытке получения owner'а создавать его, если его нет
-            var owner = await _repositoryWrapper.Owner.CreateAsync(
-                new Owner
-                {
-                    ApplicationUserId = id,
-                    OwnedType = type
-                });
+            var owner = new Owner
+            {
+                ApplicationUserId = id,
+                OwnedType = type
+            };
+
+            _repositoryWrapper.Owner.Create(owner);
             await _repositoryWrapper.SaveAsync();
 
             return owner;
         }
 
-        private async Task<Owner> GetUserOwnerAsync(string id, Owner.Type type)
+        private async Task<Owner> GetUserOwnerAsync(Guid id, Owner.Type type)
         {
-            var owner = _repositoryWrapper.Owner
+            var owner = await _repositoryWrapper.Owner
                     .FindByCondition(ow => ow.ApplicationUserId == id && ow.OwnedType == type)
-                    .SingleOrDefault();
+                    .SingleOrDefaultAsync();
 
             if (owner is null)
             {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -9,9 +10,9 @@ namespace MathEvent.Contracts.Services
     /// </summary>
     public interface IDataPathWorker
     {
-        Task<string> CreateContentFile(IFormFile file, string userId);
+        Task<string> CreateContentFile(IFormFile file, Guid userId);
 
-        Task<string> CreateWebRootFile(IFormFile file, string userId);
+        Task<string> CreateWebRootFile(IFormFile file, Guid userId);
 
         FileStream GetContentFileStream(string path);
 

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MathEvent.Entities.Entities
 {
@@ -8,7 +9,7 @@ namespace MathEvent.Entities.Entities
     public class Subscription
     {
         [ForeignKey("ApplicationUser")]
-        public string ApplicationUserId;
+        public Guid ApplicationUserId;
 
         [ForeignKey("Event")]
         public int EventId;

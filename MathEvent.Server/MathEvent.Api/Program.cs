@@ -1,7 +1,5 @@
 using MathEvent.Database;
-using MathEvent.Entities.Entities;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
@@ -18,25 +16,9 @@ namespace MathEvent.Api
             {
                 var serviceProvider = scope.ServiceProvider;
                 var context = serviceProvider.GetRequiredService<ApplicationContext>();
-                var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-                //await InitializeAdminAccount(userManager);
             }
 
             host.Run();
-        }
-
-        private static async Task InitializeAdminAccount(UserManager<ApplicationUser> userManager)
-        {
-            const string adminEmail = "";
-            const string adminPassword = "";
-
-            if (await userManager.FindByNameAsync(adminEmail) == null)
-            {
-                var admin = new ApplicationUser { Email = adminEmail, UserName = adminEmail };
-                var result = await userManager.CreateAsync(admin, adminPassword);
-            }
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

@@ -36,15 +36,11 @@ namespace MathEvent.Validation.Events
             validationErrors.AddRange(_eventValidationUtils.ValidateName(model.Name));
             validationErrors.AddRange(_eventValidationUtils.ValidateDescription(model.Description));
             validationErrors.AddRange(_eventValidationUtils.ValidateStartDateTime(model.StartDate));
+            validationErrors.AddRange(await _userValidationUtils.ValidateUserId(model.AuthorId));
 
             if (model.Location is not null)
             {
                 validationErrors.AddRange(_eventValidationUtils.ValidateLocation(model.Location));
-            }
-
-            if (model.AuthorId is not null)
-            {
-                validationErrors.AddRange(await _userValidationUtils.ValidateUserId(model.AuthorId));
             }
 
             if (model.OrganizationId is not null)

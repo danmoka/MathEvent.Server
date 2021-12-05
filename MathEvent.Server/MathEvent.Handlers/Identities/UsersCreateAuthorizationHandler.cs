@@ -1,5 +1,4 @@
 ﻿using MathEvent.Constants;
-using MathEvent.Contracts.Services;
 using MathEvent.Models.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -12,38 +11,30 @@ using System.Threading.Tasks;
 namespace MathEvent.AuthorizationHandlers.Identities
 {
     /// <summary>
-    /// Обработчик запроса на авторизацию для CRUD операций пользователей
+    /// Обработчик запроса на авторизацию для создания пользователей
     /// </summary>
-    public class UsersAuthorizationCrudHandler :
-        AuthorizationHandler<OperationAuthorizationRequirement, UserWithEventsReadModel>
+    public class UsersCreateAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, UserCreateModel>
     {
-        private readonly IUserService _userService;
 
-        public UsersAuthorizationCrudHandler(IUserService userService)
+        public UsersCreateAuthorizationHandler()
         {
-            _userService = userService;
         }
 
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement,
-            UserWithEventsReadModel resource)
+            UserCreateModel resource)
         {
-            var user = await _userService.GetUserByClaims(context.User);
-
-            if (user is null)
-            {
-                context.Fail();
-            }
-
             var roleClaim = context.User.Claims
                 .Where(c => c.Type == ClaimTypes.Role)
                 .SingleOrDefault();
+            var emailClaim = context.User.Claims
+                .Where(c => c.Type == ClaimTypes.Email)
+                .SingleOrDefault();
 
-            if (requirement.Name == Operations.Update.Name
-                || requirement.Name == Operations.Delete.Name)
+            if (requirement.Name == Operations.Create.Name)
             {
-                if (resource.Email == user.Email)
+                if (resource.Email == emailClaim.Value)
                 {
                     context.Succeed(requirement);
                 }

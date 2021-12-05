@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace MathEvent.Models.Users
 {
@@ -7,15 +8,11 @@ namespace MathEvent.Models.Users
     /// </summary>
     public class UserUpdateModel
     {
+        public Guid IdentityUserId { get; set; }
+
         public string Name { get; set; }
 
         public string Surname { get; set; }
-
-        public string Email { get; set; }
-
-        public string UserName { get; set; }
-
-        public string Patronymic { get; set; }
 
         public int? OrganizationId { get; set; }
 

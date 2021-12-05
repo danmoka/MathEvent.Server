@@ -28,8 +28,6 @@ namespace MathEvent.Validation.Extensions
             services.AddTransient<IOrganizationUpdateModelValidator, OrganizationUpdateModelValidator>();
             services.AddTransient<IUserCreateModelValidator, UserCreateModelValidator>();
             services.AddTransient<IUserUpdateModelValidator, UserUpdateModelValidator>();
-            services.AddTransient<IForgotPasswordModelValidator, ForgotPasswordModelValidator>();
-            services.AddTransient<IForgotPasswordResetModelValidator, ForgotPasswordResetModelValidator>();
             services.AddTransient<UserValidationUtils>();
             services.AddTransient<FileValidationUtils>();
             services.AddTransient<OrganizationValidationUtils>();

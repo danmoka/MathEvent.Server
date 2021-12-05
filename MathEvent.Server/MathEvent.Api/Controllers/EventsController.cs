@@ -57,7 +57,7 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<EventReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var events = await _eventService.ListAsync(filters);
+            var events = await _eventService.List(filters);
 
             return Ok(events);
         }
@@ -71,7 +71,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var ev = await _eventService.RetrieveAsync(id);
+            var ev = await _eventService.Retrieve(id);
 
             if (ev is null)
             {
@@ -84,14 +84,7 @@ namespace MathEvent.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<EventWithUsersReadModel>> Create([FromBody] EventCreateModel eventCreateModel)
         {
-            var validationResult = await _eventCreateModelValidator.Validate(eventCreateModel);
-
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
-            var user = await _userService.GetUserAsync(User);
+            var user = await _userService.GetUserByClaims(User);
 
             if (user is null)
             {
@@ -99,7 +92,15 @@ namespace MathEvent.Api.Controllers
             }
 
             eventCreateModel.AuthorId = user.Id;
-            var createdEvent = await _eventService.CreateAsync(eventCreateModel);
+
+            var validationResult = await _eventCreateModelValidator.Validate(eventCreateModel);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
+            var createdEvent = await _eventService.Create(eventCreateModel);
 
             if (createdEvent is null)
             {
@@ -124,7 +125,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var ev = await _eventService.RetrieveAsync(id);
+            var ev = await _eventService.Retrieve(id);
 
             if (ev is null)
             {
@@ -139,7 +140,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать событие с id={id}");
             }
 
-            var updatedEvent = await _eventService.UpdateAsync(id, eventUpdateModel);
+            var updatedEvent = await _eventService.Update(id, eventUpdateModel);
 
             if (updatedEvent is null)
             {
@@ -162,7 +163,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("Тело запроса не задано");
             }
 
-            var ev = await _eventService.RetrieveAsync(id);
+            var ev = await _eventService.Retrieve(id);
 
             if (ev is null)
             {
@@ -188,7 +189,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var updatedEvent = await _eventService.UpdateAsync(id, eventToPatch);
+            var updatedEvent = await _eventService.Update(id, eventToPatch);
 
             if (updatedEvent is null)
             {
@@ -206,7 +207,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var ev = await _eventService.RetrieveAsync(id);
+            var ev = await _eventService.Retrieve(id);
 
             if (ev is null)
             {
@@ -228,7 +229,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"Событие с id={id} имеет дочерние события");
             }
 
-            await _eventService.DeleteAsync(id);
+            await _eventService.Delete(id);
 
             return NoContent();
         }
@@ -280,7 +281,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var ev = await _eventService.RetrieveAsync(eventId);
+            var ev = await _eventService.Retrieve(eventId);
 
             if (ev is null)
             {
@@ -302,7 +303,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(checkResult.Errors);
             }
 
-            var user = await _userService.GetUserAsync(User);
+            var user = await _userService.GetUserByClaims(User);
 
             if (user is null)
             {
