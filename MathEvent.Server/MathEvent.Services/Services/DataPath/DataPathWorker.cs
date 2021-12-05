@@ -44,11 +44,11 @@ namespace MathEvent.Services.Services.DataPath
         /// </summary>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns></returns>
-        private string GetPath(string userId)
+        private string GetPath(Guid userId)
         {
             var pathParts = new string[]
             {
-                userId,
+                userId.ToString(),
                 DateTime.Now.Year.ToString(),
                 DateTime.Now.Month.ToString(),
                 DateTime.Now.Day.ToString()
@@ -63,7 +63,7 @@ namespace MathEvent.Services.Services.DataPath
         /// <param name="file">Файл</param>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns>Путь к файлу</returns>
-        public async Task<string> CreateContentFile(IFormFile file, string userId)
+        public async Task<string> CreateContentFile(IFormFile file, Guid userId)
         {
             var path = GetPath(userId);
             var fullPath = GetFullContentPath(path);
@@ -77,7 +77,7 @@ namespace MathEvent.Services.Services.DataPath
         /// <param name="file">Файл</param>
         /// <param name="userId">Идентификатор пользователя</param>
         /// <returns>Путь к файлу</returns>
-        public async Task<string> CreateWebRootFile(IFormFile file, string userId)
+        public async Task<string> CreateWebRootFile(IFormFile file, Guid userId)
         {
             var path = GetPath(userId);
             var fullPath = GetFullWebRootPath(path);

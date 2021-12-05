@@ -21,7 +21,7 @@ namespace MathEvent.DTOs.Files
         public int? ParentId { get; set; }
         #endregion
 
-        public string AuthorId { get; set; }
+        public Guid AuthorId { get; set; }
 
         public int? OwnerId { get; set; }
 

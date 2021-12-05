@@ -30,7 +30,6 @@ namespace MathEvent.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.ConfigureConnection(Configuration);
-            services.ConfigureIndentity();
             services.ConfigureAuthentication(Configuration);
             services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();

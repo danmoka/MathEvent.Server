@@ -41,7 +41,7 @@ namespace MathEvent.Validation.Files
             {
                 validationErrors.AddRange(await ValidateFileId(id));
 
-                var file = await _fileService.RetrieveAsync((int)id);
+                var file = await _fileService.Retrieve((int)id);
 
                 if (file.Hierarchy is null)
                 {
@@ -75,7 +75,7 @@ namespace MathEvent.Validation.Files
             }
             else
             {
-                var file = await _fileService.RetrieveAsync((int)id);
+                var file = await _fileService.Retrieve((int)id);
 
                 if (file is null)
                 {

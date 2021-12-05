@@ -1,5 +1,4 @@
 ﻿using MathEvent.Entities.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -8,7 +7,7 @@ namespace MathEvent.Database
     /// <summary>
     /// Контекст данных для работы с базой данных
     /// </summary>
-    public class ApplicationContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationContext : DbContext
     {
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
@@ -42,8 +41,13 @@ namespace MathEvent.Database
 
             // пользователи
             builder.Entity<ApplicationUser>()
-                .Property(e => e.Id)
-                .ValueGeneratedOnAdd();
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            builder.Entity<ApplicationUser>()
+                .HasIndex(u => u.IdentityUserId)
+                .IsUnique();
+
             builder.Entity<ApplicationUser>()
                 .HasOne<Organization>()
                 .WithMany()
@@ -113,11 +117,6 @@ namespace MathEvent.Database
             builder.Entity<Organization>()
                 .HasIndex(org => org.ITN)
                 .IsUnique();
-            builder.Entity<Organization>()
-                .HasOne<ApplicationUser>()
-                .WithMany()
-                .HasForeignKey(org => org.ManagerId)
-                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

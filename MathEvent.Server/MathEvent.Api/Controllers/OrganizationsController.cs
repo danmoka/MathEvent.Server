@@ -50,7 +50,7 @@ namespace MathEvent.Api.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<OrganizationReadModel>>> List([FromQuery] IDictionary<string, string> filters)
         {
-            var organizations = await _organizationService.ListAsync(filters);
+            var organizations = await _organizationService.List(filters);
 
             return Ok(organizations);
         }
@@ -64,7 +64,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var organization = await _organizationService.RetrieveAsync(id);
+            var organization = await _organizationService.Retrieve(id);
 
             if (organization is null)
             {
@@ -84,15 +84,17 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var user = await _userService.GetUserAsync(User);
+            var organization = _mapper.Map<OrganizationReadModel>(_mapper.Map<OrganizationDTO>(organizaionCreateModel));
 
-            if (user is null)
+            var authorizationResult = await _authorizationService
+                .AuthorizeAsync(User, organization, Operations.Create);
+
+            if (!authorizationResult.Succeeded)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Не удается получить данные о текущем пользователе");
+                return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя создать организацию");
             }
 
-            organizaionCreateModel.ManagerId = user.Id;
-            var createdOrganization = await _organizationService.CreateAsync(organizaionCreateModel);
+            var createdOrganization = await _organizationService.Create(organizaionCreateModel);
 
             if (createdOrganization is null)
             {
@@ -117,7 +119,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var organization = await _organizationService.RetrieveAsync(id);
+            var organization = await _organizationService.Retrieve(id);
 
             if (organization is null)
             {
@@ -132,7 +134,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя редактировать организацию с id={id}");
             }
 
-            var updatedOrganization = await _organizationService.UpdateAsync(id, organizationUpdateModel);
+            var updatedOrganization = await _organizationService.Update(id, organizationUpdateModel);
 
             if (updatedOrganization is null)
             {
@@ -155,7 +157,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest("Тело запроса не задано");
             }
 
-            var organization = await _organizationService.RetrieveAsync(id);
+            var organization = await _organizationService.Retrieve(id);
 
             if (organization is null)
             {
@@ -181,7 +183,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest(validationResult.Errors);
             }
 
-            var updatedOrganization = await _organizationService.UpdateAsync(id, organizationToPatch);
+            var updatedOrganization = await _organizationService.Update(id, organizationToPatch);
 
             if (updatedOrganization is null)
             {
@@ -199,7 +201,7 @@ namespace MathEvent.Api.Controllers
                 return BadRequest($"id={id} меньше 0");
             }
 
-            var organization = await _organizationService.RetrieveAsync(id);
+            var organization = await _organizationService.Retrieve(id);
 
             if (organization is null)
             {
@@ -214,7 +216,7 @@ namespace MathEvent.Api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, $"Вам нельзя удалять организацию с id={id}");
             }
 
-            await _organizationService.DeleteAsync(id);
+            await _organizationService.Delete(id);
 
             return NoContent();
         }

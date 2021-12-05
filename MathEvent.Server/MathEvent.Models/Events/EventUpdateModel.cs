@@ -27,8 +27,8 @@ namespace MathEvent.Models.Events
         /// <summary>
         /// Для обновления коллекции пользователей по их id
         /// </summary>
-        public ICollection<string> ApplicationUsers { get; set; }
+        public ICollection<Guid> ApplicationUsers { get; set; }
 
-        public ICollection<string> Managers { get; set; }
+        public ICollection<Guid> Managers { get; set; }
     }
 }

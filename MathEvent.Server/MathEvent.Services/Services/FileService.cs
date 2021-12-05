@@ -43,7 +43,7 @@ namespace MathEvent.Services.Services
         /// <param name="filters">Набор параметров - пар ключ-значение, для фильтрации файлов</param>
         /// <returns>Набор моделей файлов</returns>
         /// <remarks>Реализована фильтрация только по параметрам "parent" и "owner"</remarks>
-        public async Task<IEnumerable<FileReadModel>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<FileReadModel>> List(IDictionary<string, string> filters)
         {
             var files = await Filter(_repositoryWrapper.File.FindAll(), filters).ToListAsync();
             var fileDTOs = _mapper.Map<IEnumerable<FileDTO>>(files);
@@ -57,7 +57,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id файла</param>
         /// <returns>Модель файла</returns>
-        public async Task<FileReadModel> RetrieveAsync(int id)
+        public async Task<FileReadModel> Retrieve(int id)
         {
             var file = await GetFileEntityAsync(id);
 
@@ -77,22 +77,16 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="createModel">Модель создания файла</param>
         /// <returns>Модель созданного файла</returns>
-        public async Task<FileReadModel> CreateAsync(FileCreateModel createModel)
+        public async Task<FileReadModel> Create(FileCreateModel createModel)
         {
             var fileDTO = _mapper.Map<FileDTO>(createModel);
             fileDTO.Date = DateTime.UtcNow;
             var fileEntity = _mapper.Map<File>(fileDTO);
 
-            var fileEntityDb = await _repositoryWrapper.File.CreateAsync(fileEntity);
-
-            if (fileEntityDb is null)
-            {
-                throw new Exception("Errors while creating file");
-            }
-
+            _repositoryWrapper.File.Create(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            var createdFileDTO = _mapper.Map<FileDTO>(fileEntityDb);
+            var createdFileDTO = _mapper.Map<FileDTO>(fileEntity);
             var createdFileReadModel = _mapper.Map<FileReadModel>(createdFileDTO);
 
             return createdFileReadModel;
@@ -104,7 +98,7 @@ namespace MathEvent.Services.Services
         /// <param name="id">id файла</param>
         /// <param name="updateModel">Модель обновления файла</param>
         /// <returns>Модель обновленного файла</returns>
-        public async Task<FileReadModel> UpdateAsync(int id, FileUpdateModel updateModel)
+        public async Task<FileReadModel> Update(int id, FileUpdateModel updateModel)
         {
             var file = await GetFileEntityAsync(id);
 
@@ -130,7 +124,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id файла</param>
         /// <returns></returns>
-        public async Task DeleteAsync(int id)
+        public async Task Delete(int id)
         {
             var file = await GetFileEntityAsync(id);
 
@@ -166,19 +160,12 @@ namespace MathEvent.Services.Services
             fileDTO.Extension = System.IO.Path.GetExtension(file.FileName);
             fileDTO.Path = filePath;
             fileDTO.Date = DateTime.UtcNow;
-
             var fileEntity = _mapper.Map<File>(fileDTO);
 
-            var createdFile = await _repositoryWrapper.File.CreateAsync(fileEntity);
-
-            if (createdFile is null)
-            {
-                throw new Exception("Errors while uploading file");
-            }
-
+            _repositoryWrapper.File.Create(fileEntity);
             await _repositoryWrapper.SaveAsync();
 
-            var fileReadModel = _mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(createdFile));
+            var fileReadModel = _mapper.Map<FileReadModel>(_mapper.Map<FileDTO>(fileEntity));
 
             return fileReadModel;
         }

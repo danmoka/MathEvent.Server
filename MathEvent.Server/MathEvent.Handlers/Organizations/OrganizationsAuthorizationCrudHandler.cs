@@ -1,13 +1,18 @@
-﻿using MathEvent.Contracts.Services;
-using MathEvent.Entities.Entities;
+﻿using MathEvent.Constants;
+using MathEvent.Contracts.Services;
+using MathEvent.Models.Organizations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MathEvent.AuthorizationHandlers.Organizations
 {
     public class OrganizationsAuthorizationCrudHandler :
-        AuthorizationHandler<OperationAuthorizationRequirement, Organization>
+        AuthorizationHandler<OperationAuthorizationRequirement, OrganizationReadModel>
     {
         private readonly IUserService _userService;
 
@@ -19,16 +24,35 @@ namespace MathEvent.AuthorizationHandlers.Organizations
         protected override async Task HandleRequirementAsync(
             AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement,
-            Organization resource)
+            OrganizationReadModel resource)
         {
-            var user = await _userService.GetUserAsync(context.User);
+            var user = await _userService.GetUserByClaims(context.User);
 
-            if (requirement.Name == Operations.Update.Name
+            if (user is null)
+            {
+                context.Fail();
+            }
+
+            var roleClaim = context.User.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .SingleOrDefault();
+
+            if (requirement.Name == Operations.Create.Name
+                || requirement.Name == Operations.Update.Name
                 || requirement.Name == Operations.Delete.Name)
             {
-                if (resource.ManagerId == user.Id)
+                if (roleClaim is not null)
                 {
-                    context.Succeed(requirement);
+                    var roles = JsonConvert.DeserializeObject<IList<string>>(roleClaim.Value);
+
+                    if (roles.Contains(MathEventRoles.Administrator) || roles.Contains(MathEventRoles.Moderator))
+                    {
+                        context.Succeed(requirement);
+                    }
+                    else
+                    {
+                        context.Fail();
+                    }
                 }
                 else
                 {

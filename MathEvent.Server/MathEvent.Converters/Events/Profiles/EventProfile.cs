@@ -113,11 +113,11 @@ namespace MathEvent.Converters.Events.Profiles
         /// <summary>
         /// Класс, описывающий маппинг transfer объектов сущности пользователя на id пользователя
         /// </summary>
-        public class UserDTOToIdResolver : IValueResolver<EventWithUsersDTO, EventUpdateModel, ICollection<string>>
+        public class UserDTOToIdResolver : IValueResolver<EventWithUsersDTO, EventUpdateModel, ICollection<Guid>>
         {
-            public ICollection<string> Resolve(EventWithUsersDTO source, EventUpdateModel destination, ICollection<string> destMember, ResolutionContext context)
+            public ICollection<Guid> Resolve(EventWithUsersDTO source, EventUpdateModel destination, ICollection<Guid> destMember, ResolutionContext context)
             {
-                var ids = new HashSet<string>();
+                var ids = new HashSet<Guid>();
 
                 foreach (var user in source.ApplicationUsers)
                 {
@@ -131,11 +131,11 @@ namespace MathEvent.Converters.Events.Profiles
         /// <summary>
         /// Класс, описывающий маппинг transfer объектов сущности менеджера на id менеджера
         /// </summary>
-        public class ManagerDTOToIdResolver : IValueResolver<EventWithUsersDTO, EventUpdateModel, ICollection<string>>
+        public class ManagerDTOToIdResolver : IValueResolver<EventWithUsersDTO, EventUpdateModel, ICollection<Guid>>
         {
-            public ICollection<string> Resolve(EventWithUsersDTO source, EventUpdateModel destination, ICollection<string> destMember, ResolutionContext context)
+            public ICollection<Guid> Resolve(EventWithUsersDTO source, EventUpdateModel destination, ICollection<Guid> destMember, ResolutionContext context)
             {
-                var ids = new HashSet<string>();
+                var ids = new HashSet<Guid>();
 
                 foreach (var user in source.Managers)
                 {
@@ -285,29 +285,10 @@ namespace MathEvent.Converters.Events.Profiles
 
                 if (owner is null)
                 {
-                    owner = CreateEventOwner(source.Id, Owner.Type.File);
+                    return null;
                 }
 
                 return owner.Id;
-            }
-
-            /// <summary>
-            /// Создает владельца-событие
-            /// </summary>
-            /// <param name="id">Идентификатор события</param>
-            /// <param name="type">Тип обладаемой сущности</param>
-            /// <returns>Владелец</returns>
-            private Owner CreateEventOwner(int id, Owner.Type type)
-            {
-                var owner = _repositoryWrapper.Owner.CreateAsync(
-                    new Owner
-                    {
-                        EventId = id,
-                        OwnedType = type
-                    }).Result;
-                _repositoryWrapper.SaveAsync();
-
-                return owner;
             }
         }
     }

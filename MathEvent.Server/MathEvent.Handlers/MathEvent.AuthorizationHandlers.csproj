@@ -6,9 +6,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="5.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MathEvent.Constants\MathEvent.Constants.csproj" />
     <ProjectReference Include="..\MathEvent.Contracts\MathEvent.Contracts.csproj" />
   </ItemGroup>
 

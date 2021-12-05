@@ -1,7 +1,6 @@
 ﻿using MathEvent.Contracts.Validators;
 using MathEvent.Models.Organizations;
 using MathEvent.Validation.Common;
-using MathEvent.Validation.Users;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,14 +13,10 @@ namespace MathEvent.Validation.Organization
     {
         private readonly OrganizationValidationUtils _organizationValidationUtils;
 
-        private readonly UserValidationUtils _userValidationUtils;
-
         public OrganizationUpdateModelValidator(
-            OrganizationValidationUtils organizationValidationUtils,
-            UserValidationUtils userValidationUtils)
+            OrganizationValidationUtils organizationValidationUtils)
         {
             _organizationValidationUtils = organizationValidationUtils;
-            _userValidationUtils = userValidationUtils;
         }
 
         public async Task<IValidationResult> Validate(OrganizationUpdateModel model)
@@ -33,8 +28,12 @@ namespace MathEvent.Validation.Organization
                 validationErrors.AddRange(_organizationValidationUtils.ValidateITN(model.ITN));
             }
 
+            if (!string.IsNullOrEmpty(model.Description))
+            {
+                validationErrors.AddRange(_organizationValidationUtils.ValidateDescription(model.Description));
+            }
+
             validationErrors.AddRange(_organizationValidationUtils.ValidateName(model.Name));
-            validationErrors.AddRange(await _userValidationUtils.ValidateUserId(model.ManagerId));
 
             return new ValidationResult
             {

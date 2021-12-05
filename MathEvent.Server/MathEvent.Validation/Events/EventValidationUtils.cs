@@ -169,7 +169,7 @@ namespace MathEvent.Validation.Events
             }
             else
             {
-                var ev = await _eventService.RetrieveAsync((int)id);
+                var ev = await _eventService.Retrieve((int)id);
 
                 if (ev is null)
                 {
@@ -206,9 +206,9 @@ namespace MathEvent.Validation.Events
 
             foreach (var id in eventIds)
             {
-                var user = await _eventService.RetrieveAsync(id);
+                var ev = await _eventService.Retrieve(id);
 
-                if (user is null)
+                if (ev is null)
                 {
                     validationErrors.Add(new ValidationError
                     {

@@ -33,15 +33,9 @@ namespace MathEvent.Validation.Users
         {
             var validationErrors = new List<IValidationError>();
 
+            validationErrors.AddRange(await _userValidationUtils.ValidateIdentityUserId(model.IdentityUserId, false));
             validationErrors.AddRange(_userValidationUtils.ValidateName(model.Name));
             validationErrors.AddRange(_userValidationUtils.ValidateSurname(model.Surname));
-            validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email, false));
-            validationErrors.AddRange(_userValidationUtils.ValidateUsername(model.UserName));
-
-            if (model.Patronymic is not null)
-            {
-                validationErrors.AddRange(_userValidationUtils.ValidatePatronymic(model.Patronymic));
-            }
 
             if (model.OrganizationId is not null)
             {

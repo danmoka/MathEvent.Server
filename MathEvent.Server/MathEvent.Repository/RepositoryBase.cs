@@ -3,7 +3,6 @@ using MathEvent.Database;
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace MathEvent.Repository
 {
@@ -33,11 +32,9 @@ namespace MathEvent.Repository
             return ApplicationContext.Set<T>().Where(expression);
         }
 
-        public async Task<T> CreateAsync(T entity)
+        public void Create(T entity)
         {
-            var addResult = await ApplicationContext.Set<T>().AddAsync(entity);
-
-            return addResult.Entity;
+            ApplicationContext.Set<T>().Add(entity);
         }
 
         public void Update(T entity)

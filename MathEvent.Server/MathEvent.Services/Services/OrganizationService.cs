@@ -31,7 +31,7 @@ namespace MathEvent.Services.Services
         /// <param name="filters">Набор пар ключ-значение</param>
         /// <returns>Набор организаций</returns>
         /// <remarks>Фильтры не используются</remarks>
-        public async Task<IEnumerable<OrganizationReadModel>> ListAsync(IDictionary<string, string> filters)
+        public async Task<IEnumerable<OrganizationReadModel>> List(IDictionary<string, string> filters)
         {
             var organizations = await Filter(_repositoryWrapper.Organization.FindAll(), filters).ToListAsync();
             var organizationDTOs = _mapper.Map<IEnumerable<OrganizationDTO>>(organizations);
@@ -45,7 +45,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id организации</param>
         /// <returns>Организация с указанным id</returns>
-        public async Task<OrganizationReadModel> RetrieveAsync(int id)
+        public async Task<OrganizationReadModel> Retrieve(int id)
         {
             var organization = await GetOrganizationEntityAsync(id);
 
@@ -65,24 +65,14 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="createModel">Модель создания организации</param>
         /// <returns>Созданная организация</returns>
-        public async Task<OrganizationReadModel> CreateAsync(OrganizationCreateModel createModel)
+        public async Task<OrganizationReadModel> Create(OrganizationCreateModel createModel)
         {
-            if (string.IsNullOrEmpty(createModel.ManagerId))
-            {
-                throw new Exception("Manager id is empty");
-            }
-
             var organizationEntity = _mapper.Map<Organization>(_mapper.Map<OrganizationDTO>(createModel));
-            var organizationEntityDb = await _repositoryWrapper.Organization.CreateAsync(organizationEntity);
-
-            if (organizationEntityDb is null)
-            {
-                throw new Exception("Errors while creating organization");
-            }
+            _repositoryWrapper.Organization.Create(organizationEntity);
 
             await _repositoryWrapper.SaveAsync();
 
-            var organizationReadModel = _mapper.Map<OrganizationReadModel>(_mapper.Map<OrganizationDTO>(organizationEntityDb));
+            var organizationReadModel = _mapper.Map<OrganizationReadModel>(_mapper.Map<OrganizationDTO>(organizationEntity));
 
             return organizationReadModel;
         }
@@ -93,13 +83,8 @@ namespace MathEvent.Services.Services
         /// <param name="id">id организации</param>
         /// <param name="updateModel">Модель обновления организации</param>
         /// <returns>Обновленная организация</returns>
-        public async Task<OrganizationReadModel> UpdateAsync(int id, OrganizationUpdateModel updateModel)
+        public async Task<OrganizationReadModel> Update(int id, OrganizationUpdateModel updateModel)
         {
-            if (updateModel.ManagerId is null)
-            {
-                throw new Exception("Manager id is empty");
-            }
-
             var organization = await GetOrganizationEntityAsync(id);
 
             if (organization is null)
@@ -124,7 +109,7 @@ namespace MathEvent.Services.Services
         /// </summary>
         /// <param name="id">id организации</param>
         /// <returns></returns>
-        public async Task DeleteAsync(int id)
+        public async Task Delete(int id)
         {
             var organization = await GetOrganizationEntityAsync(id);
 

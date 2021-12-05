@@ -13,14 +13,14 @@ namespace MathEvent.Contracts.Services
     /// <typeparam name="I">Тип поля идентификатора</typeparam>
     public interface IServiceBase<R, SR, C, U, I>
     {
-        Task<IEnumerable<SR>> ListAsync(IDictionary<string, string> filters);
+        Task<IEnumerable<SR>> List(IDictionary<string, string> filters);
 
-        Task<R> RetrieveAsync(I id);
+        Task<R> Retrieve(I id);
 
-        Task<R> CreateAsync(C createModel);
+        Task<R> Create(C createModel);
 
-        Task<R> UpdateAsync(I id, U updateModel);
+        Task<R> Update(I id, U updateModel);
 
-        Task DeleteAsync(I id);
+        Task Delete(I id);
     }
 }

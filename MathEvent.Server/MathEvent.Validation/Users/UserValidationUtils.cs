@@ -1,6 +1,7 @@
 ﻿using MathEvent.Contracts.Services;
 using MathEvent.Contracts.Validators;
 using MathEvent.Validation.Common;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -16,17 +17,9 @@ namespace MathEvent.Validation.Users
 
         private const string _emailPattern = @"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$";
 
-        private const int _passwordMinLength = 6;
-
-        private const int _passwordMaxLength = 255;
-
         private const int _nameMaxLength = 50;
 
         private const int _surnameMaxLength = 50;
-
-        private const int _usernameMaxLength = 62;
-
-        private const int _patronymicMaxLength = 50;
 
         public UserValidationUtils(IUserService userService)
         {
@@ -38,11 +31,11 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="id">id пользователя</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateUserId(string id)
+        public async Task<IEnumerable<IValidationError>> ValidateUserId(Guid id)
         {
             var validationErrors = new List<IValidationError>();
 
-            if (id is null)
+            if (Guid.Empty == id)
             {
                 // TODO: ValidationError - в Models проект
                 validationErrors.Add(new ValidationError
@@ -53,7 +46,7 @@ namespace MathEvent.Validation.Users
             }
             else
             {
-                var user = await _userService.RetrieveAsync(id);
+                var user = await _userService.Retrieve(id);
 
                 if (user is null)
                 {
@@ -73,7 +66,7 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="userIds">Идентификаторы пользователей</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateUserIds(ICollection<string> userIds, string userType)
+        public async Task<IEnumerable<IValidationError>> ValidateUserIds(ICollection<Guid> userIds, string userType)
         {
             var validationErrors = new List<IValidationError>();
 
@@ -131,47 +124,6 @@ namespace MathEvent.Validation.Users
                     {
                         Field = nameof(email),
                         Message = "Пользователь с данным email уже существует"
-                    });
-                }
-            }
-
-            return validationErrors;
-        }
-
-        /// <summary>
-        /// Проверяет корректность пароля
-        /// </summary>
-        /// <param name="password">Пароль</param>
-        /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidatePassword(string password)
-        {
-            var validationErrors = new List<IValidationError>();
-
-            if (string.IsNullOrEmpty(password))
-            {
-                validationErrors.Add(new ValidationError
-                {
-                    Field = nameof(password),
-                    Message = "Введите пароль"
-                });
-            }
-            else
-            {
-                if (password.Length < _passwordMinLength)
-                {
-                    validationErrors.Add(new ValidationError
-                    {
-                        Field = nameof(password),
-                        Message = $"Минимальная длина составляет {_passwordMinLength} символов"
-                    });
-                }
-
-                if (password.Length > _passwordMaxLength)
-                {
-                    validationErrors.Add(new ValidationError
-                    {
-                        Field = nameof(password),
-                        Message = $"Длина не должна превышать {_passwordMaxLength} символов"
                     });
                 }
             }
@@ -248,50 +200,59 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="username">Логин</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateUsername(string username)
-        {
-            var validationErrors = new List<IValidationError>();
+        //public async Task<IEnumerable<ValidationError>> ValidateUsername(string username, bool checkUserExistence = true)
+        //{
+        //    var validationErrors = new List<ValidationError>();
 
-            if (string.IsNullOrEmpty(username))
-            {
-                validationErrors.Add(new ValidationError { Field = nameof(username), Message = "Введите логин" });
-            }
-            else
-            {
-                if (username.Length > _usernameMaxLength)
-                {
-                    validationErrors.Add(new ValidationError
-                    {
-                        Field = nameof(username),
-                        Message = $"Длина логина не должна превышать {_usernameMaxLength} символов"
-                    });
-                }
-            }
+        //    if (string.IsNullOrEmpty(username))
+        //    {
+        //        validationErrors.Add(new ValidationError { Field = nameof(username), Message = "Логин должен быть задан" });
+        //    }
+        //    else
+        //    {
+        //        if (username.Length > _usernameMaxLength)
+        //        {
+        //            validationErrors.Add(new ValidationError
+        //            {
+        //                Field = nameof(username),
+        //                Message = $"Длина логина не должна превышать {_usernameMaxLength} символов"
+        //            });
+        //        }
 
-            return validationErrors;
-        }
+        //        if (checkUserExistence && await _userService.GetUserByUsername(username) != null)
+        //        {
+        //            validationErrors.Add(new ValidationError
+        //            {
+        //                Field = nameof(username),
+        //                Message = "Пользователь с данным логином уже существует"
+        //            });
+        //        }
+        //    }
+
+        //    return validationErrors;
+        //}
 
         /// <summary>
-        /// Валидация отчества пользователя
+        /// Валидация id пользователя платформы аутентификации
         /// </summary>
-        /// <param name="patronymic">Отчество</param>
+        /// <param name="id">id пользователя платформы аутентификации</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidatePatronymic(string patronymic)
+        public async Task<IEnumerable<ValidationError>> ValidateIdentityUserId(Guid id, bool checkUserExistence = true)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
-            if (string.IsNullOrEmpty(patronymic))
+            if (Guid.Empty == id)
             {
-                validationErrors.Add(new ValidationError { Field = nameof(patronymic), Message = "Введите отчество" });
+                validationErrors.Add(new ValidationError { Field = nameof(id), Message = "Идентификатор платформы аутентификации должен быть задан" });
             }
             else
             {
-                if (patronymic.Length > _patronymicMaxLength)
+                if (checkUserExistence && await _userService.GetUserByIdentityUserId(id) != null)
                 {
                     validationErrors.Add(new ValidationError
                     {
-                        Field = nameof(patronymic),
-                        Message = $"Длина отчества не должна превышать {_patronymicMaxLength} символов"
+                        Field = nameof(id),
+                        Message = "Пользователь с данным идентификатором платформы аутентификации существует"
                     });
                 }
             }

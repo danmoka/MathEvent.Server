@@ -19,6 +19,8 @@ namespace MathEvent.Validation.Organization
 
         private const int _nameMaxLength = 150;
 
+        private const int _descriptionMaxLength = 350;
+
         public OrganizationValidationUtils(IOrganizationService organizationService)
         {
             _organizationService = organizationService;
@@ -98,6 +100,38 @@ namespace MathEvent.Validation.Organization
         }
 
         /// <summary>
+        /// Валидация описания организации
+        /// </summary>
+        /// <param name="description">Описание организации</param>
+        /// <returns>Ошибки валидации</returns>
+        public IEnumerable<IValidationError> ValidateDescription(string description)
+        {
+            var validationErrors = new List<IValidationError>();
+
+            if (string.IsNullOrEmpty(description))
+            {
+                validationErrors.Add(new ValidationError
+                {
+                    Field = nameof(description),
+                    Message = "Описание не задано"
+                });
+            }
+            else
+            {
+                if (description.Length > _descriptionMaxLength)
+                {
+                    validationErrors.Add(new ValidationError
+                    {
+                        Field = nameof(description),
+                        Message = $"Длина описания не должна превышать {_descriptionMaxLength} символов"
+                    });
+                }
+            }
+
+            return validationErrors;
+        }
+
+        /// <summary>
         /// Проверяет то, что существует ли организация с данным идентификатором
         /// </summary>
         /// <param name="id">id организации</param>
@@ -116,7 +150,7 @@ namespace MathEvent.Validation.Organization
             }
             else
             {
-                var organization = await _organizationService.RetrieveAsync((int)id);
+                var organization = await _organizationService.Retrieve((int)id);
 
                 if (organization is null)
                 {

@@ -1,7 +1,5 @@
 ﻿using MathEvent.Contracts;
 using MathEvent.Database;
-using MathEvent.Entities.Entities;
-using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 
 namespace MathEvent.Repository
@@ -15,11 +13,6 @@ namespace MathEvent.Repository
         /// Контекст данных для работы с базой данных
         /// </summary>
         private ApplicationContext _applicationContext;
-
-        /// <summary>
-        /// Менеджер для работы с пользователями
-        /// </summary>
-        private UserManager<ApplicationUser> _userManager;
 
         /// <summary>
         /// Репозиторий для работы с Событиями
@@ -56,10 +49,9 @@ namespace MathEvent.Repository
         /// </summary>
         private IOrganizationRepository _organization;
 
-        public RepositoryWrapper(ApplicationContext applicationContext, UserManager<ApplicationUser> userManager)
+        public RepositoryWrapper(ApplicationContext applicationContext)
         {
             _applicationContext = applicationContext;
-            _userManager = userManager;
         }
 
         /// <summary>
@@ -87,7 +79,7 @@ namespace MathEvent.Repository
             {
                 if (_user is null)
                 {
-                    _user = new UserRepository(_applicationContext, _userManager);
+                    _user = new UserRepository(_applicationContext);
                 }
 
                 return _user;

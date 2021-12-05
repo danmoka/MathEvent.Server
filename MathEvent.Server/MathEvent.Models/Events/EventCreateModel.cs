@@ -15,7 +15,7 @@ namespace MathEvent.Models.Events
 
         public string Location { get; set; }
 
-        public string AuthorId { get; set; }
+        public Guid AuthorId { get; set; }
 
         public int? OrganizationId { get; set; }
 

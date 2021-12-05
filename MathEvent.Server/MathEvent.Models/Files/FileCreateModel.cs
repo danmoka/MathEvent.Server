@@ -1,4 +1,6 @@
-﻿namespace MathEvent.Models.Files
+﻿using System;
+
+namespace MathEvent.Models.Files
 {
     /// <summary>
     /// Класс для передачи данных для создания файла
@@ -7,7 +9,7 @@
     {
         public string Name { get; set; }
 
-        public string AuthorId { get; set; }
+        public Guid AuthorId { get; set; }
 
         public int? OwnerId { get; set; }
 

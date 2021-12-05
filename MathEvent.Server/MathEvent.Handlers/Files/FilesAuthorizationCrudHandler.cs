@@ -1,8 +1,7 @@
 ﻿using MathEvent.Contracts;
-using MathEvent.Entities.Entities;
+using MathEvent.Contracts.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,14 +16,14 @@ namespace MathEvent.AuthorizationHandlers.Files
     {
         private readonly IRepositoryWrapper _repositoryWrapper;
 
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
 
         public FilesAuthorizationCrudHandler(
             IRepositoryWrapper repositoryWrapper,
-            UserManager<ApplicationUser> userManager)
+            IUserService userService)
         {
             _repositoryWrapper = repositoryWrapper;
-            _userManager = userManager;
+            _userService = userService;
         }
 
         protected override async Task HandleRequirementAsync(
@@ -32,7 +31,13 @@ namespace MathEvent.AuthorizationHandlers.Files
             OperationAuthorizationRequirement requirement,
             int resource)
         {
-            var user = await _userManager.GetUserAsync(context.User);
+            var user = await _userService.GetUserByClaims(context.User);
+
+            if (user is null)
+            {
+                context.Fail();
+            }
+
             var owner = await _repositoryWrapper
                 .Owner
                 .FindByCondition(ow => ow.Id == resource)
@@ -48,13 +53,7 @@ namespace MathEvent.AuthorizationHandlers.Files
                 }
                 else if (owner.EventId is not null)
                 {
-                    var userManagedEventIds = await _repositoryWrapper
-                        .Management
-                        .FindByCondition(m => m.ApplicationUserId == user.Id)
-                        .Select(m => m.EventId)
-                        .ToListAsync();
-
-                    if (userManagedEventIds.Contains((int)owner.EventId))
+                    if (user.ManagedEvents.Where(ev => ev.Id == (int)owner.EventId).Any())
                     {
                         context.Succeed(requirement);
                     }

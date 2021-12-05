@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MathEvent.Entities.Entities
 {
@@ -18,8 +17,7 @@ namespace MathEvent.Entities.Entities
         [StringLength(12, MinimumLength = 10)]
         public string ITN { get; set; }
 
-        [Required]
-        [ForeignKey("ApplicationUser")]
-        public string ManagerId { get; set; }
+        [StringLength(350, MinimumLength = 1)]
+        public string Description { get; set; }
     }
 }

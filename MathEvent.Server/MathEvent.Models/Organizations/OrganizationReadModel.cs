@@ -1,6 +1,4 @@
-﻿using MathEvent.Models.Users;
-
-namespace MathEvent.Models.Organizations
+﻿namespace MathEvent.Models.Organizations
 {
     public class OrganizationReadModel
     {
@@ -10,6 +8,6 @@ namespace MathEvent.Models.Organizations
 
         public string Name { get; set; }
 
-        public UserReadModel Manager { get; set; }
+        public string Description { get; set; }
     }
 }
