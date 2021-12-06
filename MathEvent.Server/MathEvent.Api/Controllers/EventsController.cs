@@ -199,6 +199,86 @@ namespace MathEvent.Api.Controllers
             return Ok(updatedEvent);
         }
 
+        [HttpPost("Subscribe/{id}")]
+        public async Task<ActionResult> Subscribe([FromRoute] int id)
+        {
+            if (id < 0)
+            {
+                return BadRequest($"id={id} меньше 0");
+            }
+
+            var ev = await _eventService.Retrieve(id);
+
+            if (ev is null)
+            {
+                return NotFound($"Событие с id={id} не найдено");
+            }
+
+            var user = await _userService.GetUserByClaims(User);
+
+            if (user is null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Не удается получить данные о текущем пользователе");
+            }
+
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(ev);
+            var eventToPatch = _mapper.Map<EventUpdateModel>(eventDTO);
+
+            if (!eventToPatch.ApplicationUsers.Contains(user.Id))
+            {
+                eventToPatch.ApplicationUsers.Add(user.Id);
+            }
+
+            var updatedEvent = await _eventService.Update(id, eventToPatch);
+
+            if (updatedEvent is null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления события");
+            }
+
+            return Ok(updatedEvent);
+        }
+
+        [HttpPost("Unsubscribe/{id}")]
+        public async Task<ActionResult> Unsubscribe([FromRoute] int id)
+        {
+            if (id < 0)
+            {
+                return BadRequest($"id={id} меньше 0");
+            }
+
+            var ev = await _eventService.Retrieve(id);
+
+            if (ev is null)
+            {
+                return NotFound($"Событие с id={id} не найдено");
+            }
+
+            var user = await _userService.GetUserByClaims(User);
+
+            if (user is null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Не удается получить данные о текущем пользователе");
+            }
+
+            var eventDTO = _mapper.Map<EventWithUsersDTO>(ev);
+            var eventToPatch = _mapper.Map<EventUpdateModel>(eventDTO);
+
+            if (eventToPatch.ApplicationUsers.Contains(user.Id))
+            {
+                eventToPatch.ApplicationUsers.Remove(user.Id);
+            }
+
+            var updatedEvent = await _eventService.Update(id, eventToPatch);
+
+            if (updatedEvent is null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ошибка во время обновления события");
+            }
+
+            return Ok(updatedEvent);
+        }
+
         [HttpDelete("{id}")]
         public async Task<ActionResult> Destroy([FromRoute] int id)
         {
