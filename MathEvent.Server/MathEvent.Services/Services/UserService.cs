@@ -41,7 +41,7 @@ namespace MathEvent.Services.Services
         /// <remarks>Фильтры не используются</remarks>
         public async Task<IEnumerable<UserReadModel>> List(IDictionary<string, string> filters)
         {
-            var users = await Filter(_repositoryWrapper.User.FindAll(), filters).ToListAsync();
+            var users = await Filter(_repositoryWrapper.User.FindAll(), filters);
             var userDTOs = _mapper.Map<IEnumerable<UserDTO>>(users);
             var userReadModels = _mapper.Map<IEnumerable<UserReadModel>>(userDTOs);
 
@@ -505,14 +505,24 @@ namespace MathEvent.Services.Services
             }
         }
 
-        private static IQueryable<ApplicationUser> Filter(IQueryable<ApplicationUser> filesQuery, IDictionary<string, string> filters)
+        private static async Task<IList<ApplicationUser>> Filter(IQueryable<ApplicationUser> userQuery, IDictionary<string, string> filters)
         {
+            var users = new List<ApplicationUser>();
+
             if (filters is not null)
             {
-                // TODO: фильтрация
+                users = await userQuery.ToListAsync();
+
+                if (filters.TryGetValue("search", out string searchString))
+                {
+                    if (!string.IsNullOrEmpty(searchString))
+                    {
+                        users = users.Where(c => c.Surname.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                    }
+                }
             }
 
-            return filesQuery;
+            return users;
         }
 
         /// <summary>

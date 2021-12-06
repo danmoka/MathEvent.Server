@@ -716,6 +716,16 @@ namespace MathEvent.Services.Services
 
                 events = await eventQuery.ToListAsync();
 
+                if (filters.TryGetValue("search", out string searchString))
+                {
+                    if (!string.IsNullOrEmpty(searchString))
+                    {
+                        events = events.Where(c => c.Name.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0
+                        || (c.Description.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
+                        || (c.Location != null && c.Location.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)).ToList();
+                    }
+                }
+
                 if (filters.TryGetValue("sortBy", out string sortParam))
                 {
                     if (int.TryParse(sortParam, out int sortValue))

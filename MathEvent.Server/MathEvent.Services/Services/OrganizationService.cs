@@ -33,7 +33,7 @@ namespace MathEvent.Services.Services
         /// <remarks>Фильтры не используются</remarks>
         public async Task<IEnumerable<OrganizationReadModel>> List(IDictionary<string, string> filters)
         {
-            var organizations = await Filter(_repositoryWrapper.Organization.FindAll(), filters).ToListAsync();
+            var organizations = await Filter(_repositoryWrapper.Organization.FindAll(), filters);
             var organizationDTOs = _mapper.Map<IEnumerable<OrganizationDTO>>(organizations);
             var organizationReadModels = _mapper.Map<IEnumerable<OrganizationReadModel>>(organizationDTOs);
 
@@ -322,14 +322,24 @@ namespace MathEvent.Services.Services
             return statistics;
         }
 
-        private static IQueryable<Organization> Filter(IQueryable<Organization> organizationQuery, IDictionary<string, string> filters)
+        private static async Task<IList<Organization>> Filter(IQueryable<Organization> organizationsQuery, IDictionary<string, string> filters)
         {
+            var organizations = new List<Organization>();
+
             if (filters is not null)
             {
-                // TODO: фильтрация
+                organizations = await organizationsQuery.ToListAsync();
+
+                if (filters.TryGetValue("search", out string searchString))
+                {
+                    if (!string.IsNullOrEmpty(searchString))
+                    {
+                        organizations = organizations.Where(c => c.Name.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                    }
+                }
             }
 
-            return organizationQuery;
+            return organizations;
         }
     }
 }
