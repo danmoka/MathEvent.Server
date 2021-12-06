@@ -161,7 +161,6 @@ namespace MathEvent.Services.Services
         /// <param name="id">id события, которое требуется удалить</param>
         /// <returns></returns>
         /// <remarks>При удалении события удаляется аватар события</remarks>
-        /// TODO: удаляются ли файлы события?
         public async Task Delete(int id)
         {
             var eventEntity = await GetEventEntityAsync(id);
@@ -171,12 +170,23 @@ namespace MathEvent.Services.Services
                 throw new Exception($"Event with id={id} is not exists");
             }
 
+            var ownerId = (await GetEventOwner(eventEntity.Id, Owner.Type.File)).Id;
+            var files = await _repositoryWrapper.File
+                .FindByCondition(f => f.OwnerId == ownerId && f.Hierarchy == null)
+                .ToListAsync();
+
+            foreach (var file in files)
+            {
+                _dataPathService.DeleteContentFile(file.Path, out string deleteMessage);
+
+                if (deleteMessage is not null)
+                {
+                    throw new Exception(deleteMessage);
+                }
+            }
+
             var avatarPath = eventEntity.AvatarPath;
 
-            _repositoryWrapper.Event.Delete(eventEntity);
-            await _repositoryWrapper.SaveAsync();
-
-            // TODO: НЕ УДАЛЯЮТСЯ НИКАКИЕ ФАЙЛЫ
             if (avatarPath is not null)
             {
                 _dataPathService.DeleteWebRootFile(avatarPath, out string deleteMessage);
@@ -186,6 +196,9 @@ namespace MathEvent.Services.Services
                     throw new Exception(deleteMessage);
                 }
             }
+
+            _repositoryWrapper.Event.Delete(eventEntity);
+            await _repositoryWrapper.SaveAsync();
         }
 
         /// <summary>
@@ -720,9 +733,9 @@ namespace MathEvent.Services.Services
                 {
                     if (!string.IsNullOrEmpty(searchString))
                     {
-                        events = events.Where(c => c.Name.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0
-                        || (c.Description.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)
-                        || (c.Location != null && c.Location.IndexOf(searchString, StringComparison.OrdinalIgnoreCase) >= 0)).ToList();
+                        events = events.Where(c => c.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+                        || (c.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+                        || (c.Location != null && c.Location.Contains(searchString, StringComparison.OrdinalIgnoreCase))).ToList();
                     }
                 }
 
