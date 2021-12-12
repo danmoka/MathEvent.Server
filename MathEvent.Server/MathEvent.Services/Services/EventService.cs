@@ -459,9 +459,7 @@ namespace MathEvent.Services.Services
 
             var statistics = new ChartData
             {
-                Title = eventEntity.Hierarchy is null
-                ? $"Подписчики события по организациям"
-                : $"Подписчики вложенных \"листовых\" событий по организациям",
+                Title = "Подписчики события по организациям",
                 Data = new List<ChartDataPiece>()
             };
 
@@ -494,59 +492,43 @@ namespace MathEvent.Services.Services
         {
             var organizationSubcribersCount = new Dictionary<int, int>();
 
-            return await GetEventSubscribersByOrganization(ev, 0, organizationSubcribersCount);
+            return await GetEventSubscribersByOrganization(ev, organizationSubcribersCount);
         }
 
-        private async Task<IDictionary<int, int>> GetEventSubscribersByOrganization(Event ev, int level, IDictionary<int, int> orgSubsCount)
+        private async Task<IDictionary<int, int>> GetEventSubscribersByOrganization(Event ev, IDictionary<int, int> orgSubsCount)
         {
             // TODO: мб вместо обращения к репозиторию, задействовать другие сервисы
-            if (level > _breadcrumbRecursionDepth)
-            {
-                return orgSubsCount;
-            }
 
-            if (ev.Hierarchy is null)
-            {
-                var subscriptions = await _repositoryWrapper.Subscription
+            var subscriptions = await _repositoryWrapper.Subscription
                     .FindByCondition(s => s.EventId == ev.Id)
                     .ToListAsync();
 
-                var subscribers = new List<ApplicationUser>();
+            var subscribers = new List<ApplicationUser>();
 
-                foreach (var subscription in subscriptions)
-                {
-                    subscribers.Add(await _repositoryWrapper.User
-                        .FindByCondition(user => user.Id == subscription.ApplicationUserId)
-                        .SingleOrDefaultAsync());
-                }
-
-                foreach (var user in subscribers)
-                {
-                    int orgId = -1;
-
-                    if (user.OrganizationId != null)
-                    {
-                        orgId = user.OrganizationId.Value;
-                    }
-
-                    if (orgSubsCount.ContainsKey(orgId))
-                    {
-                        orgSubsCount[orgId]++;
-                    }
-                    else
-                    {
-                        orgSubsCount.Add(orgId, 1);
-                    }
-                }
+            foreach (var subscription in subscriptions)
+            {
+                subscribers.Add(await _repositoryWrapper.User
+                    .FindByCondition(user => user.Id == subscription.ApplicationUserId)
+                    .SingleOrDefaultAsync());
             }
 
-            var children = await _repositoryWrapper.Event
-                .FindByCondition(e => e.ParentId == ev.Id)
-                .ToListAsync();
-
-            foreach (var child in children)
+            foreach (var user in subscribers)
             {
-                await GetEventSubscribersByOrganization(child, level + 1, orgSubsCount);
+                int orgId = -1;
+
+                if (user.OrganizationId != null)
+                {
+                    orgId = user.OrganizationId.Value;
+                }
+
+                if (orgSubsCount.ContainsKey(orgId))
+                {
+                    orgSubsCount[orgId]++;
+                }
+                else
+                {
+                    orgSubsCount.Add(orgId, 1);
+                }
             }
 
             return orgSubsCount;

@@ -39,7 +39,6 @@ namespace MathEvent.Api
             services.ConfigureMapper();
             services.ConfigureValidation();
             services.ConfigureControllers();
-            services.ConfigureQuartz();
             services.ConfigureOpenApi();
         }
 
