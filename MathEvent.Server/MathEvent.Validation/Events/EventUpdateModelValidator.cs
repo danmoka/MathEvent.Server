@@ -47,11 +47,6 @@ namespace MathEvent.Validation.Events
                 validationErrors.AddRange(await _organizationValidationUtils.ValidateOrganizationId(model.OrganizationId));
             }
 
-            if (model.ParentId is not null)
-            {
-                validationErrors.AddRange(await _eventValidationUtils.ValidateParentEventId(model.ParentId));
-            }
-
             validationErrors.AddRange(await _userValidationUtils.ValidateUserIds(model.ApplicationUsers, "Подписчик"));
             validationErrors.AddRange(await _userValidationUtils.ValidateUserIds(model.ApplicationUsers, "Менеджер"));
 

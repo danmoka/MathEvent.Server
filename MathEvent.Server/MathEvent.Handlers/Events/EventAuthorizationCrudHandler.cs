@@ -1,8 +1,12 @@
-﻿using MathEvent.Contracts.Services;
+﻿using MathEvent.Constants;
+using MathEvent.Contracts.Services;
 using MathEvent.Models.Events;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MathEvent.AuthorizationHandlers.Events
@@ -26,27 +30,37 @@ namespace MathEvent.AuthorizationHandlers.Events
             OperationAuthorizationRequirement requirement,
             EventWithUsersReadModel resource)
         {
-            var user = await _userService.GetUserByClaims(context.User);
-
-            if (user is null)
-            {
-                context.Fail();
-            }
-
             if (requirement.Name == Operations.Update.Name
                 || requirement.Name == Operations.Delete.Name)
             {
-                if (user.ManagedEvents.Where(ev => ev.Id == resource.Id).Any())
+                var user = await _userService.GetUserByClaims(context.User);
+
+                if (user is not null)
                 {
-                    context.Succeed(requirement);
+                    if (user.ManagedEvents.Where(ev => ev.Id == resource.Id).Any())
+                    {
+                        context.Succeed(requirement);
+                        return;
+                    }
                 }
-                else
+
+                var roleClaim = context.User.Claims
+                    .Where(c => c.Type == ClaimTypes.Role)
+                    .SingleOrDefault();
+
+                if (roleClaim is not null)
                 {
-                    context.Fail();
+                    var roles = JsonConvert.DeserializeObject<IList<string>>(roleClaim.Value);
+
+                    if (roles.Contains(MathEventRoles.Administrator) || roles.Contains(MathEventRoles.Moderator))
+                    {
+                        context.Succeed(requirement);
+                        return;
+                    }
                 }
             }
 
-            context.Succeed(requirement);
+            context.Fail();
         }
     }
 }

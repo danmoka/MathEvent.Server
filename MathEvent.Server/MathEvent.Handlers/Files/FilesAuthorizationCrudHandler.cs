@@ -1,9 +1,13 @@
-﻿using MathEvent.Contracts;
+﻿using MathEvent.Constants;
+using MathEvent.Contracts;
 using MathEvent.Contracts.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MathEvent.AuthorizationHandlers.Files
@@ -31,44 +35,46 @@ namespace MathEvent.AuthorizationHandlers.Files
             OperationAuthorizationRequirement requirement,
             int resource)
         {
-            var user = await _userService.GetUserByClaims(context.User);
-
-            if (user is null)
-            {
-                context.Fail();
-            }
-
-            var owner = await _repositoryWrapper
-                .Owner
-                .FindByCondition(ow => ow.Id == resource)
-                .SingleOrDefaultAsync();
-
             if (requirement.Name == Operations.Create.Name
-                || requirement.Name == Operations.Update.Name
-                || requirement.Name == Operations.Delete.Name)
+               || requirement.Name == Operations.Update.Name
+               || requirement.Name == Operations.Delete.Name)
             {
+                var owner = await _repositoryWrapper
+                    .Owner
+                    .FindByCondition(ow => ow.Id == resource)
+                    .SingleOrDefaultAsync();
+
+                var user = await _userService.GetUserByClaims(context.User);
+
                 if (owner.ApplicationUserId == user.Id)
                 {
                     context.Succeed(requirement);
+                    return;
                 }
-                else if (owner.EventId is not null)
+
+                if (owner.EventId is not null && user.ManagedEvents.Where(ev => ev.Id == (int)owner.EventId).Any())
                 {
-                    if (user.ManagedEvents.Where(ev => ev.Id == (int)owner.EventId).Any())
+                    context.Succeed(requirement);
+                    return;
+                }
+
+                var roleClaim = context.User.Claims
+                    .Where(c => c.Type == ClaimTypes.Role)
+                    .SingleOrDefault();
+
+                if (roleClaim is not null)
+                {
+                    var roles = JsonConvert.DeserializeObject<IList<string>>(roleClaim.Value);
+
+                    if (roles.Contains(MathEventRoles.Administrator) || roles.Contains(MathEventRoles.Moderator))
                     {
                         context.Succeed(requirement);
+                        return;
                     }
-                    else
-                    {
-                        context.Fail();
-                    }
-                }
-                else
-                {
-                    context.Fail();
                 }
             }
 
-            context.Succeed(requirement);
+            context.Fail();
         }
     }
 }

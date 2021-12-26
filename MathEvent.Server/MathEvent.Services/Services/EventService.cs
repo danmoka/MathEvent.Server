@@ -126,17 +126,18 @@ namespace MathEvent.Services.Services
                 throw new Exception($"Event with id={id} is not exists");
             }
 
-            if (updateModel.Hierarchy is null && eventEntity.Hierarchy is not null)
-            {
-                var children = await _repositoryWrapper.Event
-                    .FindByCondition(ev => ev.ParentId == eventEntity.Id)
-                    .ToListAsync();
+            // TODO: добавить возможность менять тип по иерархии, а также родительское событие
+            //if (updateModel.Hierarchy is null && eventEntity.Hierarchy is not null)
+            //{
+            //    var children = await _repositoryWrapper.Event
+            //        .FindByCondition(ev => ev.ParentId == eventEntity.Id)
+            //        .ToListAsync();
 
-                if (children.Count > 0)
-                {
-                    throw new Exception($"Event with the id={id} has child elements");
-                }
-            }
+            //    if (children.Count > 0)
+            //    {
+            //        throw new Exception($"Event with the id={id} has child elements");
+            //    }
+            //}
 
             await CreateNewSubscriptions(updateModel.ApplicationUsers, id);
 

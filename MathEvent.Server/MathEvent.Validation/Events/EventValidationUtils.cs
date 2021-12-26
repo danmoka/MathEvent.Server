@@ -196,6 +196,31 @@ namespace MathEvent.Validation.Events
         }
 
         /// <summary>
+        /// Проверяет иерархию события
+        /// </summary>
+        /// <param name="hierarchy">Тип</param>
+        /// <param name="id">Идентификатор события</param>
+        /// <returns>Ошибки валидации</returns>
+        // TODO: добавить возможность изменять иерархию
+        //public async Task<IEnumerable<IValidationError>> ValidateHierarchy(bool? hierarchy, int id)
+        //{
+        //    var validationErros = new List<IValidationError>();
+
+        //    var events = await _eventService.GetChildEvents(id);
+
+        //    if ((events as ICollection<EventReadModel>).Count > 0 && hierarchy is null)
+        //    {
+        //        validationErros.Add(new ValidationError
+        //        {
+        //            Field = nameof(id),
+        //            Message = $"Событие с id = {id} имеет дочерние события",
+        //        });
+        //    }
+
+        //    return validationErros;
+        //}
+
+        /// <summary>
         /// Проверяет то, что существуют ли события с данными идентификаторами
         /// </summary>
         /// <param name="eventIds">Набор идентификаторов</param>

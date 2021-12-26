@@ -18,12 +18,6 @@ namespace MathEvent.Models.Events
 
         public int? OrganizationId { get; set; }
 
-        #region hierarchy
-        public bool? Hierarchy { get; set; }
-
-        public int? ParentId { get; set; }
-        #endregion
-
         /// <summary>
         /// Для обновления коллекции пользователей по их id
         /// </summary>
