@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace MathEvent.Database.Extensions
 {
@@ -18,7 +19,9 @@ namespace MathEvent.Database.Extensions
         {
             services.AddDbContext<ApplicationContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("DBConnection"));
+                options.UseMySql(
+                    configuration.GetConnectionString("DBConnection"),
+                    new MySqlServerVersion(new Version(configuration["MySql:Version"])));
             });
         }
     }
