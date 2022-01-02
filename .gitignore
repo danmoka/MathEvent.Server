@@ -6,6 +6,7 @@
 **/media
 **/Content
 emailsettings.json
+appsettings.Development.json
 appsettings.json
 
 .vscode
