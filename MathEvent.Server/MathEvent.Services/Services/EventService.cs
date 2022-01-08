@@ -399,6 +399,7 @@ namespace MathEvent.Services.Services
         {
             var startDateFrom = DateTime.UtcNow.AddDays(-100).Date;
             var startDateTo = DateTime.UtcNow.AddDays(100).Date;
+            var offset = 0;
 
             if (dates.TryGetValue("startDateFrom", out string startDateFromParam))
             {
@@ -410,12 +411,18 @@ namespace MathEvent.Services.Services
                 startDateTo = DateTime.Parse(startDateToParam).ToUniversalTime();
             }
 
+            if (dates.TryGetValue("offset", out string offsetParam))
+            {
+                offset = int.Parse(offsetParam);
+            }
+
             return await _repositoryWrapper.Event
                 .FindByCondition(ev =>
                     ev.StartDate.Date >= startDateFrom.Date
                     && ev.StartDate.Date <= startDateTo.Date
                     && ev.ParentId == null)
-                .GroupBy(ev => ev.StartDate.Date)
+                .Select(ev => ev.StartDate.AddHours(-offset))
+                .GroupBy(ev => ev.Date)
                 .Select(g => new { date = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.date, i => i.count);
         }

@@ -52,7 +52,7 @@ namespace MathEvent.AuthorizationHandlers.Events
                 {
                     var roles = JsonConvert.DeserializeObject<IList<string>>(roleClaim.Value);
 
-                    if (roles.Contains(MathEventRoles.Administrator) || roles.Contains(MathEventRoles.Moderator))
+                    if (roles.Contains(MathEventRoles.Administrator))
                     {
                         context.Succeed(requirement);
                         return;
