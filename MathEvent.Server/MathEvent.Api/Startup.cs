@@ -4,7 +4,6 @@ using MathEvent.Converters.Extension;
 using MathEvent.Database.Extensions;
 using MathEvent.Email.Extensions;
 using MathEvent.Repository.Extensions;
-using MathEvent.ScheduledJobs.Extensions;
 using MathEvent.Services.Extension;
 using MathEvent.Validation.Extensions;
 using Microsoft.AspNetCore.Builder;
@@ -30,7 +29,7 @@ namespace MathEvent.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.ConfigureConnection(Configuration);
-            services.ConfigureAuthentication(Configuration);
+            services.ConfigureAuthentication(Configuration, Environment);
             services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();
             services.ConfigureEmail();
@@ -46,21 +45,27 @@ namespace MathEvent.Api
         {
             if (env.IsDevelopment())
             {
+                app.UseCors(builder =>
+                {
+                    builder.WithOrigins(Configuration.GetSection("Origins").Get<string[]>());
+                    builder.AllowCredentials();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                    builder.WithExposedHeaders("Content-Disposition");
+                });
+                app.UseHttpsRedirection();
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MathEvent.Api v1"));
             }
-
-            app.UseCors(builder =>
+            else if (env.IsProduction())
             {
-                builder.WithOrigins(Configuration.GetSection("Origins").Get<string[]>());
-                builder.AllowCredentials();
-                builder.AllowAnyHeader();
-                builder.AllowAnyMethod();
-                builder.WithExposedHeaders("Content-Disposition");
-            });
-
-            app.UseHttpsRedirection();
+                app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials());
+            }
 
             app.UseRouting();
 

@@ -12,6 +12,10 @@ appsettings.json
 .vscode
 **/Migrations/
 
+*jwk
+*/.env
+*/.env.development
+
 # User-specific files
 *.rsuser
 *.suo

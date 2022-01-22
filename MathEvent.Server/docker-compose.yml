@@ -1,0 +1,18 @@
+version: "${DOCKER_COMPOSE_VERSION}"
+
+services:
+  api:
+    build: 
+      context: ./
+      dockerfile: MathEvent.Api/Dockerfile
+    image: matheventapi
+    container_name: matheventapi
+    platform: "${DOCKER_COMPOSE_IMAGE_PLATFORM}"
+    networks:
+      - mathevent
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5003;
+networks:
+  mathevent:
+    external: true
