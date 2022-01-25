@@ -122,6 +122,29 @@ namespace MathEvent.Services.Services
             await _repositoryWrapper.SaveAsync();
         }
 
+
+        /// <summary>
+        /// Возвращает организацию с указанным ИНН
+        /// </summary>
+        /// <param name="itn">ИНН организации</param>
+        /// <returns>Организация с указанным ИНН</returns>
+        public async Task<OrganizationReadModel> FindByITN(string itn)
+        {
+            var organization = await _repositoryWrapper.Organization
+                .FindByCondition(org => org.ITN == itn)
+                .SingleOrDefaultAsync();
+
+            if (organization is null)
+            {
+                return null;
+            }
+
+            var organizationDTO = _mapper.Map<OrganizationDTO>(organization);
+            var organizationReadModel = _mapper.Map<OrganizationReadModel>(organizationDTO);
+
+            return organizationReadModel;
+        }
+
         /// <summary>
         /// Возвращает организацию с указанным id
         /// </summary>
@@ -179,7 +202,7 @@ namespace MathEvent.Services.Services
             };
 
             var numberOfEventsPerMonthResult = await _repositoryWrapper.Event
-                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1))
+                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1) && e.StartDate <= DateTime.UtcNow)
                 .GroupBy(e => e.OrganizationId)
                 .Select(g => new { orgId = g.Key, count = g.Count() })
                 .ToDictionaryAsync(k => k.orgId is null ? -1 : k.orgId, i => i.count);
@@ -227,7 +250,7 @@ namespace MathEvent.Services.Services
 
             var organizationSubcribersPerEvent = new Dictionary<int, int>();
             var events = await _repositoryWrapper.Event
-                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1))
+                .FindByCondition(e => e.StartDate >= DateTime.UtcNow.AddYears(-1) && e.StartDate <= DateTime.UtcNow)
                 .ToListAsync();
 
             foreach (var ev in events)

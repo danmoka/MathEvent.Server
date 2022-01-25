@@ -5,6 +5,7 @@ using MathEvent.Contracts.Validators;
 using MathEvent.DTOs.Organizations;
 using MathEvent.Models.Organizations;
 using MathEvent.Models.Others;
+using MathEvent.Models.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -61,7 +62,11 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() {
+                    new ValidationError() {
+                        Field = "id", Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var organization = await _organizationService.Retrieve(id);
@@ -109,7 +114,11 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() {
+                    new ValidationError() {
+                        Field = "id", Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var validationResult = await _organizationUpdateModelValidator.Validate(organizationUpdateModel);
@@ -149,12 +158,20 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() {
+                    new ValidationError() {
+                        Field = "id", Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             if (patchDocument is null)
             {
-                return BadRequest("Тело запроса не задано");
+                return BadRequest(new List<ValidationError>() {
+                    new ValidationError() {
+                        Field = "body", Message = "Тело запроса не задано"
+                    }
+                });
             }
 
             var organization = await _organizationService.Retrieve(id);
@@ -198,7 +215,11 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() {
+                    new ValidationError() {
+                        Field = "id", Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var organization = await _organizationService.Retrieve(id);

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using MathEvent.Models.Validation;
+using System.Threading.Tasks;
 
 namespace MathEvent.Contracts.Validators
 {
@@ -8,6 +9,6 @@ namespace MathEvent.Contracts.Validators
     /// <typeparam name="T">Тип объекта валидации</typeparam>
     public interface IValidator<T> where T : class
     {
-        Task<IValidationResult> Validate(T obj);
+        Task<ValidationResult> Validate(T obj);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using MathEvent.Contracts.Services;
-using MathEvent.Contracts.Validators;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,11 +13,11 @@ namespace MathEvent.Validation.Events
     {
         private readonly IEventService _eventService;
 
-        private const int _nameMaxLenght = 250;
+        private const int _nameMaxLength = 250;
 
-        private const int _descriptionMaxLenght = 500;
+        private const int _descriptionMaxLength = 500;
 
-        private const int _locationMaxLenght = 100;
+        private const int _locationMaxLength = 100;
 
         public EventValidationUtils(IEventService eventService)
         {
@@ -30,9 +29,9 @@ namespace MathEvent.Validation.Events
         /// </summary>
         /// <param name="startDateISOString">Время</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateStartDateTime(string startDateISOString)
+        public IEnumerable<ValidationError> ValidateStartDateTime(string startDateISOString)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (!DateTime.TryParse(startDateISOString, out DateTime dateTime))
             {
@@ -59,9 +58,9 @@ namespace MathEvent.Validation.Events
         /// </summary>
         /// <param name="name">Название события</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateName(string name)
+        public IEnumerable<ValidationError> ValidateName(string name)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(name))
             {
@@ -73,12 +72,12 @@ namespace MathEvent.Validation.Events
             }
             else
             {
-                if (name.Length > _nameMaxLenght)
+                if (name.Length > _nameMaxLength)
                 {
                     validationErrors.Add(new ValidationError
                     {
                         Field = nameof(name),
-                        Message = $"Длина названия события должна быть до {_nameMaxLenght} символов",
+                        Message = $"Длина названия события должна быть до {_nameMaxLength} символов",
                     });
                 }
             }
@@ -91,9 +90,9 @@ namespace MathEvent.Validation.Events
         /// </summary>
         /// <param name="description">Описание события</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateDescription(string description)
+        public IEnumerable<ValidationError> ValidateDescription(string description)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(description))
             {
@@ -105,12 +104,12 @@ namespace MathEvent.Validation.Events
             }
             else
             {
-                if (description.Length > _descriptionMaxLenght)
+                if (description.Length > _descriptionMaxLength)
                 {
                     validationErrors.Add(new ValidationError
                     {
                         Field = nameof(description),
-                        Message = $"Длина описания события должна быть от 1 до {_descriptionMaxLenght} символов",
+                        Message = $"Длина описания события должна быть от 1 до {_descriptionMaxLength} символов",
                     });
                 }
             }
@@ -123,26 +122,26 @@ namespace MathEvent.Validation.Events
         /// </summary>
         /// <param name="location">Адрес</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateLocation(string location)
+        public IEnumerable<ValidationError> ValidateLocation(string location)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(location))
             {
                 validationErrors.Add(new ValidationError
                 {
                     Field = nameof(location),
-                    Message = "Адрес события должно быть задано",
+                    Message = "Адрес события должен быть задан",
                 });
             }
             else
             {
-                if (location.Length > _nameMaxLenght)
+                if (location.Length > _nameMaxLength)
                 {
                     validationErrors.Add(new ValidationError
                     {
                         Field = nameof(location),
-                        Message = $"Длина адреса события должна быть до {_locationMaxLenght} символов",
+                        Message = $"Длина адреса события должна быть до {_locationMaxLength} символов",
                     });
                 }
             }
@@ -155,9 +154,9 @@ namespace MathEvent.Validation.Events
         /// </summary>
         /// <param name="id">id события</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateParentEventId(int? id)
+        public async Task<IEnumerable<ValidationError>> ValidateParentEventId(int? id)
         {
-            var validationErros = new List<IValidationError>();
+            var validationErros = new List<ValidationError>();
 
             if (id is null)
             {
@@ -225,9 +224,9 @@ namespace MathEvent.Validation.Events
         /// </summary>
         /// <param name="eventIds">Набор идентификаторов</param>
         /// <returns>Ошибки валидации</returns>
-        internal async Task<IEnumerable<IValidationError>> ValidateEventIds(IEnumerable<int> eventIds)
+        internal async Task<IEnumerable<ValidationError>> ValidateEventIds(IEnumerable<int> eventIds)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             foreach (var id in eventIds)
             {

@@ -29,7 +29,7 @@ namespace MathEvent.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.ConfigureConnection(Configuration);
-            services.ConfigureAuthentication(Configuration, Environment);
+            services.ConfigureAuthentication(Configuration);
             services.ConfigureAuthorization(Configuration);
             services.ConfigureRepositoryWrapper();
             services.ConfigureEmail();

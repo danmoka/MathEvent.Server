@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts.Validators;
 using MathEvent.Models.Files;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -18,9 +18,9 @@ namespace MathEvent.Validation.Files
             _fileValidationUtils = fileValidationUtils;
         }
 
-        public async Task<IValidationResult> Validate(FileCreateModel model)
+        public async Task<ValidationResult> Validate(FileCreateModel model)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             validationErrors.AddRange(_fileValidationUtils.ValidateName(model.Name));
 
@@ -29,7 +29,7 @@ namespace MathEvent.Validation.Files
                 validationErrors.Add(new ValidationError
                 {
                     Field = nameof(model.Name),
-                    Message = "Неопределен владелец файла",
+                    Message = "Не определен владелец файла",
                 });
             }
 

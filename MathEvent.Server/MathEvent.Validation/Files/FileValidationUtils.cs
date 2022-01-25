@@ -1,6 +1,5 @@
 ﻿using MathEvent.Contracts.Services;
-using MathEvent.Contracts.Validators;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,7 +12,7 @@ namespace MathEvent.Validation.Files
     {
         private readonly IFileService _fileService;
 
-        private const int _nameMaxLenght = 250;
+        private const int _nameMaxLength = 250;
 
         public FileValidationUtils(IFileService fileService)
         {
@@ -25,9 +24,9 @@ namespace MathEvent.Validation.Files
         /// </summary>
         /// <param name="id">id файла</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateParentFileId(int? id)
+        public async Task<IEnumerable<ValidationError>> ValidateParentFileId(int? id)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (id is null)
             {
@@ -61,9 +60,9 @@ namespace MathEvent.Validation.Files
         /// </summary>
         /// <param name="id">id файла</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateFileId(int? id)
+        public async Task<IEnumerable<ValidationError>> ValidateFileId(int? id)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (id is null)
             {
@@ -95,9 +94,9 @@ namespace MathEvent.Validation.Files
         /// </summary>
         /// <param name="name">Название файла</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateName(string name)
+        public IEnumerable<ValidationError> ValidateName(string name)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(name))
             {
@@ -109,12 +108,12 @@ namespace MathEvent.Validation.Files
             }
             else
             {
-                if (name.Length > _nameMaxLenght)
+                if (name.Length > _nameMaxLength)
                 {
                     validationErrors.Add(new ValidationError
                     {
                         Field = nameof(name),
-                        Message = $"Длина названия файла должна быть до {_nameMaxLenght} символов",
+                        Message = $"Длина названия файла должна быть до {_nameMaxLength} символов",
                     });
                 }
             }

@@ -1,11 +1,9 @@
-﻿using MathEvent.Contracts.Validators;
-
-namespace MathEvent.Validation.Common
+﻿namespace MathEvent.Models.Validation
 {
     /// <summary>
     /// Описывает ошибку валидации
     /// </summary>
-    public class ValidationError : IValidationError
+    public class ValidationError
     {
         public string Field { get; set; }
 

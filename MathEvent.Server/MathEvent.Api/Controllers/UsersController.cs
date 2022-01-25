@@ -5,6 +5,7 @@ using MathEvent.Contracts.Validators;
 using MathEvent.DTOs.Users;
 using MathEvent.Models.Others;
 using MathEvent.Models.Users;
+using MathEvent.Models.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -57,7 +58,14 @@ namespace MathEvent.Api.Controllers
         {
             if (Guid.Empty == identityUserId)
             {
-                return BadRequest($"identityUserId не задан");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "identityUserId",
+                        Message = $"identityUserId не задан"
+                    }
+                });
             }
 
             var user = await _userService.RetrieveByIdentityUserId(identityUserId);
@@ -134,7 +142,14 @@ namespace MathEvent.Api.Controllers
         {
             if (Guid.Empty == identityUserId)
             {
-                return BadRequest("identityId не задан");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "identityUserId",
+                        Message = $"identityUserId не задан"
+                    }
+                });
             }
 
             var validationResult = await _userUpdateModelValidator.Validate(userUpdateModel);
@@ -174,12 +189,26 @@ namespace MathEvent.Api.Controllers
         {
             if (Guid.Empty == identityUserId)
             {
-                return BadRequest("identityUserId не задан");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "identityUserId",
+                        Message = $"identityUserId не задан"
+                    }
+                });
             }
 
             if (patchDocument is null)
             {
-                return BadRequest("Тело запроса не задано");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "body",
+                        Message = $"Тело запроса не задано"
+                    }
+                });
             }
 
             var user = await _userService.RetrieveByIdentityUserId(identityUserId);
@@ -223,7 +252,14 @@ namespace MathEvent.Api.Controllers
         {
             if (Guid.Empty == identityUserId)
             {
-                return BadRequest("id не задан");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "identityUserId",
+                        Message = $"identityUserId не задан"
+                    }
+                });
             }
 
             var user = await _userService.RetrieveByIdentityUserId(identityUserId);
@@ -260,7 +296,14 @@ namespace MathEvent.Api.Controllers
         {
             if (Guid.Empty == identityUserId)
             {
-                return BadRequest("id не задан");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "identityUserId",
+                        Message = $"identityUserId не задан"
+                    }
+                });
             }
 
             var userStatistics = await _userService.GetUserStatistics(identityUserId);

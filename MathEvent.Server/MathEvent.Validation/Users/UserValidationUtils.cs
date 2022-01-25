@@ -1,6 +1,5 @@
 ﻿using MathEvent.Contracts.Services;
-using MathEvent.Contracts.Validators;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -31,9 +30,9 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="id">id пользователя</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateUserId(Guid id)
+        public async Task<IEnumerable<ValidationError>> ValidateUserId(Guid id)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (Guid.Empty == id)
             {
@@ -66,9 +65,9 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="userIds">Идентификаторы пользователей</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateUserIds(ICollection<Guid> userIds, string userType)
+        public async Task<IEnumerable<ValidationError>> ValidateUserIds(ICollection<Guid> userIds, string userType)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (userIds is null)
             {
@@ -95,9 +94,9 @@ namespace MathEvent.Validation.Users
         /// <param name="email">Email адрес</param>
         /// <param name="checkUserExistence">Требуется ли проверка существования пользователя с таким email</param>
         /// <returns>Ошибки валидации</returns>
-        public async Task<IEnumerable<IValidationError>> ValidateEmail(string email, bool checkUserExistence = true)
+        public async Task<IEnumerable<ValidationError>> ValidateEmail(string email, bool checkUserExistence = true)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(email))
             {
@@ -136,9 +135,9 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="name">Имя</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateName(string name)
+        public IEnumerable<ValidationError> ValidateName(string name)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(name))
             {
@@ -168,9 +167,9 @@ namespace MathEvent.Validation.Users
         /// </summary>
         /// <param name="surname">Фамилия</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateSurname(string surname)
+        public IEnumerable<ValidationError> ValidateSurname(string surname)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(surname))
             {

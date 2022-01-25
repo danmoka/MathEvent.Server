@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts.Validators;
 using MathEvent.Models.Organizations;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,13 +19,13 @@ namespace MathEvent.Validation.Organization
             _organizationValidationUtils = organizationValidationUtils;
         }
 
-        public async Task<IValidationResult> Validate(OrganizationCreateModel model)
+        public async Task<ValidationResult> Validate(OrganizationCreateModel model)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (!string.IsNullOrEmpty(model.ITN))
             {
-                validationErrors.AddRange(_organizationValidationUtils.ValidateITN(model.ITN));
+                validationErrors.AddRange(await _organizationValidationUtils.ValidateITN(model.ITN, true));
             }
 
             validationErrors.AddRange(_organizationValidationUtils.ValidateName(model.Name));

@@ -1,6 +1,5 @@
 ﻿using MathEvent.Contracts.Services;
-using MathEvent.Contracts.Validators;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -31,9 +30,9 @@ namespace MathEvent.Validation.Organization
         /// </summary>
         /// <param name="itn">ИНН</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateITN(string itn)
+        public async Task<IEnumerable<ValidationError>> ValidateITN(string itn, bool checkIfExists = false)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(itn))
             {
@@ -62,6 +61,15 @@ namespace MathEvent.Validation.Organization
                         Message = $"Длина ИНН должна быть больше {_itnMinLength} символов"
                     });
                 }
+
+                if (checkIfExists && await _organizationService.FindByITN(itn) is not null)
+                {
+                    validationErrors.Add(new ValidationError
+                    {
+                        Field = nameof(itn),
+                        Message = $"Организация с ИНН = {itn} уже существует"
+                    });
+                }
             }
 
             return validationErrors;
@@ -72,9 +80,9 @@ namespace MathEvent.Validation.Organization
         /// </summary>
         /// <param name="name">Название организации</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateName(string name)
+        public IEnumerable<ValidationError> ValidateName(string name)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(name))
             {
@@ -104,9 +112,9 @@ namespace MathEvent.Validation.Organization
         /// </summary>
         /// <param name="description">Описание организации</param>
         /// <returns>Ошибки валидации</returns>
-        public IEnumerable<IValidationError> ValidateDescription(string description)
+        public IEnumerable<ValidationError> ValidateDescription(string description)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (string.IsNullOrEmpty(description))
             {
@@ -136,16 +144,16 @@ namespace MathEvent.Validation.Organization
         /// </summary>
         /// <param name="id">id организации</param>
         /// <returns></returns>
-        internal async Task<IEnumerable<IValidationError>> ValidateOrganizationId(int? id)
+        internal async Task<IEnumerable<ValidationError>> ValidateOrganizationId(int? id)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (id is null)
             {
                 validationErrors.Add(new ValidationError
                 {
                     Field = nameof(id),
-                    Message = $"id={id} организации не задано"
+                    Message = $"id = {id} организации не задано"
                 });
             }
             else

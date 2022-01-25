@@ -16,5 +16,6 @@ namespace MathEvent.Contracts.Services
         int>
     {
         Task<IEnumerable<ChartData>> GetOrganizationsStatistics(IDictionary<string, string> filters);
+        Task<OrganizationReadModel> FindByITN(string itn);
     }
 }

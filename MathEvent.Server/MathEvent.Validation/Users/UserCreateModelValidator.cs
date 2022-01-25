@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts.Validators;
 using MathEvent.Models.Users;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,9 +19,9 @@ namespace MathEvent.Validation.Users
             _userValidationUtils = userValidationUtils;
         }
 
-        public async Task<IValidationResult> Validate(UserCreateModel model)
+        public async Task<ValidationResult> Validate(UserCreateModel model)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             validationErrors.AddRange(await _userValidationUtils.ValidateIdentityUserId(model.IdentityUserId));
             validationErrors.AddRange(await _userValidationUtils.ValidateEmail(model.Email));

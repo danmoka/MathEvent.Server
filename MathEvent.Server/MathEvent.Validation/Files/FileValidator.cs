@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts.Services;
 using MathEvent.Contracts.Validators;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,9 +19,9 @@ namespace MathEvent.Validation.Files
             _dataPathWorker = dataPathWorker;
         }
 
-        public async Task<IValidationResult> Validate(IFormFile file)
+        public async Task<ValidationResult> Validate(IFormFile file)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             if (!_dataPathWorker.IsPermittedExtension(file))
             {

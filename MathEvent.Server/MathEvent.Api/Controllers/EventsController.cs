@@ -6,6 +6,7 @@ using MathEvent.DTOs.Events;
 using MathEvent.Models.Events;
 using MathEvent.Models.Files;
 using MathEvent.Models.Others;
+using MathEvent.Models.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
@@ -68,7 +69,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var ev = await _eventService.Retrieve(id);
@@ -115,7 +123,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                    {
+                        new ValidationError()
+                        {
+                            Field = "id",
+                            Message = $"id = {id} меньше 0"
+                        }
+                    });
             }
 
             var validationResult = await _eventUpdateModelValidator.Validate(eventUpdateModel);
@@ -155,12 +170,26 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             if (patchDocument is null)
             {
-                return BadRequest("Тело запроса не задано");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "body",
+                        Message = "Тело запроса не задано"
+                    }
+                });
             }
 
             var ev = await _eventService.Retrieve(id);
@@ -204,7 +233,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() { new ValidationError() { Field = "id", Message = $"id = {id} меньше 0" } });
             }
 
             var ev = await _eventService.Retrieve(id);
@@ -244,7 +273,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() { new ValidationError() { Field = "id", Message = $"id = {id} меньше 0" } });
             }
 
             var ev = await _eventService.Retrieve(id);
@@ -284,7 +313,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() { new ValidationError() { Field = "id", Message = $"id = {id} меньше 0" } });
             }
 
             var ev = await _eventService.Retrieve(id);
@@ -306,7 +335,14 @@ namespace MathEvent.Api.Controllers
 
             if (childEvents.Count > 0)
             {
-                return BadRequest($"Событие с id={id} имеет дочерние события");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"Событие с id = {id} имеет дочерние события"
+                    }
+                });
             }
 
             await _eventService.Delete(id);
@@ -320,7 +356,7 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() { new ValidationError() { Field = "id", Message = $"id = {id} меньше 0" } });
             }
 
             var breadcrumbs = await _eventService.GetBreadcrumbs(id);
@@ -358,7 +394,7 @@ namespace MathEvent.Api.Controllers
 
             if (eventId < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>() { new ValidationError() { Field = "id", Message = $"id = {id} меньше 0" } });
             }
 
             var ev = await _eventService.Retrieve(eventId);

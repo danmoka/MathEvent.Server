@@ -1,6 +1,6 @@
 ﻿using MathEvent.Contracts.Validators;
 using MathEvent.Models.Users;
-using MathEvent.Validation.Common;
+using MathEvent.Models.Validation;
 using MathEvent.Validation.Events;
 using MathEvent.Validation.Organization;
 using System.Collections.Generic;
@@ -29,9 +29,9 @@ namespace MathEvent.Validation.Users
             _organizationValidationUtils = organizationValidationUtils;
         }
 
-        public async Task<IValidationResult> Validate(UserUpdateModel model)
+        public async Task<ValidationResult> Validate(UserUpdateModel model)
         {
-            var validationErrors = new List<IValidationError>();
+            var validationErrors = new List<ValidationError>();
 
             validationErrors.AddRange(await _userValidationUtils.ValidateIdentityUserId(model.IdentityUserId, false));
             validationErrors.AddRange(_userValidationUtils.ValidateName(model.Name));

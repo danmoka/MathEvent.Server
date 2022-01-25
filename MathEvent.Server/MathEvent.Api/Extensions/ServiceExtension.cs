@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -19,20 +17,12 @@ namespace MathEvent.Api.Extensions
         /// </summary>
         /// <param name="services">Зависимости</param>
         /// <param name="configuration">Поставщик конфигурации</param>
-        public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
+        public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             var authenticationSettings = configuration.GetSection("Authentication");
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
             {
-                if (env.IsProduction())
-                {
-                    options.RequireHttpsMetadata = false;
-                }
-                else if (env.IsDevelopment())
-                {
-                    options.RequireHttpsMetadata = true;
-                }
-
+                options.RequireHttpsMetadata = false;
                 options.Authority = authenticationSettings["Authority"];
                 options.TokenValidationParameters = new TokenValidationParameters
                 {

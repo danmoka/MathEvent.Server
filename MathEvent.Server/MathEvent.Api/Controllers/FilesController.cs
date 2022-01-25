@@ -3,6 +3,7 @@ using MathEvent.Contracts.Services;
 using MathEvent.Contracts.Validators;
 using MathEvent.Models.Files;
 using MathEvent.Models.Others;
+using MathEvent.Models.Validation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -59,7 +60,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var file = await _fileService.Retrieve(id);
@@ -113,7 +121,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var validationResult = await _fileUpdateModelValidator.Validate(fileUpdateModel);
@@ -153,7 +168,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var file = await _fileService.Retrieve(id);
@@ -167,7 +189,14 @@ namespace MathEvent.Api.Controllers
 
             if (child.Count > 0)
             {
-                return BadRequest($"Файл с id={id} имеет дочерние файлы");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"Файл с id = {id} имеет дочерние файлы"
+                    }
+                });
             }
 
             var authorizationResult = await _authorizationService
@@ -263,7 +292,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var file = await _fileService.Retrieve(id);
@@ -275,7 +311,14 @@ namespace MathEvent.Api.Controllers
 
             if (file.Hierarchy is not null)
             {
-                return BadRequest("Скачивание папок невозможно");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "hierarchy",
+                        Message = "Скачивание папок недоступно"
+                    }
+                });
             }
 
             var downloadedFile = await _fileService.Download(id);
@@ -293,7 +336,14 @@ namespace MathEvent.Api.Controllers
         {
             if (id < 0)
             {
-                return BadRequest($"id={id} меньше 0");
+                return BadRequest(new List<ValidationError>()
+                {
+                    new ValidationError()
+                    {
+                        Field = "id",
+                        Message = $"id = {id} меньше 0"
+                    }
+                });
             }
 
             var breadcrumbs = await _fileService.GetBreadcrumbs(id);
